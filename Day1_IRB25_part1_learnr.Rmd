@@ -12,6 +12,12 @@ library(learnr)
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
+```{r shared-data, exercise.setup=TRUE}
+# These variables are available to ALL exercises that reference this chunk
+iris_data <- iris
+animals <- c("dog", "cat", "bird", "fish", "hamster")
+```
+
 ## Welcome! 👋
 
 Welcome to your first session "Introduction to R" in the Institute Ruder Boskovic (IRB) workshop. 
@@ -91,51 +97,67 @@ Calculate:
 2. Full groups of 10 cells
 3. Leftover cells
 
-### Your Turn!
+### Step 1: Calculate Total Cells
 
-```{r stem-cells, exercise=TRUE}
+```{r stem-cells-1, exercise=TRUE}
 # Number of initial cells
 initial_cells <- 48
 
-# Calculate total cells after division
+# Calculate total cells after division (multiply by 2)
+total_cells <- 
 
-
-# Calculate full groups of 10
-
-
-# Calculate leftover cells
-
-
+total_cells
 ```
 
-```{r stem-cells-hint-1}
+### Step 2: Calculate Groups
+
+Now use the `total_cells` from the previous exercise:
+
+```{r stem-cells-2, exercise=TRUE, exercise.setup="stem-cells-1"}
+# Now total_cells is available from previous exercise!
+# Calculate full groups of 10
+full_groups <- 
+
+full_groups
+```
+
+### Step 3: Calculate Leftovers
+
+```{r stem-cells-3, exercise=TRUE, exercise.setup="stem-cells-2"}
+# Both total_cells and full_groups are available!
+# Calculate leftover cells
+leftover <- 
+
+leftover
+```
+
+```{r stem-cells-1-hint}
 # Multiply by 2 for division
 total_cells <- initial_cells * 2
 ```
 
-```{r stem-cells-hint-2}
+```{r stem-cells-1-solution}
+initial_cells <- 48
+total_cells <- initial_cells * 2
+total_cells
+```
+
+```{r stem-cells-2-hint}
 # Use %/% for full groups
 full_groups <- total_cells %/% 10
 ```
 
-```{r stem-cells-hint-3}
+```{r stem-cells-2-solution}
+full_groups <- total_cells %/% 10
+full_groups
+```
+
+```{r stem-cells-3-hint}
 # Use %% for leftovers
 leftover <- total_cells %% 10
 ```
 
-```{r stem-cells-solution}
-# Number of initial cells
-initial_cells <- 48
-
-# Calculate total cells after division
-total_cells <- initial_cells * 2
-total_cells
-
-# Calculate full groups of 10
-full_groups <- total_cells %/% 10
-full_groups
-
-# Calculate leftover cells
+```{r stem-cells-3-solution}
 leftover <- total_cells %% 10
 leftover
 ```
