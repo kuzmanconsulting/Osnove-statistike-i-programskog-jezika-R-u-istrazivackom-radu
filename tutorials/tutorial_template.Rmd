@@ -1,0 +1,92 @@
+---
+title: "Your Tutorial Title"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r load-branding, echo=FALSE}
+# Load Kuzman Consulting branding (CSS + logos)
+source("../assets/setup_branding.R", local = knitr::knit_global())
+setup_kuzman_branding()
+```
+
+```{r shared-data, exercise.setup=TRUE, include=FALSE}
+# Shared data for exercises
+
+```
+
+## Welcome
+
+Welcome to [Your Workshop Name]
+
+**Authors:** dr.sc. Maja Kuzman - Kuzman Consulting d.o.o., [Add other authors]
+
+### How to Use This Tutorial
+
+- Click **"Run Code"** to execute R code
+- Click **"Submit Answer"** to check your solutions
+- Click **"Hint"** if you need help
+- Progress is tracked as you complete exercises
+
+---
+
+## Section 1: Your Topic
+
+Brief introduction to your topic.
+Your First Section
+### Demonstration
+
+```{r demo-1, exercise=TRUE, exercise.setup="shared-data"}
+# Add demonstration code here
+
+
+```
+
+### Exercise 1: Your Exercise
+
+Instructions for your exercise.
+
+```{r exercise-1, exercise=TRUE, exercise.setup="shared-data"}
+# Students write their code here
+
+
+```
+
+```{r exercise-1-hint}
+# Hint
+```
+
+```{r exercise-1-solution}
+# Solution
+```
+
+---
+
+## Congratulations!
+
+You've completed [Tutorial Name]!
+
+### What You've Learned:
+
+✅ Topic 1  
+✅ Topic 2  
+✅ Topic 3  
+
+### Next Steps:
+
+Continue to **[Next Tutorial Name]**
+
+---
+
+## Resources
+
+- [Resource 1](https://example.com)
+- [Resource 2](https://example.com)

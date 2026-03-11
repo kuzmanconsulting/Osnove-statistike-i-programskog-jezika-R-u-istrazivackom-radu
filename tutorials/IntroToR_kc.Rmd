@@ -1,0 +1,482 @@
+---
+title: "Introduction to R"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r load-branding, echo=FALSE}
+# Load Kuzman Consulting branding (CSS + logos)
+source("../assets/setup_branding.R", local = knitr::knit_global())
+setup_kuzman_branding()
+```
+
+```{r shared-data, exercise.setup=TRUE, include=FALSE}
+# Shared data for exercises
+myFirstNumber <- 0.1
+myFirstVector <- c("some words","p","awesome", "last one")
+myFirstSequence <- 1:4
+someothervector <- c(1,0,1,0,1)
+```
+
+## Welcome
+
+Welcome to **Introduction to R**
+
+**Author:** dr.sc. Maja Kuzman - Kuzman Consulting d.o.o.
+
+### How to Use This Tutorial
+
+- Click **"Run Code"** to execute R code
+- Click **"Submit Answer"** to check your solutions
+- Click **"Hint"** if you need help
+- Progress is tracked as you complete exercises
+
+---
+
+## Getting Started with R
+
+### How can we use R and RStudio?
+
+- Console
+- Script
+- Notebook (add new chunk: Ctrl + Alt + I)
+
+```{r calculator-demo, exercise=TRUE}
+1 + 1
+
+```
+
+### Try it!
+
+Add your calculation here. Calculate the result of 13%%3, 12%%3, 15%%3.  
+Can you guess what %% does?
+
+```{r modulo-exercise, exercise=TRUE}
+# Calculate modulo operations
+13 %% 3
+
+```
+
+```{r modulo-exercise-hint}
+# Try calculating:
+# 12 %% 3
+# 15 %% 3
+# The %% operator gives you the remainder after division
+```
+
+```{r modulo-exercise-solution}
+13 %% 3  # Result: 1
+12 %% 3  # Result: 0
+15 %% 3  # Result: 0
+# %% gives the remainder (modulo operation)
+```
+
+### What have we learned so far?
+
+**We can use R as a calculator!**
+
+*We can even do better than that...*
+
+---
+
+## Working with Vectors
+
+### Variables and Data Structures
+
+Variables store values that you can reuse throughout your code.
+
+```{r variables-demo, exercise=TRUE, exercise.setup="shared-data"}
+myFirstNumber <- 0.1
+myFirstVector <- c(2, 3, 7, 8)
+
+# Call the variable by name
+print(myFirstNumber)
+myFirstNumber
+```
+
+### Data Structures in R
+
+- **Vectors** - one-dimensional arrays of data
+- **Matrix** - two-dimensional arrays
+- **Data.frame** - tables with rows and columns
+- **List** - collections of different objects
+- **Factors** - categorical variables
+
+### Creating Vectors with c()
+
+You can make a vector using the function `c()` (concatenate).
+
+```{r vector-creation, exercise=TRUE, exercise.setup="shared-data"}
+myFirstVector <- c("some words", "p", "awesome", "last one")
+myFirstSequence <- 1:4
+
+# Print the vectors
+myFirstVector
+myFirstSequence
+```
+
+### Subsetting with [ ]
+
+**Print the whole vector:**
+
+```{r subsetting-demo, exercise=TRUE, exercise.setup="shared-data"}
+myFirstVector
+myFirstSequence
+```
+
+### Print Third Element
+
+```{r subsetting-single, exercise=TRUE, exercise.setup="shared-data"}
+myFirstVector[3]
+myFirstSequence[3]
+```
+
+### Access by Position
+
+**This won't work:**
+```{r wrong-subsetting, eval=FALSE}
+myFirstVector[1,3]  # Wrong syntax!
+```
+
+**Correct way** - provide a VECTOR of positions:
+
+```{r subsetting-multiple, exercise=TRUE, exercise.setup="shared-data"}
+myFirstVector[c(1, 3)]
+
+# Or create a variable with positions
+somePositions <- c(1, 3)
+myFirstVector[somePositions]
+```
+
+### Exercise 1: Subsetting by Position
+
+1. Create a vector named `myvector` that contains numbers 15, 16, 17, 18, and 20
+2. Get the 2nd and 4th numbers by subsetting
+
+```{r exercise-subsetting, exercise=TRUE}
+# Create your vector here
+myvector <- c(15, 16, 17, 18, 20)
+
+# Subset to get 2nd and 4th elements
+
+```
+
+```{r exercise-subsetting-hint}
+# Use c() to specify positions: c(2, 4)
+myvector[c(2, 4)]
+```
+
+```{r exercise-subsetting-solution}
+myvector <- c(15, 16, 17, 18, 20)
+myvector[c(2, 4)]  # Returns 16 and 18
+```
+
+### Access by Logical Vector
+
+Provide a LOGICAL vector:
+
+```{r logical-subsetting, exercise=TRUE, exercise.setup="shared-data"}
+myFirstVector
+myFirstVector[c(TRUE, FALSE, TRUE, FALSE)]
+
+# Or use a logical variable
+someLogicalVector <- c(TRUE, TRUE, FALSE, FALSE)
+myFirstVector[someLogicalVector]
+```
+
+### Exercise 2: Subsetting by Logical Vector
+
+Get the 2nd and 4th numbers in `myvector` by providing a logical vector.
+
+```{r exercise-logical, exercise=TRUE}
+myvector <- c(15, 16, 17, 18, 20)
+
+# Create logical vector and subset
+
+```
+
+```{r exercise-logical-hint}
+# Think: which positions should be TRUE?
+# Position: 1     2     3      4     5
+# Logical:  FALSE TRUE  FALSE TRUE  FALSE
+```
+
+```{r exercise-logical-solution}
+myvector <- c(15, 16, 17, 18, 20)
+myvector[c(FALSE, TRUE, FALSE, TRUE, FALSE)]
+```
+
+### Understanding Type Conversion
+
+```{r conversion-demo, exercise=TRUE, exercise.setup="shared-data"}
+someothervector <- c(1, 0, 1, 0, 1)
+myFirstVector
+
+# Numbers are converted to logical!
+myFirstVector[someothervector]
+
+# Explicit conversion
+myFirstVector[as.logical(someothervector)]
+```
+
+---
+
+## Vector Operations
+
+### Basic Arithmetic
+
+Same as on numbers: `+`, `-`, `/`, `*`
+
+**Multiplication by Constant:**
+
+```{r mult-constant, exercise=TRUE, exercise.setup="shared-data"}
+someothervector
+someothervector * 0.5
+```
+
+### Multiplication by Other Vector
+
+**I) SAME size**
+
+```{r mult-same, exercise=TRUE, exercise.setup="shared-data"}
+someothervector
+1:5
+someothervector * 1:5
+```
+
+**II) DIFFERENT size: Recycling**
+
+```{r mult-recycle, exercise=TRUE, exercise.setup="shared-data"}
+someothervector
+c(0.3, 0.1)
+someothervector * c(0.3, 0.1)
+
+# Vector recycling in action
+c(1, 2, 3, 4, 5, 6) * 1:2
+```
+
+### Exercise 3: Multiplication & Recycling
+
+1. Create `myvector` with values 15, 16, 17, 18, 20
+2. Multiply `myvector` by `c(0.1, 0.2)` - what do you expect to get?
+3. Check if you get what you expected by comparing
+
+```{r exercise-mult, exercise=TRUE}
+myvector <- c(15, 16, 17, 18, 20)
+
+# Multiply by c(0.1, 0.2)
+
+
+# Compare to your expected result
+
+```
+
+```{r exercise-mult-solution}
+myvector <- c(15, 16, 17, 18, 20)
+result <- myvector * c(0.1, 0.2)
+result
+
+# Expected: c(1.5, 3.2, 1.7, 3.6, 2.0)
+expected <- c(1.5, 3.2, 1.7, 3.6, 2.0)
+result == expected
+```
+
+### Comparisons and Subsetting
+
+Comparisons return a logical vector:
+
+```{r comparison-demo, exercise=TRUE, exercise.setup="shared-data"}
+someothervector
+someothervector == 1
+
+someothervector == c(1, 0, 1, 0, 1)
+
+someothervector > 0
+```
+
+### What Happened Here?
+
+```{r subset-by-comparison, exercise=TRUE, exercise.setup="shared-data"}
+someothervector[someothervector > 0]
+```
+
+**Remember:** Subsetting by logical indices returns elements at positions which are TRUE!
+
+### Exercise 4: Subsetting with Comparison
+
+Return only elements in `myvector` that are smaller than 17.
+
+```{r exercise-comparison, exercise=TRUE}
+myvector <- c(15, 16, 17, 18, 20)
+
+# Use subsetting and comparison
+myvector[???]
+```
+
+```{r exercise-comparison-hint}
+# Use the < operator to create a logical vector
+myvector[myvector < 17]
+```
+
+```{r exercise-comparison-solution}
+myvector <- c(15, 16, 17, 18, 20)
+myvector[myvector < 17]  # Returns 15 and 16
+```
+
+### Logical Operators
+
+- **AND:** `&`
+- **OR:** `|`
+- **NOT:** `!`
+
+```{r logical-ops, exercise=TRUE}
+firstLogical <- c(TRUE, TRUE, FALSE, FALSE) 
+secondLogical <- c(TRUE, FALSE, TRUE, FALSE)
+
+firstLogical & secondLogical  # AND
+firstLogical | secondLogical  # OR
+!firstLogical                 # NOT
+```
+
+### Exercise 5: Logical Operators
+
+**Remember:**
+- `x == 0` - where is x equal to 0
+- `x %% 5` - gives you the modulo
+- `x != 0` - not equal to
+
+Return all elements from `myvector` that are divisible by 3.
+
+```{r exercise-logical-ops, exercise=TRUE}
+myvector <- c(15, 16, 17, 18, 20)
+
+# Find elements divisible by 3
+
+```
+
+```{r exercise-logical-ops-hint}
+# A number is divisible by 3 if modulo 3 equals 0
+myvector[myvector %% 3 == 0]
+```
+
+```{r exercise-logical-ops-solution}
+myvector <- c(15, 16, 17, 18, 20)
+myvector[myvector %% 3 == 0]  # Returns 15 and 18
+```
+
+### Extra Challenge!
+
+Return all elements from `myvector` which are on EVEN positions (2, 4, 6, ...).
+
+```{r exercise-even-positions, exercise=TRUE}
+myvector <- c(15, 16, 17, 18, 20)
+
+# Get elements at even positions
+
+```
+
+```{r exercise-even-positions-solution}
+myvector <- c(15, 16, 17, 18, 20)
+# Create a logical vector for even positions
+even_positions <- seq(1, length(myvector)) %% 2 == 0
+myvector[even_positions]
+
+# Or more directly:
+myvector[c(FALSE, TRUE)]  # Uses recycling
+```
+
+---
+
+## Functions and Help
+
+### Useful Vector Functions
+
+```{r func-length, exercise=TRUE, exercise.setup="shared-data"}
+length(someothervector)
+```
+
+**unique() - Unique Elements:**
+
+```{r func-unique, exercise=TRUE, exercise.setup="shared-data"}
+unique(someothervector)
+```
+
+**table() - Count Elements:**
+
+```{r func-table, exercise=TRUE, exercise.setup="shared-data"}
+table(someothervector)
+```
+
+### Math Functions
+
+```{r math-functions, exercise=TRUE, exercise.setup="shared-data"}
+sum(someothervector)
+mean(someothervector)
+sd(someothervector)
+summary(someothervector)
+```
+
+### Try These Functions!
+
+```{r exercise-functions, exercise=TRUE}
+myvector <- c(15, 16, 17, 18, 20)
+
+# Calculate sum, mean, and standard deviation
+
+
+
+```
+
+```{r exercise-functions-solution}
+myvector <- c(15, 16, 17, 18, 20)
+sum(myvector)
+mean(myvector)
+sd(myvector)
+```
+
+### Getting Help
+
+```{r help-demo, exercise=TRUE, eval=FALSE}
+?runif
+example(runif)
+```
+
+You can also use:
+- `?function_name` - opens help documentation
+- `example(function_name)` - shows examples
+- `help.search("keyword")` - searches help files
+
+---
+
+## Congratulations! 🎊
+
+You've completed the **Introduction to R** tutorial!
+
+### What You've Learned:
+
+✅ Using R as a calculator  
+✅ Creating and working with variables  
+✅ Understanding vectors and data structures  
+✅ Subsetting vectors by position and logical conditions  
+✅ Vector operations and recycling  
+✅ Comparison and logical operators  
+✅ Useful R functions  
+✅ How to get help in R
+
+### Next Steps:
+
+Continue exploring R programming and data analysis!
+
+### Additional Resources
+
+- [R for Data Science](https://r4ds.had.co.nz/)
+- [RStudio Cheat Sheets](https://www.rstudio.com/resources/cheatsheets/)
+- [R Documentation](https://www.rdocumentation.org/)

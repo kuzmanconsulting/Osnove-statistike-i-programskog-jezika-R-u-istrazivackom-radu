@@ -1,0 +1,124 @@
+/* ============================================
+   Kuzman Consulting - learnr Tutorial Theme
+   Professional Soft Gray & Orange Design
+   ============================================ */
+
+/* Sidebar - Soft Gray Background */
+.topicsContainer {
+  background-color: #F8F9FA;
+  border-right: 1px solid #E0E0E0;
+}
+
+/* Sidebar Header - Company Orange */
+.topicsHeader {
+  background-color: #FF8A50;
+  color: white;
+  font-weight: 500;
+}
+
+/* Sidebar Navigation Links */
+.topicsList a {
+  color: #455A64;
+  transition: all 0.2s;
+}
+
+/* Active/Current Section */
+.topicsList a.current {
+  background-color: #FFF3E0;
+  border-left: 3px solid #FF8A50;
+  color: #FF6B35;
+  font-weight: 500;
+}
+
+/* Hover State */
+.topicsList a:hover {
+  background-color: #FAFAFA;
+  border-left: 3px solid #FFB74D;
+}
+
+/* Main Content Headers */
+h2 {
+  color: #37474F;
+  border-left: 4px solid #FF8A50;
+  padding-left: 12px;
+  font-weight: 600;
+}
+
+h3 {
+  color: #455A64;
+}
+
+/* ============================================
+   Progress Bar - Bottom Right
+   ============================================ */
+
+/* Progress indicator container */
+.topics-progress {
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  top: auto !important;
+  left: auto !important;
+  width: 200px !important;
+  background-color: white;
+  border: 2px solid #FF8A50;
+  border-radius: 8px;
+  padding: 10px 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9998;
+  font-size: 13px;
+}
+
+/* Progress bar itself */
+.topics-progress .progress {
+  height: 8px;
+  border-radius: 4px;
+  background-color: #F0F0F0;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+/* Progress bar fill */
+.topics-progress .progress-bar {
+  background-color: #FF8A50;
+  transition: width 0.3s ease;
+  height: 100%;
+}
+
+/* Progress text */
+.topics-progress .progress-text {
+  color: #455A64;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+/* Primary Buttons - Subtle Orange */
+.btn-primary {
+  background-color: #FF8A50;
+  border-color: #FF8A50;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: #FF6B35;
+  border-color: #FF6B35;
+}
+
+/* Links - Muted Orange */
+a {
+  color: #FF8A50;
+}
+
+a:hover {
+  color: #FF6B35;
+}
+
+/* Code Blocks - Clean Styling */
+pre {
+  background-color: #FAFAFA;
+  border-left: 3px solid #B0BEC5;
+}
+
+code {
+  background-color: #F5F5F5;
+}

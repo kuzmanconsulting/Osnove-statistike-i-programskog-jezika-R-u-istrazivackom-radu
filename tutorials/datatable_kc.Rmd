@@ -1,0 +1,611 @@
+---
+title: "Data.table in R"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(data.table)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r load-branding, echo=FALSE}
+# Load Kuzman Consulting branding (CSS + logos)
+source("../assets/setup_branding.R", local = knitr::knit_global())
+setup_kuzman_branding()
+```
+
+```{r shared-data, exercise.setup=TRUE, include=FALSE}
+# Load shared data for exercises
+ddf <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/tidyData.txt", header=T)
+ddf_dt <- as.data.table(ddf)
+iris_dt <- as.data.table(iris)
+```
+
+## Welcome
+
+Welcome to **Data.table in R**
+
+**Author:** dr.sc. Maja Kuzman - Kuzman Consulting d.o.o.
+
+### How to Use This Tutorial
+
+- Click **"Run Code"** to execute R code
+- Click **"Submit Answer"** to check your solutions
+- Click **"Hint"** if you need help
+- Progress is tracked as you complete exercises
+
+---
+
+## Getting Started
+
+### Introduction
+
+### Sample Data
+
+We'll use this dataset for examples:
+
+```{r data-preview, exercise=TRUE, exercise.setup="shared-data"}
+ddf
+```
+
+And you'll practice on the `iris` dataset:
+
+```{r iris-preview, exercise=TRUE}
+iris
+```
+
+---
+
+### Loading the Library
+
+### Installation
+
+If you don't have the package, install it (only once):
+
+```{r install-dt, exercise=TRUE, eval=FALSE}
+install.packages("data.table")
+```
+
+### Loading
+
+Load it every session:
+
+```{r load-dt, exercise=TRUE}
+library(data.table)
+```
+
+### Converting to data.table
+
+If you already have a data frame:
+
+```{r convert-dt, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt <- as.data.table(ddf)
+ddf_dt
+```
+
+---
+
+### data.table Syntax
+
+### All You Need to Know:
+
+### **DT[i, j, by]**
+
+- **i:** select those rows
+- **j:** do this to them
+- **by:** do it per groups
+
+---
+
+## Basic Operations
+
+### Selecting Rows
+
+### Example: Height > 180
+
+How many people are taller than 180?
+
+```{r select-rows, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[Height > 180]
+nrow(ddf_dt[Height > 180])
+```
+
+You select rows similar to vector subsetting!
+
+---
+
+### Selecting Columns
+
+### Show Age and Continent of First 5 People
+
+In data.table use `.` instead of `c()` (`.` is short for `list()`):
+
+```{r select-cols, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[1:5, .(Age, Continent)]
+```
+
+### Using Column Names as Variables
+
+```{r select-cols-vars, exercise=TRUE, exercise.setup="shared-data"}
+cnames <- c("Age", "Continent")
+ddf_dt[1:5, ..cnames]
+```
+
+---
+
+### More Column Selection
+
+### Range of Columns
+
+```{r select-range, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[1:3, Age:Continent]
+```
+
+### Exclude Columns
+
+```{r select-exclude, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[1:3, -(Age:Continent)]
+```
+
+### Negate Selection
+
+```{r select-negate, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[1:3, !(Age:Gender)]
+```
+
+---
+
+### Exercise 1: iris Basics
+
+Practice with the `iris` dataset!
+
+**Tasks:**
+1. Convert `iris` to data.table - call it `iris_dt`
+2. Select all rows with Sepal.Length < 6.7
+3. Select as before, but show only Sepal.Length and Species columns
+
+```{r exercise-iris-1, exercise=TRUE}
+# Convert iris to data.table
+iris_dt <- as.data.table(iris)
+
+# Select rows with Sepal.Length < 6.7
+
+
+# Show only specific columns
+
+```
+
+```{r exercise-iris-1-hint}
+# Step 2: iris_dt[Sepal.Length < 6.7]
+# Step 3: iris_dt[Sepal.Length < 6.7, .(Sepal.Length, Species)]
+```
+
+```{r exercise-iris-1-solution}
+iris_dt <- as.data.table(iris)
+iris_dt[Sepal.Length < 6.7]
+iris_dt[Sepal.Length < 6.7, .(Sepal.Length, Species)]
+```
+
+---
+
+## Aggregations and Groups
+
+### Operations on Columns
+
+### Calculate Mean
+
+```{r calc-mean, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[, mean(Height)]
+```
+
+### Mean by Groups
+
+```{r mean-by-group, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[, mean(Height), by = Gender]
+```
+
+---
+
+### Multiple Statistics by Group
+
+Calculate mean, sd, max, min for Height, and count per Gender, ordered by mean:
+
+```{r multiple-stats, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[, 
+       .(mean = mean(Height),
+         sd = sd(Height),
+         min_x = min(Height),
+         max_x = max(Height),
+         N = .N),
+       by = Gender][order(mean)]
+```
+
+---
+
+### Special Symbols: .N
+
+### .N gives number of observations
+
+```{r dot-n, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[, .N]
+ddf_dt[, .N, by = Gender]
+```
+
+### Group by Multiple Variables
+
+```{r multiple-groups, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[, .N, by = .(Gender, Height > 180)]
+```
+
+### Exercise: Count by Group
+
+How many men and women are there from different continents?
+
+```{r exercise-count, exercise=TRUE, exercise.setup="shared-data"}
+# Count by Gender and Continent
+
+```
+
+```{r exercise-count-solution}
+ddf_dt[, .N, by = .(Gender, Continent)]
+```
+
+---
+
+### Exercise 2: iris Operations
+
+**Tasks:**
+1. Select all rows where Sepal.Length < 6.7 AND Species == "virginica"
+2. For those, use chaining `[][]` to calculate mean Petal.Width
+3. How many flowers have Sepal.Width > 3 and how many have Sepal.Width < 3?
+
+```{r exercise-iris-2, exercise=TRUE}
+iris_dt <- as.data.table(iris)
+
+# Task 1: Filter
+
+
+# Task 2: Calculate mean with chaining
+
+
+# Task 3: Count by Sepal.Width
+
+```
+
+```{r exercise-iris-2-hint}
+# Task 1: iris_dt[Sepal.Length < 6.7 & Species == "virginica"]
+# Task 2: Add [, mean(Petal.Width)] after Task 1
+# Task 3: iris_dt[Sepal.Length < 6.7 & Species == "virginica", .N, by = .(Sepal.Width > 3)]
+```
+
+```{r exercise-iris-2-solution}
+iris_dt <- as.data.table(iris)
+
+# Task 1
+iris_dt[Sepal.Length < 6.7 & Species == "virginica"]
+
+# Task 2
+iris_dt[Sepal.Length < 6.7 & Species == "virginica"][, mean(Petal.Width)]
+
+# Task 3
+iris_dt[Sepal.Length < 6.7 & Species == "virginica", .N, by = .(Sepal.Width > 3)]
+```
+
+---
+
+## Modifying Data
+
+### Adding New Columns
+
+### Use := to Add a Column
+
+```{r add-column, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[, N := .N]
+ddf_dt[1:3]
+```
+
+### Add Multiple Columns
+
+Use `:=` as a function:
+
+```{r add-multiple, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[, 
+       ':='(N_grp = .N, mean = mean(Height)),
+       by = .(Gender, Continent)]
+ddf_dt
+```
+
+---
+
+### Exercise 3: Add Columns to iris
+
+**Tasks:**
+1. Add columns to `iris_dt` for mean and sd of Sepal.Width grouped by Species
+2. Use `uniqueN()` to check how many unique mean Sepal Widths there are
+
+```{r exercise-add-cols, exercise=TRUE}
+iris_dt <- as.data.table(iris)
+
+# Add mean and sd columns
+
+
+# Check unique means
+
+```
+
+```{r exercise-add-cols-solution}
+iris_dt <- as.data.table(iris)
+
+iris_dt[, ':='(mean_sw = mean(Sepal.Width), 
+               sd_sw = sd(Sepal.Width)), 
+        by = Species]
+
+uniqueN(iris_dt$mean_sw)
+```
+
+---
+
+### Special Symbols: .I and .GRP
+
+### .I holds row numbers
+
+```{r dot-i, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[, .(row_id = .I, Gender, Continent)]
+```
+
+### .GRP holds unique group number
+
+```{r dot-grp, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[, .GRP, by = .(Gender, Continent)]
+```
+
+---
+
+### Exercise 4: Advanced Operations
+
+**Tasks:**
+1. Add column to `iris_dt` with number of observations where Petal.Length < 6.5, grouped by Species
+2. Select all rows with Species == "virginica" and rename those Species entries to "new_virginica"
+
+```{r exercise-advanced, exercise=TRUE}
+iris_dt <- as.data.table(iris)
+
+# Task 1: Add column with counts
+
+
+# Task 2: Sub-assign by reference
+
+```
+
+```{r exercise-advanced-solution}
+iris_dt <- as.data.table(iris)
+
+# Task 1
+iris_dt[Petal.Length < 6.5, N_count := .N, by = Species]
+
+# Task 2
+iris_dt[Species == "virginica", Species := "new_virginica"]
+iris_dt
+```
+
+---
+
+## Advanced Features
+
+### Keys for Faster Operations
+
+Set a key for faster manipulation (especially merging)!
+
+```{r keys, exercise=TRUE, exercise.setup="shared-data"}
+setkey(ddf_dt, Gender, Continent, Height)
+ddf_dt
+```
+
+---
+
+### .SD and .SDcols
+
+### .SD selects all columns or subset
+
+```{r sd-demo, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[, .SD, .SDcols = c(2, 4, 5)]
+```
+
+### Apply function to multiple columns
+
+```{r sd-apply, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[, lapply(.SD, mean), by = Gender, .SDcols = c(2, 4, 5)]
+```
+
+### Select first and last row per group
+
+```{r sd-firstlast, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[, .SD[c(1, .N)], by = Gender]
+```
+
+---
+
+### Exercise 5: Advanced .SD
+
+Do the following in a single command:
+1. Order results by Petal.Width and select first three (smallest) observations
+2. Calculate mean of first four columns for those observations
+
+```{r exercise-sd, exercise=TRUE}
+iris_dt <- as.data.table(iris)
+
+# Order, select, and calculate means
+
+```
+
+```{r exercise-sd-hint}
+# Use setorder() or order(), then .SD with .SDcols
+iris_dt[order(Petal.Width)][1:3][, lapply(.SD, mean), .SDcols = 1:4]
+```
+
+```{r exercise-sd-solution}
+iris_dt <- as.data.table(iris)
+iris_dt[order(Petal.Width)][1:3][, lapply(.SD, mean), .SDcols = 1:4]
+```
+
+---
+
+### Reshape with dcast & melt
+
+```{r reshape, exercise=TRUE, exercise.setup="shared-data"}
+molten <- melt(ddf_dt, id.vars = c("Gender", "Continent"))
+dcast(ddf_dt, Gender + Age ~ Continent)
+dcast(ddf_dt, Gender + Age ~ Continent, fun.aggregate = mean)
+```
+
+---
+
+### Suppress Output with {}
+
+Calculate BMI without saving intermediate steps!
+
+**BMI = Weight / (Height in meters)²**
+
+```{r bmi, exercise=TRUE, exercise.setup="shared-data"}
+ddf_dt[, BMI := {
+    heightinmeters <- Height / 100
+    heightinmeterssquared <- heightinmeters^2
+    Weight / heightinmeterssquared
+}]
+ddf_dt
+```
+
+### Exercise: How many people are obese (BMI > 25)?
+
+```{r exercise-bmi, exercise=TRUE, exercise.setup="shared-data"}
+# Calculate BMI first if needed
+ddf_dt[, BMI := {
+    heightinmeters <- Height / 100
+    Weight / (heightinmeters^2)
+}]
+
+# Count obese people
+
+```
+
+```{r exercise-bmi-solution}
+ddf_dt[, BMI := {
+    heightinmeters <- Height / 100
+    Weight / (heightinmeters^2)
+}]
+nrow(ddf_dt[BMI > 25])
+```
+
+---
+
+### Merging Data Tables
+
+### Define Dummy Data
+
+```{r merge-setup, exercise=TRUE}
+dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
+dt2 <- data.table(x = c("a", "b", "k"), y = c(10, 15, 20), z = c("one", "two", "three"))
+dt1
+dt2
+```
+
+### Merge by Variable
+
+```{r merge-demo, exercise=TRUE}
+dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
+dt2 <- data.table(x = c("a", "b", "k"), y = c(10, 15, 20), z = c("one", "two", "three"))
+
+merge(dt1, dt2, by = "x")
+```
+
+### Other Join Types
+
+```{r merge-types, exercise=TRUE, eval=FALSE}
+merge(dt1, dt2, by = "x", all.x = TRUE)  # Left join
+merge(dt1, dt2, by = "x", all.y = TRUE)  # Right join
+```
+
+### data.table Join Syntax
+
+```{r dt-join, exercise=TRUE}
+dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
+dt2 <- data.table(x = c("a", "b", "k"), y = c(10, 15, 20), z = c("one", "two", "three"))
+
+dt1[dt2, on = .(x)]
+```
+
+---
+
+### Rolling Joins
+
+### Forward Join
+
+Merge on closest smaller numerical value in dt2:
+
+```{r roll-forward, exercise=TRUE}
+dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
+dt2 <- data.table(x = c("a", "b", "k"), y = c(10, 15, 20), z = c("one", "two", "three"))
+
+dt2[dt1, on = .(y), roll = TRUE]
+```
+
+### Backward Join
+
+Merge on closest larger numerical value:
+
+```{r roll-backward, exercise=TRUE}
+dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
+dt2 <- data.table(x = c("a", "b", "k"), y = c(10, 15, 20), z = c("one", "two", "three"))
+
+dt2[dt1, on = .(y), roll = -4]
+```
+
+---
+
+### Overlapping Joins
+
+```{r foverlaps, exercise=TRUE}
+dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
+dt3 <- data.table(min_y = c(0, 10, 15, 20), max_y = c(10, 15, 20, 30))
+
+setkey(dt3, min_y, max_y)
+dt1[, `:=`(dt1_y_end = c(13, 25, 10, 22), dt1_y = y)]
+setkey(dt1, dt1_y, dt1_y_end)
+
+foverlaps(dt1, dt3, type = "any")
+```
+
+---
+
+## Congratulations!
+
+You've completed the **Data.table in R** tutorial!
+
+### What You've Learned:
+
+✅ data.table syntax: DT[i, j, by]  
+✅ Selecting rows and columns  
+✅ Operations and aggregations by group  
+✅ Special symbols: .N, .I, .GRP, .SD  
+✅ Adding and modifying columns with :=  
+✅ Keys for faster operations  
+✅ Reshaping with melt and dcast  
+✅ Merging and joining data tables  
+✅ Rolling and overlapping joins
+
+### Next Steps:
+
+Continue with **ggplot2** for data visualization!
+
+---
+
+### Additional Resources
+
+- [data.table Documentation](https://rdatatable.gitlab.io/data.table/)
+- [data.table Cheat Sheet](https://github.com/Rdatatable/data.table/wiki/Getting-started)
+- [Advanced data.table](https://rdatatable.gitlab.io/data.table/articles/datatable-intro.html)

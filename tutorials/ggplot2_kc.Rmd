@@ -1,0 +1,541 @@
+---
+title: "Data Visualization with ggplot2"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(data.table)
+library(ggplot2)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r load-branding, echo=FALSE}
+# Load Kuzman Consulting branding (CSS + logos)
+source("../assets/setup_branding.R", local = knitr::knit_global())
+setup_kuzman_branding()
+```
+
+```{r shared-data, exercise.setup=TRUE, include=FALSE}
+# Load shared data for exercises
+tidy <- fread("http://hex.bioinfo.hr/~mfabijanic/tidyData.txt", header=T)
+works <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/works.txt", header = T)
+works$Grade <- factor(works$Grade, levels=c("Extremely bad", "Below average", "Average", "Good", "Excellent"))
+df <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/df.txt", header=TRUE, fill=T)
+colnames(df) <- "recommend"
+df$recommend <- factor(df$recommend, levels=c("Strongly no","No", "Maybe", "Yes", "Strongly yes"))
+```
+
+## Welcome! 👋
+
+Welcome to **Data Visualization with ggplot2**
+
+### Author
+
+**dr.sc. Maja Kuzman** - Kuzman Consulting d.o.o.
+
+### How to Use This Tutorial
+
+- Click **"Run Code"** to execute R code
+- Click **"Submit Answer"** to check your solutions
+- Click **"Hint"** if you need help
+- Progress is tracked as you complete exercises
+
+---
+
+## Installation
+
+### Installing Packages
+
+You only need to install packages ONCE:
+
+```{r install-packages, exercise=TRUE, eval=FALSE}
+install.packages("data.table")
+install.packages("ggplot2")
+```
+
+### Loading Libraries
+
+Load them every session:
+
+```{r load-libs, exercise=TRUE}
+library(data.table)
+library(ggplot2)
+```
+
+### Sample Data
+
+```{r data-preview, exercise=TRUE, exercise.setup="shared-data"}
+tidy
+```
+
+---
+
+## Variable Types
+
+### Categorical Variables
+
+- **Nominal** - no order (e.g., colors, continents)
+- **Ordinal** - ordered (e.g., grades, ratings)
+
+### Quantitative Variables
+
+- **Discrete** - countable (e.g., number of children)
+- **Continuous** - measurable (e.g., height, weight)
+
+---
+
+## Graphs for One Variable
+
+### Categorical Variable: Bar Chart
+
+```{r bar-demo, exercise=TRUE, exercise.setup="shared-data"}
+ggplot(tidy, aes(Continent)) +
+    geom_bar() +
+    theme_light()
+```
+
+### Quantitative Variable: Density Plot
+
+```{r density-demo, exercise=TRUE, exercise.setup="shared-data"}
+ggplot(tidy, aes(Height, fill = Gender)) +
+    geom_density(alpha = 0.3) +
+    theme_light()
+```
+
+---
+
+## Graphs with Two Variables
+
+### Continuous X, Continuous Y: Scatterplot
+
+```{r scatter-demo, exercise=TRUE, exercise.setup="shared-data"}
+ggplot(tidy, aes(Height, Weight)) +
+    geom_point() +
+    theme_light()
+```
+
+---
+
+## Discrete X, Continuous Y
+
+### Boxplot
+
+```{r boxplot-demo, exercise=TRUE, exercise.setup="shared-data"}
+ggplot(tidy, aes(Gender, Height, fill = Gender)) +
+    geom_boxplot(alpha = 0.3) +
+    theme_light()
+```
+
+### Violin Plot
+
+```{r violin-demo, exercise=TRUE, exercise.setup="shared-data"}
+ggplot(tidy, aes(Gender, Height, fill = Gender)) +
+    geom_violin(alpha = 0.3) +
+    theme_light()
+```
+
+---
+
+## Discrete X, Discrete Y: Bar Chart
+
+### Simple Bar Chart
+
+```{r bar-simple, exercise=TRUE, exercise.setup="shared-data"}
+ggplot(tidy, aes(Gender)) +
+    geom_bar() +
+    theme_light()
+```
+
+### Stacked Bar Chart
+
+```{r bar-stacked, exercise=TRUE, exercise.setup="shared-data"}
+ggplot(tidy, aes(Gender, Height, fill = Continent)) +
+    geom_bar(stat = "identity") +
+    theme_light()
+```
+
+---
+
+## ggplot2 vs Base R
+
+### Base R Plot
+
+```{r base-plot, exercise=TRUE}
+plot(iris$Sepal.Length, iris$Petal.Length, col = iris$Species)
+```
+
+### ggplot2 Plot
+
+```{r ggplot-plot, exercise=TRUE}
+ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) + 
+    geom_point() +
+    theme_light()
+```
+
+---
+
+## Why ggplot2?
+
+### Advantages
+
+✅ Elegant  
+✅ Highly customizable  
+✅ Uniform syntax  
+✅ Natural and expressive  
+✅ Very popular
+
+### Disadvantages
+
+❌ Steep learning curve  
+❌ Can be slow with large data  
+❌ Evolving rapidly
+
+---
+
+## Basic ggplot Logic
+
+### ggplot(data, aes(x, y))
+
+Three ways to initialize:
+
+```{r ggplot-init, exercise=TRUE, eval=FALSE}
+p <- ggplot()
+p <- ggplot(data_frame)
+p <- ggplot(data_frame, aes(x, y))
+```
+
+**Note:** You always need at least one layer (geom) for a plot to display!
+
+---
+
+## Mapping Aesthetics
+
+### The aes() Function
+
+- **HOW** data is stored
+- **HOW** data is split
+
+```{r aes-demo, exercise=TRUE}
+p <- ggplot(iris, aes(Species, Petal.Length))
+p  # This shows only the empty plot structure
+```
+
+---
+
+## Layers: The Building Blocks
+
+### Adding Layers with +
+
+We use `+` to add layers:
+
+- **geoms** - geometric objects (what the data looks like)
+- **scales** - control axes and colors
+- **facets** - create subplots
+- **stats** - statistical transformations
+
+---
+
+## Geometric Objects (geoms)
+
+Common geoms:
+
+- `geom_point()` - scatter plot
+- `geom_line()` - line plot
+- `geom_bar()` - bar chart
+- `geom_boxplot()` - box plot
+- `geom_smooth()` - smoothed line
+
+---
+
+## Example 1: Step-by-Step
+
+### Step 1: Set Basic Layout
+
+X axis is categorical, Y axis is numerical.
+
+Fill the empty spaces to use `iris` dataset with Species on x-axis and Petal.Length on y-axis:
+
+```{r example1-step1, exercise=TRUE}
+p <- ggplot(iris, aes(Species, Petal.Length))
+p
+```
+
+What does `p` look like? (Just the axes!)
+
+---
+
+## Example 1: Add Points
+
+### Step 2: Add Scatter Plot Layer
+
+```{r example1-step2, exercise=TRUE}
+p <- ggplot(iris, aes(Species, Petal.Length))
+p + geom_point()
+```
+
+---
+
+## Example 1: Color and Boxplot
+
+### Step 3: Color Points by Petal.Length
+
+```{r example1-step3, exercise=TRUE}
+p <- ggplot(iris, aes(Species, Petal.Length))
+p + geom_point(aes(color = Petal.Length))
+```
+
+### Step 4: Add Boxplot Layer
+
+```{r example1-step4, exercise=TRUE}
+p <- ggplot(iris, aes(Species, Petal.Length))
+p + geom_point(aes(color = Petal.Length)) +
+    geom_boxplot(alpha = 0.3)
+```
+
+---
+
+## Exercise 1: Build Your Own Plot
+
+Create a plot showing the relationship between Species (x) and Petal.Length (y):
+
+1. Set the basic layout
+2. Add points
+3. Color points by Petal.Length
+4. Add boxplot
+
+```{r exercise1, exercise=TRUE}
+# Your code here
+
+
+```
+
+```{r exercise1-solution}
+p <- ggplot(iris, aes(Species, Petal.Length))
+p + geom_point(aes(color = Petal.Length)) +
+    geom_boxplot(alpha = 0.3)
+```
+
+---
+
+## Example 2: Numerical vs Numerical
+
+### Step 1: Set Layout
+
+Both axes are numerical. Looking for connection between Petal.Length and Sepal.Length:
+
+```{r example2-step1, exercise=TRUE}
+p2 <- ggplot(iris, aes(Petal.Length, Sepal.Length))
+p2
+```
+
+### Step 2: Add Points
+
+```{r example2-step2, exercise=TRUE}
+p2 <- ggplot(iris, aes(Petal.Length, Sepal.Length))
+p2 + geom_point()
+```
+
+---
+
+## Example 2: Color by Species
+
+### Step 3: Override Aesthetics
+
+Color points by Species (set inside `geom_point`):
+
+```{r example2-step3, exercise=TRUE}
+p2 <- ggplot(iris, aes(Petal.Length, Sepal.Length))
+p3 <- p2 + geom_point(aes(color = Species))
+p3
+```
+
+---
+
+## Example 2: Add Smoothing Lines
+
+### Step 4: Add Linear Regression
+
+Add `geom_smooth()` grouped by Species:
+
+```{r example2-step4, exercise=TRUE}
+p2 <- ggplot(iris, aes(Petal.Length, Sepal.Length))
+p3 <- p2 + geom_point(aes(color = Species))
+p4 <- p3 + geom_smooth(aes(group = Species), method = "lm")
+p4
+```
+
+---
+
+## Example 2: Faceting
+
+### Step 5: Separate by Species
+
+Use `facet_wrap()` to create separate plots:
+
+```{r example2-step5, exercise=TRUE}
+p2 <- ggplot(iris, aes(Petal.Length, Sepal.Length))
+p3 <- p2 + geom_point(aes(color = Species))
+p4 <- p3 + geom_smooth(aes(group = Species), method = "lm")
+p4 + facet_wrap(~Species)
+```
+
+---
+
+## Exercise 2: Complete Analysis
+
+Build the complete plot step by step:
+
+1. Set layout with Petal.Length (x) and Sepal.Length (y)
+2. Add colored points by Species
+3. Add smooth lines grouped by Species
+4. Facet by Species
+
+```{r exercise2, exercise=TRUE}
+# Your code here
+
+
+```
+
+```{r exercise2-solution}
+p2 <- ggplot(iris, aes(Petal.Length, Sepal.Length))
+p2 + geom_point(aes(color = Species)) +
+    geom_smooth(aes(group = Species), method = "lm") +
+    facet_wrap(~Species)
+```
+
+---
+
+## Challenge 1: Recreate Plot
+
+### Works Dataset
+
+```{r challenge1-data, exercise=TRUE, exercise.setup="shared-data"}
+works
+```
+
+**Your Task:** Create a plot showing the relationship between Grade and Mark.
+
+**Hint:** Use `geom_jitter()` to add random noise to points!
+
+```{r challenge1, exercise=TRUE, exercise.setup="shared-data"}
+# Your code here
+
+
+```
+
+```{r challenge1-hint}
+# Use geom_jitter() instead of geom_point()
+# Try different colors by Grade
+ggplot(works, aes(Grade, Mark, color = Grade)) +
+    geom_jitter(width = 0.2) +
+    theme_light()
+```
+
+```{r challenge1-solution}
+ggplot(works, aes(Grade, Mark, color = Grade)) +
+    geom_jitter(width = 0.2, alpha =0.7) +
+    theme_light() +
+    theme(legend.position = "none")
+```
+
+---
+
+## Challenge 2: Advanced Bar Plot
+
+### Recommendation Dataset
+
+```{r challenge2-data, exercise=TRUE, exercise.setup="shared-data"}
+df
+table(df$recommend)
+```
+
+**Your Task:** Create a horizontal bar plot with custom colors.
+
+**Colors:** `c("#d7191c", "#fdae61", "#ffffbf", "#a6d96a", "#1a9641")`
+
+**Hints:**
+- Use `scale_x_discrete()` to set x-axis limits
+- Use `scale_fill_manual()` for custom colors
+- Try `coord_flip()` for horizontal bars
+
+```{r challenge2, exercise=TRUE, exercise.setup="shared-data"}
+# Your code here
+
+
+```
+
+```{r challenge2-hint}
+# Start with a basic bar plot
+ggplot(df, aes(recommend, fill = recommend)) +
+    geom_bar() +
+    scale_fill_manual(
+        values = c("#d7191c", "#fdae61", "#ffffbf", "#a6d96a", "#1a9641")
+    ) +
+    coord_flip() +
+    theme_light()
+```
+
+```{r challenge2-solution}
+ggplot(df, aes(recommend, fill = recommend)) +
+    geom_bar() +
+    scale_fill_manual(
+        breaks = c("Strongly no", "No", "Maybe", "Yes", "Strongly yes"),
+        values = c("#d7191c", "#fdae61", "#ffffbf", "#a6d96a", "#1a9641")
+    ) +
+    coord_flip() +
+    theme_light() +
+    labs(x = "Recommendation", y = "Count") +
+    theme(legend.position = "none")
+```
+
+---
+
+## Interactive Plots with plotly
+
+### Make Plots Interactive
+
+```{r plotly-demo, exercise=TRUE, eval=FALSE}
+library(plotly)
+
+plot2 <- ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) +
+    geom_point() +
+    theme_light()
+
+ggplotly(plot2)
+```
+
+Try hovering over points to see the values!
+
+---
+
+## 🎊 Congratulations!
+
+You've completed the **Data Visualization with ggplot2** tutorial!
+
+### What You've Learned:
+
+✅ Variable types and appropriate visualizations  
+✅ Basic ggplot2 syntax: `ggplot(data, aes(x, y)) + geom_*()`  
+✅ Common geoms: point, bar, boxplot, violin, smooth  
+✅ Layering multiple geoms  
+✅ Faceting for subplots  
+✅ Customizing colors and themes  
+✅ Creating interactive plots with plotly
+
+### Next Steps:
+
+Practice with your own datasets and explore more ggplot2 features!
+
+---
+
+## Additional Resources
+
+- [ggplot2 Documentation](https://ggplot2.tidyverse.org/)
+- [R Graphics Cookbook](https://r-graphics.org/)
+- [ggplot2 Cheat Sheet](https://github.com/rstudio/cheatsheets/blob/main/data-visualization.pdf)
+- [plotly for R](https://plotly.com/r/)
