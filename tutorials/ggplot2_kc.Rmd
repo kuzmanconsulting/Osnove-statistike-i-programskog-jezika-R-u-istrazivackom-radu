@@ -20,6 +20,10 @@ source("../assets/setup_branding.R", local = knitr::knit_global())
 setup_kuzman_branding()
 ```
 
+```{r server-setup, context="server"}
+# Server setup (empty - download handled by JavaScript)
+```
+
 ```{r shared-data, exercise.setup=TRUE, include=FALSE}
 # Load shared data for exercises
 tidy <- fread("http://hex.bioinfo.hr/~mfabijanic/tidyData.txt", header=T)
@@ -30,7 +34,7 @@ colnames(df) <- "recommend"
 df$recommend <- factor(df$recommend, levels=c("Strongly no","No", "Maybe", "Yes", "Strongly yes"))
 ```
 
-## Welcome! 👋
+## Welcome
 
 Welcome to **Data Visualization with ggplot2**
 
@@ -38,12 +42,23 @@ Welcome to **Data Visualization with ggplot2**
 
 **dr.sc. Maja Kuzman** - Kuzman Consulting d.o.o.
 
-### How to Use This Tutorial
+<div class="callout callout-info">
+<div class="callout-title">How to Use This Tutorial</div>
 
 - Click **"Run Code"** to execute R code
 - Click **"Submit Answer"** to check your solutions
 - Click **"Hint"** if you need help
 - Progress is tracked as you complete exercises
+</div>
+
+<div class="callout callout-success">
+<div class="callout-title">What You'll Learn</div>
+
+- Creating beautiful visualizations with the Grammar of Graphics  
+- Mastering ggplot2's layered approach  
+- Customizing plots with themes, colors, and facets  
+- Making publication-ready graphics
+</div>
 
 ---
 
@@ -76,6 +91,12 @@ tidy
 ---
 
 ## Variable Types
+
+<div class="callout callout-concept">
+<div class="callout-title">Choosing the Right Visualization</div>
+
+The type of visualization you choose depends on your **variable types**. Categorical variables work best with bar charts or pie charts, while continuous variables are better suited for histograms, scatter plots, or line graphs.
+</div>
 
 ### Categorical Variables
 
@@ -181,23 +202,40 @@ ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) +
 
 ## Why ggplot2?
 
+<div class="callout callout-success">
+<div class="callout-title">The Power of ggplot2</div>
+
+ggplot2 is based on the **Grammar of Graphics** - a consistent system for building any visualization by combining independent components. Once you learn the logic, you can create almost any plot!
+</div>
+
 ### Advantages
 
-✅ Elegant  
-✅ Highly customizable  
-✅ Uniform syntax  
-✅ Natural and expressive  
-✅ Very popular
+- Elegant  
+- Highly customizable  
+- Uniform syntax  
+- Natural and expressive  
+- Very popular
 
 ### Disadvantages
 
-❌ Steep learning curve  
-❌ Can be slow with large data  
-❌ Evolving rapidly
+- Steep learning curve  
+- Can be slow with large data  
+- Evolving rapidly
 
 ---
 
 ## Basic ggplot Logic
+
+<div class="callout callout-info">
+<div class="callout-title">The ggplot2 Formula</div>
+
+**Core pattern:** `ggplot(data, aes(x, y)) + geom_*()`
+
+- **ggplot()** = initialize the plot with data
+- **aes()** = aesthetic mappings (which variables go where)
+- **geom_*** = geometric objects (points, bars, lines, etc.)
+- **+** = layer components together
+</div>
 
 ### ggplot(data, aes(x, y))
 
@@ -209,11 +247,27 @@ p <- ggplot(data_frame)
 p <- ggplot(data_frame, aes(x, y))
 ```
 
+<div class="callout callout-danger">
+<div class="callout-title">Common Mistake!</div>
+
+Calling `ggplot()` without adding a geom layer results in a **blank plot or error**. You must add at least one `geom_*()` to see anything!
+</div>
+
 **Note:** You always need at least one layer (geom) for a plot to display!
 
 ---
 
 ## Mapping Aesthetics
+
+<div class="callout callout-tip">
+<div class="callout-title">Pro Tip: Flexible Aesthetics</div>
+
+Aesthetics can be defined:
+- **Globally** in `ggplot(aes(...))` - applies to all layers
+- **Per layer** in `geom_*(aes(...))` - applies only to that layer
+
+This flexibility lets you create complex, multi-layered visualizations!
+</div>
 
 ### The aes() Function
 
@@ -229,6 +283,17 @@ p  # This shows only the empty plot structure
 
 ## Layers: The Building Blocks
 
+<div class="callout callout-success">
+<div class="callout-title">The Power of Layers</div>
+
+ggplot2 uses **`+`** to add layers, building plots like a cake:
+1. Start with data and aesthetics (the base)
+2. Add geoms (the filling)
+3. Add scales, themes, facets (the frosting)
+
+Each layer adds something new without replacing what's there!
+</div>
+
 ### Adding Layers with +
 
 We use `+` to add layers:
@@ -241,6 +306,24 @@ We use `+` to add layers:
 ---
 
 ## Geometric Objects (geoms)
+
+<div class="callout callout-info">
+<div class="callout-title">Common Geoms Reference</div>
+
+**Continuous data:**
+- `geom_point()` - scatter plots
+- `geom_line()` - line graphs
+- `geom_smooth()` - trend lines
+
+**Categorical data:**
+- `geom_bar()` / `geom_col()` - bar charts
+- `geom_boxplot()` - box plots
+- `geom_violin()` - violin plots
+
+**Distributions:**
+- `geom_histogram()` - histograms
+- `geom_density()` - density curves
+</div>
 
 Common geoms:
 
@@ -372,6 +455,12 @@ p4
 ---
 
 ## Example 2: Faceting
+
+<div class="callout callout-tip">
+<div class="callout-title">Creating Subplots with Faceting</div>
+
+**Faceting** creates multiple plots based on a categorical variable. Use `facet_wrap(~variable)` or `facet_grid(row~col)` to split your visualization - perfect for comparing patterns across groups!
+</div>
 
 ### Step 5: Separate by Species
 
@@ -513,23 +602,37 @@ Try hovering over points to see the values!
 
 ---
 
-## 🎊 Congratulations!
+## Congratulations!
 
-You've completed the **Data Visualization with ggplot2** tutorial!
+You've completed the ggplot2 tutorial!
 
 ### What You've Learned:
 
-✅ Variable types and appropriate visualizations  
-✅ Basic ggplot2 syntax: `ggplot(data, aes(x, y)) + geom_*()`  
-✅ Common geoms: point, bar, boxplot, violin, smooth  
-✅ Layering multiple geoms  
-✅ Faceting for subplots  
-✅ Customizing colors and themes  
-✅ Creating interactive plots with plotly
+- Variable types and appropriate visualizations  
+- Basic ggplot2 syntax: `ggplot(data, aes(x, y)) + geom_*()`  
+- Common geoms: point, bar, boxplot, violin, smooth  
+- Layering multiple geoms  
+- Faceting for subplots  
+- Customizing colors and themes  
+- Creating interactive plots with plotly
 
 ### Next Steps:
 
 Practice with your own datasets and explore more ggplot2 features!
+
+---
+
+## Download Your Work
+
+<div class="callout callout-tip">
+<div class="callout-title">Save Your Work</div>
+
+Save this completed tutorial as an HTML file for future reference.
+</div>
+
+```{r download-ui, echo=FALSE}
+HTML('<button onclick="window.downloadTutorial(); return false;" class="btn-download-tutorial" style="display: block; margin: 20px auto;">📥 Download Tutorial as HTML</button>')
+```
 
 ---
 

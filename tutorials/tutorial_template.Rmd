@@ -23,6 +23,22 @@ setup_kuzman_branding()
 
 ```
 
+```{r server-setup, context="server"}
+# Server-side setup for download functionality
+# (Download is handled by JavaScript in kuzman_branding.js)
+```
+
+```{r download-ui, echo=FALSE}
+# Download button
+shiny::HTML('
+<div style="text-align: center; margin: 30px 0;">
+  <button onclick="window.downloadTutorial()" class="download-btn">
+    📥 Download Your Tutorial as HTML
+  </button>
+</div>
+')
+```
+
 ## Welcome
 
 Welcome to [Your Workshop Name]
@@ -41,7 +57,58 @@ Welcome to [Your Workshop Name]
 ## Section 1: Your Topic
 
 Brief introduction to your topic.
-Your First Section
+
+<!-- Example: How to add callout boxes -->
+<!-- Uncomment and customize the callout type you need: -->
+
+<!-- Success callout (green) - use for positive outcomes, achievements -->
+<!--
+<div class="callout callout-success">
+<div class="callout-title">Success Title</div>
+Your success message or achievement here.
+</div>
+-->
+
+<!-- Info callout (blue) - use for important information, definitions -->
+<!--
+<div class="callout callout-info">
+<div class="callout-title">Info Title</div>
+Your informational content here.
+</div>
+-->
+
+<!-- Warning callout (yellow) - use for cautions, things to watch out for -->
+<!--
+<div class="callout callout-warning">
+<div class="callout-title">Warning Title</div>
+Your warning message here.
+</div>
+-->
+
+<!-- Danger callout (red) - use for errors, common mistakes, critical issues -->
+<!--
+<div class="callout callout-danger">
+<div class="callout-title">Danger Title</div>
+Your danger/error message here.
+</div>
+-->
+
+<!-- Tip callout (orange) - use for helpful tips, best practices -->
+<!--
+<div class="callout callout-tip">
+<div class="callout-title">Tip Title</div>
+Your helpful tip here.
+</div>
+-->
+
+<!-- Concept callout (purple) - use for key concepts, theoretical explanations -->
+<!--
+<div class="callout callout-concept">
+<div class="callout-title">Concept Title</div>
+Your concept explanation here.
+</div>
+-->
+
 ### Demonstration
 
 ```{r demo-1, exercise=TRUE, exercise.setup="shared-data"}
@@ -70,15 +137,30 @@ Instructions for your exercise.
 
 ---
 
+<!-- Download Section: Placed before Congratulations so students can download their completed work -->
+```{r download-section, echo=FALSE}
+shiny::HTML('
+<div style="text-align: center; margin: 40px 0; padding: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+  <h2 style="color: white; margin-bottom: 15px; font-size: 28px;">📥 Save Your Work</h2>
+  <p style="color: white; margin-bottom: 25px; font-size: 16px;">Download an HTML copy of this tutorial with all your code and results</p>
+  <button onclick="window.downloadTutorial()" class="download-btn" style="background: white; color: #667eea; font-weight: bold; font-size: 18px; padding: 15px 40px; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: all 0.3s;" onmouseover="this.style.transform=\'scale(1.05)\'; this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.4)\'" onmouseout="this.style.transform=\'scale(1)\'; this.style.boxShadow=\'0 5px 15px rgba(0,0,0,0.3)\'">
+    📥 Download Tutorial
+  </button>
+</div>
+')
+```
+
+---
+
 ## Congratulations!
 
 You've completed [Tutorial Name]!
 
 ### What You've Learned:
 
-✅ Topic 1  
-✅ Topic 2  
-✅ Topic 3  
+- Topic 1  
+- Topic 2  
+- Topic 3  
 
 ### Next Steps:
 

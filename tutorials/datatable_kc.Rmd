@@ -19,6 +19,10 @@ source("../assets/setup_branding.R", local = knitr::knit_global())
 setup_kuzman_branding()
 ```
 
+```{r server-setup, context="server"}
+# Server setup (empty - download handled by JavaScript)
+```
+
 ```{r shared-data, exercise.setup=TRUE, include=FALSE}
 # Load shared data for exercises
 ddf <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/tidyData.txt", header=T)
@@ -32,16 +36,33 @@ Welcome to **Data.table in R**
 
 **Author:** dr.sc. Maja Kuzman - Kuzman Consulting d.o.o.
 
-### How to Use This Tutorial
+<div class="callout callout-info">
+<div class="callout-title">How to Use This Tutorial</div>
 
 - Click **"Run Code"** to execute R code
 - Click **"Submit Answer"** to check your solutions
 - Click **"Hint"** if you need help
 - Progress is tracked as you complete exercises
+</div>
+
+<div class="callout callout-success">
+<div class="callout-title">Why data.table?</div>
+
+- **Extremely fast** - optimized for speed with large datasets  
+- **Concise syntax** - less typing, more doing  
+- **Powerful** - complex operations in single expressions  
+- **Memory efficient** - works by reference, not copies
+</div>
 
 ---
 
 ## Getting Started
+
+<div class="callout callout-info">
+<div class="callout-title">What is data.table?</div>
+
+`data.table` is a high-performance package for working with tabular data in R. It's **extremely fast** and uses concise syntax: `DT[i, j, by]` where `i` = rows, `j` = columns, `by` = groups.
+</div>
 
 ### Introduction
 
@@ -104,6 +125,17 @@ ddf_dt
 
 ## Basic Operations
 
+<div class="callout callout-concept">
+<div class="callout-title">The DT[i, j, by] Syntax</div>
+
+**The core syntax:** `DT[i, j, by]`
+- **i** = which rows (row filter/subset)
+- **j** = what to do with columns (select, compute, modify)
+- **by** = group by (aggregation groups)
+
+This unified syntax makes data.table incredibly powerful and consistent!
+</div>
+
 ### Selecting Rows
 
 ### Example: Height > 180
@@ -115,13 +147,27 @@ ddf_dt[Height > 180]
 nrow(ddf_dt[Height > 180])
 ```
 
-You select rows similar to vector subsetting!
+<div class="callout callout-tip">
+<div class="callout-title">Familiar Syntax!</div>
+
+You select rows similar to vector subsetting - no need for `ddf_dt$Height`!
+
+data.table knows to look for column names within the data.table.
+</div>
 
 ---
 
 ### Selecting Columns
 
 ### Show Age and Continent of First 5 People
+
+<div class="callout callout-concept">
+<div class="callout-title">The Magic Dot: .()</div>
+
+In data.table use **`.`** instead of `c()`
+
+`.()` is shorthand for `list()` - it creates a list of columns to select.
+</div>
 
 In data.table use `.` instead of `c()` (`.` is short for `list()`):
 
@@ -130,6 +176,12 @@ ddf_dt[1:5, .(Age, Continent)]
 ```
 
 ### Using Column Names as Variables
+
+<div class="callout callout-tip">
+<div class="callout-title">Two Dots = Variable!</div>
+
+Use the `..` prefix to reference column names stored in variables. The two dots tell data.table: "look up one level in the calling environment".
+</div>
 
 ```{r select-cols-vars, exercise=TRUE, exercise.setup="shared-data"}
 cnames <- c("Age", "Continent")
@@ -195,6 +247,12 @@ iris_dt[Sepal.Length < 6.7, .(Sepal.Length, Species)]
 
 ## Aggregations and Groups
 
+<div class="callout callout-success">
+<div class="callout-title">Group Operations</div>
+
+The `by` parameter is where data.table truly shines. Compute statistics **by groups** with lightning-fast performance - essential for data analysis!
+</div>
+
 ### Operations on Columns
 
 ### Calculate Mean
@@ -229,7 +287,15 @@ ddf_dt[,
 
 ### Special Symbols: .N
 
+<div class="callout callout-concept">
+<div class="callout-title">Special Symbol: .N</div>
+
+`.N` gives the **number of observations** in the current group. It's incredibly useful for counting and is one of data.table's most frequently used special symbols.
+</div>
+
 ### .N gives number of observations
+
+Use `.N` to count rows in your data or within groups:
 
 ```{r dot-n, exercise=TRUE, exercise.setup="shared-data"}
 ddf_dt[, .N]
@@ -237,6 +303,12 @@ ddf_dt[, .N, by = Gender]
 ```
 
 ### Group by Multiple Variables
+
+<div class="callout callout-tip">
+<div class="callout-title">Dynamic Grouping</div>
+
+You can group by **expressions**, not just column names! This allows for flexible on-the-fly categorization like `Height > 180` without creating new columns.
+</div>
 
 ```{r multiple-groups, exercise=TRUE, exercise.setup="shared-data"}
 ddf_dt[, .N, by = .(Gender, Height > 180)]
@@ -300,6 +372,21 @@ iris_dt[Sepal.Length < 6.7 & Species == "virginica", .N, by = .(Sepal.Width > 3)
 
 ## Modifying Data
 
+<div class="callout callout-concept">
+<div class="callout-title">The Walrus Operator: :=</div>
+
+The `:=` operator is data.table's **assignment by reference** operator. It modifies data tables **in-place** without making copies, which is:
+- **Fast** - no copying overhead
+- **Memory efficient** - works on the original object
+- **Permanent** - changes the original data table
+</div>
+
+<div class="callout callout-warning">
+<div class="callout-title">The := Operator</div>
+
+The `:=` operator modifies data tables **by reference** (in-place) without making copies. This is incredibly fast and memory-efficient, but be careful - it changes the original object!
+</div>
+
 ### Adding New Columns
 
 ### Use := to Add a Column
@@ -310,6 +397,12 @@ ddf_dt[1:3]
 ```
 
 ### Add Multiple Columns
+
+<div class="callout callout-tip">
+<div class="callout-title">Multiple Assignments</div>
+
+Use `:=` as a **function** to assign multiple columns at once. Wrap assignments in `':='(col1 = val1, col2 = val2)` for efficient batch updates.
+</div>
 
 Use `:=` as a function:
 
@@ -351,6 +444,18 @@ uniqueN(iris_dt$mean_sw)
 ---
 
 ### Special Symbols: .I and .GRP
+
+<div class="callout callout-info">
+<div class="callout-title">More Special Symbols</div>
+
+data.table has several built-in symbols for advanced operations:
+- `.I` - row numbers (indices) 
+- `.GRP` - unique group number
+- `.N` - count of rows in group
+- `.SD` - subset of data (all columns except grouping ones)
+
+These make complex operations simple and readable!
+</div>
 
 ### .I holds row numbers
 
@@ -396,6 +501,12 @@ iris_dt
 ---
 
 ## Advanced Features
+
+<div class="callout callout-tip">
+<div class="callout-title">Advanced Techniques</div>
+
+data.table includes powerful features like **keys** (for fast lookups), **.SD** (subset of data), **rolling joins**, and **reshaping** - these are what make it enterprise-grade!
+</div>
 
 ### Keys for Faster Operations
 
@@ -588,19 +699,33 @@ You've completed the **Data.table in R** tutorial!
 
 ### What You've Learned:
 
-✅ data.table syntax: DT[i, j, by]  
-✅ Selecting rows and columns  
-✅ Operations and aggregations by group  
-✅ Special symbols: .N, .I, .GRP, .SD  
-✅ Adding and modifying columns with :=  
-✅ Keys for faster operations  
-✅ Reshaping with melt and dcast  
-✅ Merging and joining data tables  
-✅ Rolling and overlapping joins
+- data.table syntax: DT[i, j, by]  
+- Selecting rows and columns  
+- Operations and aggregations by group  
+- Special symbols: .N, .I, .GRP, .SD  
+- Adding and modifying columns with :=  
+- Keys for faster operations  
+- Reshaping with melt and dcast  
+- Merging and joining data tables  
+- Rolling and overlapping joins
 
 ### Next Steps:
 
 Continue with **ggplot2** for data visualization!
+
+---
+
+## Download Your Work
+
+<div class="callout callout-tip">
+<div class="callout-title">Save Your Work</div>
+
+Save this completed tutorial as an HTML file for future reference.
+</div>
+
+```{r download-ui, echo=FALSE}
+HTML('<button onclick="window.downloadTutorial(); return false;" class="btn-download-tutorial" style="display: block; margin: 20px auto;">📥 Download Tutorial as HTML</button>')
+```
 
 ---
 

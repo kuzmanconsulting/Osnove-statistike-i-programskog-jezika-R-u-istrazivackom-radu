@@ -18,6 +18,10 @@ source("../assets/setup_branding.R", local = knitr::knit_global())
 setup_kuzman_branding()
 ```
 
+```{r server-setup, context="server"}
+# Server setup (empty - download handled by JavaScript)
+```
+
 ```{r shared-data, exercise.setup=TRUE, include=FALSE}
 # Shared data for exercises
 myFirstNumber <- 0.1
@@ -43,6 +47,12 @@ Welcome to **Introduction to R**
 
 ## Getting Started with R
 
+<div class="callout callout-info">
+<div class="callout-title">R as a Calculator</div>
+
+R can perform mathematical operations just like a calculator. This is your first step in learning R programming!
+</div>
+
 ### How can we use R and RStudio?
 
 - Console
@@ -55,6 +65,12 @@ Welcome to **Introduction to R**
 ```
 
 ### Try it!
+
+<div class="callout callout-tip">
+<div class="callout-title">Understanding the %% Operator</div>
+
+The `%%` operator performs modulo division, which returns the **remainder** after division. For example, `13 %% 3` returns `1` because 13 divided by 3 is 4 with a remainder of 1.
+</div>
 
 Add your calculation here. Calculate the result of 13%%3, 12%%3, 15%%3.  
 Can you guess what %% does?
@@ -89,9 +105,15 @@ Can you guess what %% does?
 
 ## Working with Vectors
 
+<div class="callout callout-concept">
+<div class="callout-title">What are Vectors?</div>
+
+Vectors are the fundamental data structure in R. They store multiple values of the **same type** (all numbers, all text, etc.). Think of them as a ordered list of values.
+</div>
+
 ### Variables and Data Structures
 
-Variables store values that you can reuse throughout your code.
+Variables store values that you can reuse throughout your code. In R, we use the assignment operator `<-` to assign values to variables.
 
 ```{r variables-demo, exercise=TRUE, exercise.setup="shared-data"}
 myFirstNumber <- 0.1
@@ -125,6 +147,12 @@ myFirstSequence
 
 ### Subsetting with [ ]
 
+<div class="callout callout-concept">
+<div class="callout-title">Subsetting Vectors</div>
+
+Use square brackets `[ ]` to extract specific elements from a vector. You can subset by **position** (numeric index) or by **logical condition** (TRUE/FALSE values).
+</div>
+
 **Print the whole vector:**
 
 ```{r subsetting-demo, exercise=TRUE, exercise.setup="shared-data"}
@@ -141,12 +169,21 @@ myFirstSequence[3]
 
 ### Access by Position
 
+<div class="callout callout-danger">
+<div class="callout-title">Common Mistake: Wrong Subsetting Syntax</div>
+
 **This won't work:**
-```{r wrong-subsetting, eval=FALSE}
-myFirstVector[1,3]  # Wrong syntax!
+```r
+myFirstVector[1,3]  # Wrong! This is matrix/data.frame syntax
 ```
 
+Vectors use single brackets with a vector of positions, not comma-separated values.
+
 **Correct way** - provide a VECTOR of positions:
+```r
+myFirstVector[c(1, 3)]  # Right! Use c() to combine positions
+```
+</div>
 
 ```{r subsetting-multiple, exercise=TRUE, exercise.setup="shared-data"}
 myFirstVector[c(1, 3)]
@@ -231,6 +268,12 @@ myFirstVector[as.logical(someothervector)]
 
 ## Vector Operations
 
+<div class="callout callout-success">
+<div class="callout-title">Vectorized Operations</div>
+
+One of R's most powerful features is **vectorized operations**. Operations apply to each element automatically without needing loops!
+</div>
+
 ### Basic Arithmetic
 
 Same as on numbers: `+`, `-`, `/`, `*`
@@ -253,6 +296,12 @@ someothervector * 1:5
 ```
 
 **II) DIFFERENT size: Recycling**
+
+<div class="callout callout-warning">
+<div class="callout-title">Vector Recycling</div>
+
+When vectors of different lengths are used together, R **recycles** (repeats) the shorter vector. This can be useful but also a source of bugs if unexpected!
+</div>
 
 ```{r mult-recycle, exercise=TRUE, exercise.setup="shared-data"}
 someothervector
@@ -290,6 +339,12 @@ result == expected
 ```
 
 ### Comparisons and Subsetting
+
+<div class="callout callout-info">
+<div class="callout-title">Logical Subsetting</div>
+
+Comparison operators (`==`, `!=`, `>`, `<`, `>=`, `<=`) return TRUE/FALSE vectors. These can be used to filter data based on conditions - a fundamental skill in data analysis!
+</div>
 
 Comparisons return a logical vector:
 
@@ -397,6 +452,12 @@ myvector[c(FALSE, TRUE)]  # Uses recycling
 
 ## Functions and Help
 
+<div class="callout callout-tip">
+<div class="callout-title">Essential Functions</div>
+
+R has thousands of built-in functions. Learning the most common ones will make your work much more efficient.
+</div>
+
 ### Useful Vector Functions
 
 ```{r func-length, exercise=TRUE, exercise.setup="shared-data"}
@@ -456,20 +517,20 @@ You can also use:
 
 ---
 
-## Congratulations! 🎊
+## Congratulations!
 
-You've completed the **Introduction to R** tutorial!
+You've completed the Introduction to R tutorial!
 
 ### What You've Learned:
 
-✅ Using R as a calculator  
-✅ Creating and working with variables  
-✅ Understanding vectors and data structures  
-✅ Subsetting vectors by position and logical conditions  
-✅ Vector operations and recycling  
-✅ Comparison and logical operators  
-✅ Useful R functions  
-✅ How to get help in R
+- Using R as a calculator  
+- Creating and working with variables  
+- Understanding vectors and data structures  
+- Subsetting vectors by position and logical conditions  
+- Vector operations and recycling  
+- Comparison and logical operators  
+- Useful R functions  
+- How to get help in R
 
 ### Next Steps:
 
@@ -480,3 +541,15 @@ Continue exploring R programming and data analysis!
 - [R for Data Science](https://r4ds.had.co.nz/)
 - [RStudio Cheat Sheets](https://www.rstudio.com/resources/cheatsheets/)
 - [R Documentation](https://www.rdocumentation.org/)
+
+## Download Your Work
+
+<div class="callout callout-tip">
+<div class="callout-title">Save Your Work</div>
+
+Save this completed tutorial as an HTML file for future reference.
+</div>
+
+```{r download-ui, echo=FALSE}
+HTML('<button onclick="window.downloadTutorial(); return false;" class="btn-download-tutorial" style="display: block; margin: 20px auto;">📥 Download Tutorial as HTML</button>')
+```

@@ -122,3 +122,218 @@ pre {
 code {
   background-color: #F5F5F5;
 }
+
+/* ============================================
+   Callout Boxes - Professional Alert Styles
+   ============================================ */
+
+/* Base callout box styling */
+.callout {
+  padding: 15px 20px;
+  margin: 20px 0;
+  border-left: 5px solid;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.callout p:last-child {
+  margin-bottom: 0;
+}
+
+.callout-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 1.05em;
+  display: flex;
+  align-items: center;
+}
+
+.callout-title::before {
+  margin-right: 8px;
+  font-size: 1.2em;
+}
+
+/* Success/Tip Box - Green */
+.callout-success {
+  background-color: #d4edda;
+  border-left-color: #28a745;
+  color: #155724;
+}
+
+.callout-success .callout-title {
+  color: #0d4320;
+}
+
+.callout-success .callout-title::before {
+  content: "✓";
+}
+
+/* Info Box - Blue */
+.callout-info {
+  background-color: #d1ecf1;
+  border-left-color: #17a2b8;
+  color: #0c5460;
+}
+
+.callout-info .callout-title {
+  color: #084853;
+}
+
+.callout-info .callout-title::before {
+  content: "ℹ";
+}
+
+/* Warning/Caution Box - Yellow/Orange */
+.callout-warning {
+  background-color: #fff3cd;
+  border-left-color: #ffc107;
+  color: #856404;
+}
+
+.callout-warning .callout-title {
+  color: #664d03;
+}
+
+.callout-warning .callout-title::before {
+  content: "⚠";
+}
+
+/* Danger/Error Box - Red */
+.callout-danger {
+  background-color: #f8d7da;
+  border-left-color: #dc3545;
+  color: #721c24;
+}
+
+.callout-danger .callout-title {
+  color: #5a1419;
+}
+
+.callout-danger .callout-title::before {
+  content: "✕";
+}
+
+/* Tip Box - Light Orange (matches brand) */
+.callout-tip {
+  background-color: #fff4e6;
+  border-left-color: #FF8A50;
+  color: #663c00;
+}
+
+.callout-tip .callout-title {
+  color: #FF6B35;
+}
+
+.callout-tip .callout-title::before {
+  content: "💡";
+}
+
+/* Key Concept Box - Purple */
+.callout-concept {
+  background-color: #e7e3f5;
+  border-left-color: #6f42c1;
+  color: #432874;
+}
+
+.callout-concept .callout-title {
+  color: #3d1e6d;
+}
+
+.callout-concept .callout-title::before {
+  content: "📌";
+}
+
+/* ============================================
+   Enhanced Exercise Styling
+   ============================================ */
+
+/* Exercise containers with subtle background */
+.tutorial-exercise {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 15px 0;
+}
+
+/* Exercise title styling */
+.tutorial-exercise-title {
+  color: #FF6B35;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* Solution and hint panels */
+.tutorial-exercise-solution,
+.tutorial-exercise-hint {
+  background-color: #fff;
+  border-left: 3px solid #FF8A50;
+}
+
+/* ============================================
+   Section Dividers
+   ============================================ */
+
+hr {
+  border: 0;
+  height: 2px;
+  background: linear-gradient(to right, #FF8A50, transparent);
+  margin: 30px 0;
+}
+
+/* ============================================
+   Enhanced Typography
+   ============================================ */
+
+/* Bold emphasis with brand color */
+strong, b {
+  color: #37474F;
+  font-weight: 600;
+}
+
+/* Blockquotes for special callouts */
+blockquote {
+  border-left: 4px solid #FF8A50;
+  padding-left: 15px;
+  color: #455A64;
+  font-style: italic;
+  margin: 20px 0;
+  background-color: #FFF9F5;
+  padding: 10px 15px;
+  border-radius: 0 4px 4px 0;
+}
+
+/* ============================================
+   Download Tutorial Button
+   ============================================ */
+
+.download-tutorial-container {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.btn-download-tutorial {
+  background-color: #FF8A50;
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.btn-download-tutorial:hover {
+  background-color: #e67a42;
+  box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+
+.btn-download-tutorial:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
