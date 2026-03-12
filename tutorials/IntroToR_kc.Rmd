@@ -9,7 +9,9 @@ runtime: shiny_prerendered
 
 ```{r setup, include=FALSE}
 library(learnr)
+library(gradethis)
 knitr::opts_chunk$set(echo = FALSE)
+gradethis::gradethis_setup()
 ```
 
 ```{r load-branding, echo=FALSE}
@@ -93,6 +95,10 @@ Can you guess what %% does?
 12 %% 3  # Result: 0
 15 %% 3  # Result: 0
 # %% gives the remainder (modulo operation)
+```
+
+```{r modulo-exercise-check}
+grade_this_code()
 ```
 
 ### What have we learned so far?
@@ -216,6 +222,10 @@ myvector <- c(15, 16, 17, 18, 20)
 myvector[c(2, 4)]  # Returns 16 and 18
 ```
 
+```{r exercise-subsetting-check}
+grade_this_code()
+```
+
 ### Access by Logical Vector
 
 Provide a LOGICAL vector:
@@ -249,6 +259,10 @@ myvector <- c(15, 16, 17, 18, 20)
 ```{r exercise-logical-solution}
 myvector <- c(15, 16, 17, 18, 20)
 myvector[c(FALSE, TRUE, FALSE, TRUE, FALSE)]
+```
+
+```{r exercise-logical-check}
+grade_this_code()
 ```
 
 ### Understanding Type Conversion
@@ -338,6 +352,10 @@ expected <- c(1.5, 3.2, 1.7, 3.6, 2.0)
 result == expected
 ```
 
+```{r exercise-mult-check}
+grade_this_code()
+```
+
 ### Comparisons and Subsetting
 
 <div class="callout callout-info">
@@ -386,6 +404,10 @@ myvector <- c(15, 16, 17, 18, 20)
 myvector[myvector < 17]  # Returns 15 and 16
 ```
 
+```{r exercise-comparison-check}
+grade_this_code()
+```
+
 ### Logical Operators
 
 - **AND:** `&`
@@ -427,6 +449,10 @@ myvector <- c(15, 16, 17, 18, 20)
 myvector[myvector %% 3 == 0]  # Returns 15 and 18
 ```
 
+```{r exercise-logical-ops-check}
+grade_this_code()
+```
+
 ### Extra Challenge!
 
 Return all elements from `myvector` which are on EVEN positions (2, 4, 6, ...).
@@ -446,6 +472,10 @@ myvector[even_positions]
 
 # Or more directly:
 myvector[c(FALSE, TRUE)]  # Uses recycling
+```
+
+```{r exercise-even-positions-check}
+grade_this_code()
 ```
 
 ---
@@ -501,6 +531,10 @@ myvector <- c(15, 16, 17, 18, 20)
 sum(myvector)
 mean(myvector)
 sd(myvector)
+```
+
+```{r exercise-functions-check}
+grade_this_code()
 ```
 
 ### Getting Help

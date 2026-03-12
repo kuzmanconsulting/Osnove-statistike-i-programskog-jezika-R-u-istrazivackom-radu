@@ -9,8 +9,10 @@ runtime: shiny_prerendered
 
 ```{r setup, include=FALSE}
 library(learnr)
+library(gradethis)
 library(data.table)
 knitr::opts_chunk$set(echo = FALSE)
+gradethis::gradethis_setup()
 ```
 
 ```{r load-branding, echo=FALSE}
