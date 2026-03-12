@@ -26,7 +26,7 @@ cran_packages <- c(
 
 # List of GitHub packages
 github_packages <- list(
-  gradethis = "rstudio/gradethis"  # Solution checking for learnr
+#  gradethis = "rstudio/gradethis"  # Solution checking for learnr
 )
 
 # Function to install and check a single package
