@@ -180,7 +180,6 @@ Before pushing:
 ## 📦 Required Packages
 
 - learnr - Interactive tutorials
-- gradethis - Solution checking
 - knitr, rmarkdown, shiny - Tutorial infrastructure
 - data.table - Fast data manipulation
 - ggplot2 - Data visualization
