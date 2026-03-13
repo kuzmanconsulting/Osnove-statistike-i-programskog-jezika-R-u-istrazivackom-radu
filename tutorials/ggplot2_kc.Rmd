@@ -21,7 +21,9 @@ setup_kuzman_branding()
 ```
 
 ```{r server-setup, context="server"}
-# Server setup (empty - download handled by JavaScript)
+# Register resource path for logos
+source("../assets/setup_branding.R", local = TRUE)
+setup_branding_server()
 ```
 
 ```{r shared-data, exercise.setup=TRUE, include=FALSE}
@@ -46,15 +48,17 @@ Welcome to **Data Visualization with ggplot2**
 <div class="callout-title">How to Use This Tutorial</div>
 
 - Click **"Run Code"** to execute R code
-- Click **"Submit Answer"** to check your solutions
+    - ctrl + enter (windows) or command + enter (macos)
 - Click **"Hint"** if you need help
 - Progress is tracked as you complete exercises
+
 </div>
+
 
 <div class="callout callout-success">
 <div class="callout-title">What You'll Learn</div>
 
-- Creating beautiful visualizations with the Grammar of Graphics  
+- Creating visualizations using the Grammar of Graphics  
 - Mastering ggplot2's layered approach  
 - Customizing plots with themes, colors, and facets  
 - Making publication-ready graphics
@@ -205,7 +209,8 @@ ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) +
 <div class="callout callout-success">
 <div class="callout-title">The Power of ggplot2</div>
 
-ggplot2 is based on the **Grammar of Graphics** - a consistent system for building any visualization by combining independent components. Once you learn the logic, you can create almost any plot!
+ggplot2 is based on the **Grammar of Graphics** - a consistent system for building any visualization by combining independent components. Once you learn the logic, you can create almost any plot!  
+
 </div>
 
 ### Advantages
@@ -234,6 +239,7 @@ ggplot2 is based on the **Grammar of Graphics** - a consistent system for buildi
 - **ggplot()** = initialize the plot with data
 - **aes()** = aesthetic mappings (which variables go where)
 - **geom_*** = geometric objects (points, bars, lines, etc.)
+- **annotation** = add custom text to annotate the plot and data within it. 
 - **+** = layer components together
 </div>
 

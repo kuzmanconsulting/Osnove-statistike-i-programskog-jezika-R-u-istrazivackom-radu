@@ -11,9 +11,6 @@ setup_kuzman_branding <- function(assets_path = "../assets") {
   # Get absolute path to assets folder
   assets_full_path <- normalizePath(assets_path, mustWork = FALSE)
   
-  # Register assets path for Shiny/learnr (use 'images' to match JS references)
-  shiny::addResourcePath("images", assets_full_path)
-  
   # Load CSS theme
   css_file <- file.path(assets_full_path, "kuzman_theme.css")
   css_content <- readLines(css_file, warn = FALSE)
@@ -26,4 +23,17 @@ setup_kuzman_branding <- function(assets_path = "../assets") {
   
   # Return combined HTML tags
   htmltools::tagList(css_tag, js_tag)
+}
+
+#' Setup Server-Side Resource Path for Logos
+#'
+#' This function registers the assets path in the Shiny server context
+#' so that logo images can be served properly.
+#' Call this in your server-setup chunk with context="server".
+#'
+#' @param assets_path Path to the assets folder (default: "../assets")
+#' 
+setup_branding_server <- function(assets_path = "../assets") {
+  assets_full_path <- normalizePath(assets_path, mustWork = FALSE)
+  shiny::addResourcePath("images", assets_full_path)
 }

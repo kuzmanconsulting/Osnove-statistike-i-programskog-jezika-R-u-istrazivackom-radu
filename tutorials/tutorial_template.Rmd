@@ -24,8 +24,9 @@ setup_kuzman_branding()
 ```
 
 ```{r server-setup, context="server"}
-# Server-side setup for download functionality
-# (Download is handled by JavaScript in kuzman_branding.js)
+# Register resource path for logos
+source("../assets/setup_branding.R", local = TRUE)
+setup_branding_server()
 ```
 
 ```{r download-ui, echo=FALSE}

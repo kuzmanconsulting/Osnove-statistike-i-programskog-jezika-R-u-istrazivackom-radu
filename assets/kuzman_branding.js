@@ -9,83 +9,83 @@ $(document).on('ready shiny:connected', function() {
   // Wait a bit for Shiny to fully initialize
   setTimeout(function() {
     console.log("Attempting to add logos...");
-    console.log("Body exists:", $('body').length);
-    console.log("TopicsList exists:", $('.topicsList').length);
     
-    // Get the base URL for the tutorial
-    var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
-    console.log("Base URL:", baseUrl);
+    // Use the registered resource path 'images' which maps to ../assets
+    var logoPath = 'images/k_logo.png';
+    var fullLogoPath = 'images/logo_transparent_background.png';
     
-    // Try multiple possible paths for the logo
-    var possiblePaths = [
-      'images/k_logo.png',
-      'assets/k_logo.png',
-      '../assets/k_logo.png',
-      baseUrl + '/../assets/k_logo.png',
-      'session/' + window.location.pathname.split('/')[1] + '/assets/k_logo.png'
-    ];
+    // Only add logos if they don't already exist (prevents duplicates on re-render)
+    if ($('#k-logo-top').length === 0) {
+      // Add fixed K logo to top right corner (stays visible when scrolling)
+      var kLogo = $('<img>', {
+        id: 'k-logo-top',
+        src: logoPath,
+        alt: 'Kuzman Consulting',
+        css: {
+          position: 'fixed',
+          right: '20px',
+          top: '10px',
+          height: '60px',
+          zIndex: 9999,
+          display: 'none' // Hide initially
+        }
+      });
+      
+      // Show only when loaded successfully
+      kLogo.on('load', function() {
+        $(this).fadeIn(300);
+        console.log("K logo loaded successfully");
+      });
+      
+      kLogo.on('error', function() {
+        console.error('K logo failed to load from:', logoPath);
+        $(this).remove(); // Remove if it fails
+      });
+      
+      $('body').append(kLogo);
+    }
     
-    console.log("Trying logo paths:", possiblePaths);
-    
-    var logoPath = possiblePaths[0]; // default to first option
-    
-    // Add fixed K logo to top right corner (stays visible when scrolling)
-    var kLogo = '<img id="k-logo-top" src="' + logoPath + '" ' +
-                'style="position: fixed; right: 20px; top: 10px; height: 60px; z-index: 9999;" ' +
-                'alt="Kuzman Consulting" />';
-    $('body').append(kLogo);
-    console.log("K logo added with path:", logoPath);
-    
-    // Try fallback paths if first one fails
-    $('#k-logo-top').on('error', function() {
-      console.error('K logo failed to load from:', this.src);
-      var currentIndex = possiblePaths.indexOf(this.src.split('/').slice(-3).join('/'));
-      if (currentIndex === -1) currentIndex = 0;
-      if (currentIndex + 1 < possiblePaths.length) {
-        var nextPath = possiblePaths[currentIndex + 1];
-        console.log('Trying next path:', nextPath);
-        this.src = nextPath;
-      } else {
-        console.error('All logo paths failed');
-        this.style.display = 'none';
-      }
-    });
-    
-    // For full logo, try same paths
-    var fullLogoPaths = [
-      'images/logo_transparent_background.png',
-      'assets/logo_transparent_background.png',
-      '../assets/logo_transparent_background.png',
-      baseUrl + '/../assets/logo_transparent_background.png'
-    ];
-    
-    var fullLogoPath = fullLogoPaths[0];
-    
-    // Add full logo footer (clickable, links to company website)
-    var footerLogo = '<div style="text-align: center; margin-top: 20px; margin-bottom: 20px;">' +
-                     '<a href="https://www.kuzmanconsulting.com" target="_blank">' +
-                     '<img id="k-logo-footer" src="' + fullLogoPath + '" ' +
-                     'style="width: 250px; cursor: pointer;" ' +
-                     'alt="Kuzman Consulting - www.kuzmanconsulting.com" />' +
-                     '</a>' +
-                     '</div>';
-    $('.topicsList').append(footerLogo);
-    console.log("Footer logo added with path:", fullLogoPath);
-    
-    // Try fallback paths for footer logo
-    $('#k-logo-footer').on('error', function() {
-      console.error('Footer logo failed to load from:', this.src);
-      var currentIndex = fullLogoPaths.indexOf(this.src.split('/').slice(-3).join('/'));
-      if (currentIndex === -1) currentIndex = 0;
-      if (currentIndex + 1 < fullLogoPaths.length) {
-        var nextPath = fullLogoPaths[currentIndex + 1];
-        console.log('Trying next footer path:', nextPath);
-        this.src = nextPath;
-      } else {
-        console.error('All footer logo paths failed');
-        this.style.display = 'none';
-      }
-    });
+    // Only add footer logo if it doesn't exist
+    if ($('#k-logo-footer').length === 0 && $('.topicsList').length > 0) {
+      var footerLogoContainer = $('<div>', {
+        css: {
+          textAlign: 'center',
+          marginTop: '20px',
+          marginBottom: '20px'
+        }
+      });
+      
+      var logoLink = $('<a>', {
+        href: 'https://www.kuzmanconsulting.com',
+        target: '_blank'
+      });
+      
+      var footerLogo = $('<img>', {
+        id: 'k-logo-footer',
+        src: fullLogoPath,
+        alt: 'Kuzman Consulting - www.kuzmanconsulting.com',
+        css: {
+          width: '250px',
+          cursor: 'pointer',
+          display: 'none' // Hide initially
+        }
+      });
+      
+      // Show only when loaded successfully
+      footerLogo.on('load', function() {
+        $(this).fadeIn(300);
+        console.log("Footer logo loaded successfully");
+      });
+      
+      footerLogo.on('error', function() {
+        console.error('Footer logo failed to load from:', fullLogoPath);
+        $(this).parent().parent().remove(); // Remove container if it fails
+      });
+      
+      logoLink.append(footerLogo);
+      footerLogoContainer.append(logoLink);
+      $('.topicsList').append(footerLogoContainer);
+    }
     
     // Add progress bar in bottom right corner
     var progressBar = '<div class="topics-progress">' +
