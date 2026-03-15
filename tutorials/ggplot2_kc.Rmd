@@ -35,21 +35,11 @@ library(data.table)
 tidy <- fread("http://hex.bioinfo.hr/~mfabijanic/tidyData.txt", header=T)
 works <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/works.txt", header = T)
 works$Grade <- factor(works$Grade, levels=c("Extremely bad", "Below average", "Average", "Good", "Excellent"))
+setnames(works, "GradeNumerical", "Mark")
 df <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/df.txt", header=TRUE, fill=T)
 colnames(df) <- "recommend"
 df$recommend <- factor(df$recommend, levels=c("Strongly no","No", "Maybe", "Yes", "Strongly yes"))
 
-# data.table datasets
-ddf <- tidy
-ddf_dt <- as.data.table(ddf)
-iris_dt <- as.data.table(iris)
-
-# IntroToR variables
-myFirstNumber <- 0.1
-myFirstVector <- c("some words","p","awesome", "last one")
-myFirstSequence <- 1:4
-someothervector <- c(1,0,1,0,1)
-myvector <- c(15, 16, 17, 18, 20)
 ```
 
 ## Welcome
@@ -81,35 +71,39 @@ In this tutorial, you will master data visualization with ggplot2:
    - Loading libraries  
    - Sample data  
    
-2. **Variable Types**  
-   - Categorical variables  
-   - Quantitative variables  
-   
-3. **Graphs for One Variable**  
-   - Categorical variable: Bar chart  
-   - Quantitative variable: Density plot  
-   
-4. **Graphs with Two Variables**  
-   - Continuous X, Continuous Y: Scatterplot  
-   - Discrete X, Continuous Y: Boxplot, Violin plot  
-   - Discrete X, Discrete Y: Bar charts  
-   
-5. **ggplot2 vs Base R**  
+2. **ggplot2 vs Base R**  
    - Comparing approaches  
    - Why ggplot2?  
    
-6. **Basic ggplot Logic**  
+3. **Basic ggplot Logic**  
    - The ggplot() function  
    - Mapping aesthetics with aes()  
    - Layers and the + operator  
    - Geometric objects (geoms)  
    
-7. **Practical Examples**  
+4. **Practical Examples**  
    - Step-by-step plot building  
    - Adding layers and customization  
    - Faceting for subplots  
+   - Challenge exercises  
    
-8. **Interactive Plots**  
+5. **Variable Types**  
+   - Categorical variables  
+   - Quantitative variables  
+   
+6. **Graphs for One Variable**  
+   - Categorical variable: Bar chart  
+   - Quantitative variable: Histogram, Density plot  
+   
+7. **Graphs with Two Variables**  
+   - Continuous X, Continuous Y: Scatterplot  
+   - Discrete X, Continuous Y: Boxplot, Violin plot  
+   - Discrete X, Discrete Y: Bar charts  
+   
+8. **Saving a plot**  
+   → Save a plot to file. 
+
+9. **Interactive Plots**  
    - Making plots interactive with plotly  
 
 </div>
@@ -208,274 +202,21 @@ tidy
 
 ---
 
-## Variable Types
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-2. **Variable Types**  
-   → Categorical variables  
-   - Quantitative variables  
-
-</div>
-
-<div class="callout callout-concept">
-<div class="callout-title">Choosing the Right Visualization</div>
-
-The type of visualization you choose depends on your **variable types**. Categorical variables work best with bar charts or pie charts, while continuous variables are better suited for histograms, scatter plots, or line graphs.
-</div>
-
-### Categorical Variables
-
-- **Nominal** - no order (e.g., colors, continents)
-- **Ordinal** - ordered (e.g., grades, ratings)
-
-### Quantitative Variables
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-2. **Variable Types**  
-   - Categorical variables  
-   → Quantitative variables  
-
-</div>
-
-- **Discrete** - countable (e.g., number of children)
-- **Continuous** - measurable (e.g., height, weight)
-
----
-
-## Graphs for One Variable
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-3. **Graphs for One Variable**  
-   → Categorical variable: Bar chart  
-   - Quantitative variable: Density plot  
-
-</div>
-
-### Categorical Variable: Bar Chart
-
-Create a bar chart of `Continent` from the `tidy` dataset using `geom_bar()` and `theme_light()`:
-
-```{r bar-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Create a bar chart of Continent
-
-
-```
-
-```{r bar-demo-hint}
-ggplot(tidy, aes(Continent)) +
-    geom_bar() +
-    theme_light()
-```
-
-```{r bar-demo-solution}
-ggplot(tidy, aes(Continent)) +
-    geom_bar() +
-    theme_light()
-```
-
-### Quantitative Variable: Density Plot
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-3. **Graphs for One Variable**  
-   - Categorical variable: Bar chart  
-   → Quantitative variable: Density plot  
-
-</div>
-
-Create a density plot of `Height`, filled by `Gender`, using `geom_density(alpha = 0.3)` and `theme_light()`:
-
-```{r density-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Create a density plot of Height by Gender
-
-
-```
-
-```{r density-demo-hint}
-ggplot(tidy, aes(Height, fill = Gender)) +
-    geom_density(alpha = 0.3) +
-    theme_light()
-```
-
-```{r density-demo-solution}
-ggplot(tidy, aes(Height, fill = Gender)) +
-    geom_density(alpha = 0.3) +
-    theme_light()
-```
-
----
-
-## Graphs with Two Variables
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-4. **Graphs with Two Variables**  
-   → Continuous X, Continuous Y: Scatterplot  
-   - Discrete X, Continuous Y: Boxplot, Violin plot  
-   - Discrete X, Discrete Y: Bar charts  
-
-</div>
-
-### Continuous X, Continuous Y: Scatterplot
-
-Create a scatterplot with `Height` on x-axis and `Weight` on y-axis using `geom_point()` and `theme_light()`:
-
-```{r scatter-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Create a scatterplot of Height vs Weight
-
-
-```
-
-```{r scatter-demo-hint}
-ggplot(tidy, aes(Height, Weight)) +
-    geom_point() +
-    theme_light()
-```
-
-```{r scatter-demo-solution}
-ggplot(tidy, aes(Height, Weight)) +
-    geom_point() +
-    theme_light()
-```
-
----
-
-## Discrete X, Continuous Y
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-4. **Graphs with Two Variables**  
-   - Continuous X, Continuous Y: Scatterplot  
-   → Discrete X, Continuous Y: Boxplot, Violin plot  
-   - Discrete X, Discrete Y: Bar charts  
-
-</div>
-
-### Boxplot
-
-Create a boxplot with `Gender` on x-axis, `Height` on y-axis, filled by `Gender`, using `geom_boxplot(alpha = 0.3)` and `theme_light()`:
-
-```{r boxplot-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Create a boxplot of Height by Gender
-
-
-```
-
-```{r boxplot-demo-hint}
-ggplot(tidy, aes(Gender, Height, fill = Gender)) +
-    geom_boxplot(alpha = 0.3) +
-    theme_light()
-```
-
-```{r boxplot-demo-solution}
-ggplot(tidy, aes(Gender, Height, fill = Gender)) +
-    geom_boxplot(alpha = 0.3) +
-    theme_light()
-```
-
-### Violin Plot
-
-Create a violin plot with `Gender` on x-axis, `Height` on y-axis, filled by `Gender`, using `geom_violin(alpha = 0.3)` and `theme_light()`:
-
-```{r violin-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Create a violin plot of Height by Gender
-
-
-```
-
-```{r violin-demo-hint}
-ggplot(tidy, aes(Gender, Height, fill = Gender)) +
-    geom_violin(alpha = 0.3) +
-    theme_light()
-```
-
-```{r violin-demo-solution}
-ggplot(tidy, aes(Gender, Height, fill = Gender)) +
-    geom_violin(alpha = 0.3) +
-    theme_light()
-```
-
----
-
-## Discrete X, Discrete Y: Bar Chart
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-4. **Graphs with Two Variables**  
-   - Continuous X, Continuous Y: Scatterplot  
-   - Discrete X, Continuous Y: Boxplot, Violin plot  
-   → Discrete X, Discrete Y: Bar charts  
-
-</div>
-
-### Simple Bar Chart
-
-Create a simple bar chart of `Gender` using `geom_bar()` and `theme_light()`:
-
-```{r bar-simple, exercise=TRUE, exercise.setup="shared-data"}
-# Create a simple bar chart of Gender
-
-
-```
-
-```{r bar-simple-hint}
-ggplot(tidy, aes(Gender)) +
-    geom_bar() +
-    theme_light()
-```
-
-```{r bar-simple-solution}
-ggplot(tidy, aes(Gender)) +
-    geom_bar() +
-    theme_light()
-```
-
-### Stacked Bar Chart
-
-Create a stacked bar chart with `Gender` on x-axis, `Height` on y-axis, filled by `Continent`, using `geom_bar(stat = "identity")` and `theme_light()`:
-
-```{r bar-stacked, exercise=TRUE, exercise.setup="shared-data"}
-# Create a stacked bar chart
-
-
-```
-
-```{r bar-stacked-hint}
-ggplot(tidy, aes(Gender, Height, fill = Continent)) +
-    geom_bar(stat = "identity") +
-    theme_light()
-```
-
-```{r bar-stacked-solution}
-ggplot(tidy, aes(Gender, Height, fill = Continent)) +
-    geom_bar(stat = "identity") +
-    theme_light()
-```
-
----
 
 ## ggplot2 vs Base R
 
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-5. **ggplot2 vs Base R**  
+2. **ggplot2 vs Base R**  
    → Comparing approaches  
    - Why ggplot2?  
 
 </div>
 
-### Base R Plot
+### comparison  
+
+#### Base R Plot
 
 Use base R `plot()` to create a scatterplot of `iris$Sepal.Length` vs `iris$Petal.Length`, colored by `iris$Species`:
 
@@ -493,16 +234,7 @@ plot(iris$Sepal.Length, iris$Petal.Length, col = iris$Species)
 plot(iris$Sepal.Length, iris$Petal.Length, col = iris$Species)
 ```
 
-### ggplot2 Plot
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-5. **ggplot2 vs Base R**  
-   - Comparing approaches  
-   → Why ggplot2?  
-
-</div>
+#### ggplot2 Plot
 
 Now recreate the same plot using `ggplot()` with `geom_point()`, coloring by `Species`, and `theme_light()`:
 
@@ -526,8 +258,17 @@ ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) +
 
 ---
 
-## Why ggplot2?
+### Why ggplot2?
 
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+2. **ggplot2 vs Base R**  
+   - Comparing approaches  
+   → Why ggplot2?  
+
+</div>
+ 
 <div class="callout callout-success">
 <div class="callout-title">The Power of ggplot2</div>
 
@@ -535,7 +276,53 @@ ggplot2 is based on the **Grammar of Graphics** - a consistent system for buildi
 
 </div>
 
-### Advantages
+Lets make this better, just for demonstration purposes. :  
+- make points larger,   
+- different shapes.  
+- facet by species.  
+- add linear regression line, make it dashed.  
+- naaah actually make it a boxplot.  
+- yeah and remove the outliers.  
+- and make it all black 
+- oh and add errorbars.   
+- oh please make it pretty.  
+
+
+```{r ggplot-plot2, exercise=TRUE}
+# Create the same plot using ggplot2
+
+
+```
+
+
+```{r ggplot-plot2-hint}
+ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species, shape=Species)) + 
+    geom_point() +
+    theme_bw() +
+    facet_wrap( ~ Species) + 
+    geom_smooth(method = "lm", color = "black", size = 1, linetype="dashed") 
+```
+
+```{r ggplot-plot2-hint-2}
+gggplot(iris, aes(Sepal.Length, Petal.Length, shape=Species)) + 
+    theme_bw() +
+    geom_boxplot(outlier.color=NA)
+```
+
+```{r ggplot-plot2-solution}
+gggplot(iris, aes(Sepal.Length, Petal.Length, shape=Species)) + 
+    theme_bw() +
+    stat_boxplot(geom = "errorbar") + 
+    geom_boxplot(outlier.color=NA) +
+    labs(title = "Here is your plot",
+         subtitle = " I made it pretty ",
+         caption= "Probably we could write something more useful here"
+    )+
+    annotate("text", x= 6.3, y= 2, label = "WOW THANK YOU!", color="purple", size = 8)
+
+```
+
+#### Advantages
 
 - Elegant  
 - Highly customizable  
@@ -543,7 +330,7 @@ ggplot2 is based on the **Grammar of Graphics** - a consistent system for buildi
 - Natural and expressive  
 - Very popular
 
-### Disadvantages
+#### Disadvantages
 
 - Steep learning curve  
 - Can be slow with large data  
@@ -556,7 +343,7 @@ ggplot2 is based on the **Grammar of Graphics** - a consistent system for buildi
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-6. **Basic ggplot Logic**  
+3. **Basic ggplot Logic**  
    → The ggplot() function  
    - Mapping aesthetics with aes()  
    - Layers and the + operator  
@@ -582,22 +369,27 @@ Three ways to initialize:
 
 Try writing the three ways to initialize a ggplot: empty, with data only, and with data + aesthetics:
 
-```{r ggplot-init, exercise=TRUE, eval=FALSE}
+```{r ggplot-init, exercise=TRUE}
 # Three ways to initialize a ggplot
 
 
 ```
 
-```{r ggplot-init-hint, eval=FALSE}
+```{r ggplot-init-hint}
 p <- ggplot()
-p <- ggplot(data_frame)
-p <- ggplot(data_frame, aes(x, y))
+p
 ```
 
-```{r ggplot-init-solution, eval=FALSE}
+```{r ggplot-init-hint-2}
+p <- ggplot(iris)
+p
+```
+
+```{r ggplot-init-hint-3}
 p <- ggplot()
-p <- ggplot(data_frame)
-p <- ggplot(data_frame, aes(x, y))
+p <- ggplot(iris)
+p <- ggplot(iris, aes(Sepal.Length, Petal.Length))
+p
 ```
 
 <div class="callout callout-danger">
@@ -609,18 +401,6 @@ Calling `ggplot()` without adding a geom layer results in a **blank plot or erro
 **Note:** You always need at least one layer (geom) for a plot to display!
 
 ---
-
-## Mapping Aesthetics
-
-<div class="callout callout-tip">
-<div class="callout-title">Pro Tip: Flexible Aesthetics</div>
-
-Aesthetics can be defined:
-- **Globally** in `ggplot(aes(...))` - applies to all layers
-- **Per layer** in `geom_*(aes(...))` - applies only to that layer
-
-This flexibility lets you create complex, multi-layered visualizations!
-</div>
 
 ### The aes() Function
 
@@ -645,17 +425,31 @@ p <- ggplot(iris, aes(Species, Petal.Length))
 p
 ```
 
+
+### Mapping Aesthetics
+
+<div class="callout callout-tip">
+<div class="callout-title">Pro Tip: Flexible Aesthetics</div>
+
+Aesthetics can be defined:
+- **Globally** in `ggplot(aes(...))` - applies to all layers
+- **Per layer** in `geom_*(aes(...))` - applies only to that layer
+
+This flexibility lets you create complex, multi-layered visualizations!
+</div>
+
 ---
 
-## Layers: The Building Blocks
+### Layers: The Building Blocks
 
 <div class="callout callout-success">
 <div class="callout-title">The Power of Layers</div>
 
-ggplot2 uses **`+`** to add layers, building plots like a cake:
-1. Start with data and aesthetics (the base)
-2. Add geoms (the filling)
-3. Add scales, themes, facets (the frosting)
+ggplot2 uses **`+`** to add layers, building plots like a cake:   
+
+1. Start with data and aesthetics (the base)  
+2. Add geoms (the filling)  
+3. Add scales, themes, facets (the frosting)  
 
 Each layer adds something new without replacing what's there!
 </div>
@@ -671,12 +465,12 @@ We use `+` to add layers:
 
 ---
 
-## Geometric Objects (geoms)
+### Geometric Objects (geoms)
 
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-6. **Basic ggplot Logic**  
+3. **Basic ggplot Logic**  
    - The ggplot() function  
    - Mapping aesthetics with aes()  
    - Layers and the + operator  
@@ -687,37 +481,39 @@ We use `+` to add layers:
 <div class="callout callout-info">
 <div class="callout-title">Common Geoms Reference</div>
 
-**Continuous data:**
-- `geom_point()` - scatter plots
-- `geom_line()` - line graphs
-- `geom_smooth()` - trend lines
+**Continuous data:**  
+- `geom_point()` - scatter plots  
+- `geom_line()` - line graphs  
+- `geom_smooth()` - trend lines  
 
-**Categorical data:**
-- `geom_bar()` / `geom_col()` - bar charts
-- `geom_boxplot()` - box plots
-- `geom_violin()` - violin plots
+**Categorical data:**  
+- `geom_bar()` / `geom_col()` - bar charts  
+- `geom_boxplot()` - box plots  
+- `geom_violin()` - violin plots  
 
-**Distributions:**
-- `geom_histogram()` - histograms
-- `geom_density()` - density curves
+**Distributions:**  
+- `geom_histogram()` - histograms  
+- `geom_density()` - density curves  
 </div>
 
 Common geoms:
 
-- `geom_point()` - scatter plot
-- `geom_line()` - line plot
-- `geom_bar()` - bar chart
-- `geom_boxplot()` - box plot
-- `geom_smooth()` - smoothed line
+- `geom_point()` - scatter plot  
+- `geom_line()` - line plot  
+- `geom_bar()` - bar chart  
+- `geom_boxplot()` - box plot  
+- `geom_smooth()` - smoothed line  
 
 ---
 
-## Example 1: Step-by-Step
+## Practical Examples
+
+### Example 1: Step-by-Step
 
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-7. **Practical Examples**  
+4. **Practical Examples**  
    → Step-by-step plot building  
    - Adding layers and customization  
    - Faceting for subplots  
@@ -726,11 +522,11 @@ Common geoms:
 
 ### Step 1: Set Basic Layout
 
-X axis is categorical, Y axis is numerical.
+X axis is categorical, Y axis is numerical.  
 
-Fill the empty spaces to use `iris` dataset with Species on x-axis and Petal.Length on y-axis:
+Fill the empty spaces to use `iris` dataset with Species on x-axis and Petal.Length on y-axis:  
 
-Use `ggplot()` with `iris` dataset, mapping `Species` to x-axis and `Petal.Length` to y-axis. Store in `p` and display:
+Use `ggplot()` with `iris` dataset, mapping `Species` to x-axis and `Petal.Length` to y-axis. Store in `p` and display:  
 
 ```{r example1-step1, exercise=TRUE}
 # Set up the basic layout
@@ -824,7 +620,7 @@ p + geom_point(aes(color = Petal.Length)) +
 
 ---
 
-## Exercise 1: Build Your Own Plot
+### Exercise 1: Build Your Own Plot
 
 Create a plot showing the relationship between Species (x) and Petal.Length (y):
 
@@ -847,7 +643,7 @@ p + geom_point(aes(color = Petal.Length)) +
 
 ---
 
-## Example 2: Numerical vs Numerical
+### Example 2: Numerical vs Numerical
 
 
 
@@ -895,7 +691,7 @@ p2 + geom_point()
 
 ---
 
-## Example 2: Color by Species
+### Example 2: Color by Species
 
 ### Step 3: Override Aesthetics
 
@@ -923,7 +719,7 @@ p3
 
 ---
 
-## Example 2: Add Smoothing Lines
+### Example 2: Add Smoothing Lines
 
 ### Step 4: Add Linear Regression
 
@@ -953,7 +749,7 @@ p4
 
 ---
 
-## Example 2: Faceting
+### Example 2: Faceting
 
 <div class="callout callout-tip">
 <div class="callout-title">Creating Subplots with Faceting</div>
@@ -989,7 +785,7 @@ p4 + facet_wrap(~Species)
 
 ---
 
-## Exercise 2: Complete Analysis
+### Exercise 2: Complete Analysis
 
 Build the complete plot step by step:
 
@@ -1013,7 +809,7 @@ p2 + geom_point(aes(color = Species)) +
 
 ---
 
-## Challenge 1: Recreate Plot
+### Challenge 1: Recreate Plot
 
 ### Works Dataset
 
@@ -1060,7 +856,7 @@ ggplot(works, aes(Grade, Mark, color = Grade)) +
 
 ---
 
-## Challenge 2: Advanced Bar Plot
+### Challenge 2: Advanced Bar Plot
 
 ### Recommendation Dataset
 
@@ -1123,12 +919,408 @@ ggplot(df, aes(recommend, fill = recommend)) +
 
 ---
 
+
+## Variable Types
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+5. **Variable Types**  
+   → Categorical variables  
+   - Quantitative variables  
+
+</div>
+
+<div class="callout callout-concept">
+<div class="callout-title">Choosing the Right Visualization</div>
+
+The type of visualization you choose depends on your **variable types**. Categorical variables work best with bar charts or pie charts, while continuous variables are better suited for histograms, scatter plots, or line graphs.
+</div>
+
+### Categorical Variables
+
+- **Nominal** - no order (e.g., colors, continents)
+- **Ordinal** - ordered (e.g., grades, ratings)
+
+### Quantitative Variables
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+5. **Variable Types**  
+   - Categorical variables  
+   → Quantitative variables  
+
+</div>
+
+- **Discrete** - countable (e.g., number of children)
+- **Continuous** - measurable (e.g., height, weight)
+
+---
+
+## Graphs for One Variable
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+6. **Graphs for One Variable**  
+   → Categorical variable: Bar chart  
+   - Quantitative variable: Histogram  
+   - Quantitative variable: Density plot  
+
+</div>
+
+### Categorical Variable: Bar Chart
+
+Create a bar chart of `Continent` from the `tidy` dataset using `geom_bar()` and `theme_light()`:
+
+```{r bar-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Create a bar chart of Continent
+
+
+```
+
+```{r bar-demo-hint}
+ggplot(tidy, aes(Continent)) +
+    geom_bar() +
+    theme_light()
+```
+
+```{r bar-demo-solution}
+ggplot(tidy, aes(Continent)) +
+    geom_bar() +
+    theme_light()
+```
+
+### Quantitative Variable: Histogram  
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+6. **Graphs for One Variable**  
+   - Categorical variable: Bar chart  
+   → Quantitative variable: Histogram  
+   - Quantitative variable: Density plot  
+
+
+</div>
+
+Exercise :  
+
+ - Create a histogram of `Height` for dataset tidy, using `geom_histogram()` and `theme_light()`:  
+ - Change transparency of color for the bars.  
+ - Change color of the outline for bars to black.  
+
+
+
+```{r histogram-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Create a histogram of Height
+
+```
+
+```{r histogram-demo-hint}
+#use alpha parameter
+```
+
+```{r histogram-demo-hint-2}
+#use color parameter
+```
+
+
+```{r histogram-demo-solution}
+ggplot(tidy, aes(Height)) +
+    geom_histogram(alpha = 0.3, color = "black") +
+    theme_light()
+```
+
+
+---
+
+
+Change the number of bins by using the bins argument. Try 50 and 10.  
+
+```{r histogram-demo2, exercise=TRUE, exercise.setup="shared-data"}
+# Create a histogram of Height 
+ggplot(tidy, aes(Height)) +
+    geom_histogram(alpha = 0.3) +
+    theme_light()
+
+```
+
+```{r histogram-demo2-hint}
+use bins = 10 and 50
+```
+
+```{r histogram-demo2-solution}
+ggplot(tidy, aes(Height)) +
+    geom_histogram(alpha = 0.3, bins = 10) +
+    theme_light()
+
+ggplot(tidy, aes(Height)) +
+    geom_histogram(alpha = 0.3, bins = 50) +
+    theme_light()
+```
+
+---
+
+Questions: 
+    1. What is the shape of this distribution? Is it symmetrical ? Is it skewed ? Positively or negatively? 
+    2. Do you have any idea what could be source of the bimodality ?  
+        -  explore underlying distributions.  
+
+```{r histogram-demo3, exercise=TRUE, exercise.setup="shared-data"}
+# Create a histogram of Height 
+ggplot(tidy, aes(Height)) +
+    geom_histogram(alpha = 0.3) +
+    theme_light()
+
+```
+
+```{r histogram-demo3-hint}
+#use fill
+```
+
+```{r histogram-demo3-hint-2}
+#make sure to use it within aes() part
+```
+
+```{r histogram-demo3-solution}
+ggplot(tidy, aes(Height)) +
+    geom_histogram(alpha = 0.3, bins = 10) +
+    theme_light()
+
+ggplot(tidy, aes(Height)) +
+    geom_histogram(alpha = 0.3, bins = 50) +
+    theme_light()
+```
+
+
+---  
+
+### Quantitative Variable: Density Plot
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+6. **Graphs for One Variable**  
+   - Categorical variable: Bar chart  
+   → Quantitative variable: Density plot  
+
+</div>
+
+Create a density plot of `Height`, filled by `Gender`, using `geom_density(alpha = 0.3)` and `theme_light()`:
+
+```{r density-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Create a density plot of Height by Gender
+
+
+```
+
+```{r density-demo-hint}
+ggplot(tidy, aes(Height, fill = Gender)) +
+    geom_density(alpha = 0.3) +
+    theme_light()
+```
+
+```{r density-demo-solution}
+ggplot(tidy, aes(Height, fill = Gender)) +
+    geom_density(alpha = 0.3) +
+    theme_light()
+```
+
+---
+
+## Graphs with Two Variables
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+7. **Graphs with Two Variables**  
+   → Continuous X, Continuous Y: Scatterplot  
+   - Discrete X, Continuous Y: Boxplot, Violin plot  
+   - Discrete X, Discrete Y: Bar charts  
+
+</div>
+
+### Continuous X, Continuous Y: Scatterplot
+
+Create a scatterplot with `Height` on x-axis and `Weight` on y-axis using `geom_point()` and `theme_light()`:
+
+```{r scatter-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Create a scatterplot of Height vs Weight
+
+
+```
+
+```{r scatter-demo-hint}
+ggplot(tidy, aes(Height, Weight)) +
+    geom_point() +
+    theme_light()
+```
+
+```{r scatter-demo-solution}
+ggplot(tidy, aes(Height, Weight)) +
+    geom_point() +
+    theme_light()
+```
+
+---
+
+### Discrete X, Continuous Y
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+7. **Graphs with Two Variables**  
+   - Continuous X, Continuous Y: Scatterplot  
+   → Discrete X, Continuous Y: Boxplot, Violin plot  
+   - Discrete X, Discrete Y: Bar charts  
+
+</div>
+
+### Boxplot
+
+Create a boxplot with `Gender` on x-axis, `Height` on y-axis, filled by `Gender`, using `geom_boxplot(alpha = 0.3)` and `theme_light()`:
+
+```{r boxplot-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Create a boxplot of Height by Gender
+
+
+```
+
+```{r boxplot-demo-hint}
+ggplot(tidy, aes(Gender, Height, fill = Gender)) +
+    geom_boxplot(alpha = 0.3) +
+    theme_light()
+```
+
+```{r boxplot-demo-solution}
+ggplot(tidy, aes(Gender, Height, fill = Gender)) +
+    geom_boxplot(alpha = 0.3) +
+    theme_light()
+```
+
+### Violin Plot
+
+Create a violin plot with `Gender` on x-axis, `Height` on y-axis, filled by `Gender`, using `geom_violin(alpha = 0.3)` and `theme_light()`:
+
+```{r violin-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Create a violin plot of Height by Gender
+
+
+```
+
+```{r violin-demo-hint}
+ggplot(tidy, aes(Gender, Height, fill = Gender)) +
+    geom_violin(alpha = 0.3) +
+    theme_light()
+```
+
+```{r violin-demo-solution}
+ggplot(tidy, aes(Gender, Height, fill = Gender)) +
+    geom_violin(alpha = 0.3) +
+    theme_light()
+```
+
+---
+
+### Discrete X, Discrete Y: Bar Chart
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+7. **Graphs with Two Variables**  
+   - Continuous X, Continuous Y: Scatterplot  
+   - Discrete X, Continuous Y: Boxplot, Violin plot  
+   → Discrete X, Discrete Y: Bar charts  
+
+</div>
+
+### Simple Bar Chart
+
+Create a simple bar chart of `Gender` using `geom_bar()` and `theme_light()`:
+
+```{r bar-simple, exercise=TRUE, exercise.setup="shared-data"}
+# Create a simple bar chart of Gender
+
+
+```
+
+```{r bar-simple-hint}
+ggplot(tidy, aes(Gender)) +
+    geom_bar() +
+    theme_light()
+```
+
+```{r bar-simple-solution}
+ggplot(tidy, aes(Gender)) +
+    geom_bar() +
+    theme_light()
+```
+
+### Stacked Bar Chart
+
+Create a stacked bar chart with `Gender` on x-axis, `Height` on y-axis, filled by `Continent`, using `geom_bar(stat = "identity")` and `theme_light()`:
+
+```{r bar-stacked, exercise=TRUE, exercise.setup="shared-data"}
+# Create a stacked bar chart
+
+
+```
+
+```{r bar-stacked-hint}
+ggplot(tidy, aes(Gender, Height, fill = Continent)) +
+    geom_bar(stat = "identity") +
+    theme_light()
+```
+
+```{r bar-stacked-solution}
+ggplot(tidy, aes(Gender, Height, fill = Continent)) +
+    geom_bar(stat = "identity") +
+    theme_light()
+```
+
+---
+
+## Saving a plot
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+8. **Saving a plot**  
+   → Save a plot to file. 
+
+</div>
+
+
+
+To save a plot use ggsave(). It will automatically save last plot shown to a filename which you provide. You can change extension easily by naming the file with a wanted extension. You can also control plot width, height, and dpi for example. 
+
+```{r ggsave-demo, eval=FALSE}
+
+
+plot2 <- ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) +
+    geom_point() +
+    theme_light()
+
+plot2
+
+ggsave( "plot2.pdf")
+ggsave( "plot2.png")
+
+```
+
+
+
+---
+
+
 ## Interactive Plots with plotly
 
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-8. **Interactive Plots**  
+9. **Interactive Plots**  
    → Making plots interactive with plotly  
 
 </div>
@@ -1167,7 +1359,7 @@ Try hovering over points to see the values!
 
 ---
 
-## Congratulations!
+### Congratulations!
 
 You've completed the ggplot2 tutorial!
 
@@ -1187,7 +1379,7 @@ Practice with your own datasets and explore more ggplot2 features!
 
 ---
 
-## Download Your Work
+### Download Your Work
 
 <div class="callout callout-tip">
 <div class="callout-title">Save Your Work</div>
@@ -1201,7 +1393,7 @@ HTML('<button onclick="window.downloadTutorial(); return false;" class="btn-down
 
 ---
 
-## Please Give Feedback!
+### Please Give Feedback!
 
 <div class="callout callout-success">
 <div class="callout-title">💬 Your Feedback Matters</div>
@@ -1215,7 +1407,7 @@ HTML('<a href="https://forms.gle/B7Wy7G29wQTuEKjU9" target="_blank" style="displ
 
 ---
 
-## Additional Resources
+### Additional Resources
 
 - [ggplot2 Documentation](https://ggplot2.tidyverse.org/)
 - [R Graphics Cookbook](https://r-graphics.org/)
