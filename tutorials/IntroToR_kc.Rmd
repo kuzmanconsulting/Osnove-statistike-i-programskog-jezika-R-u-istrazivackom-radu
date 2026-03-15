@@ -198,6 +198,7 @@ Can you guess what %% does?
 
 ## Variables and Data Structures
 
+### Variables
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
@@ -327,11 +328,12 @@ my_factor <- factor(c("low", "high", "medium", "high"),
 my_factor
 ```
 
-**Key Differences:**
-- **Vector & Matrix**: All elements must be the same type (numeric, character, etc.)
-- **Data Frame**: Each column can be a different type (like a spreadsheet)
-- **List**: Most flexible - can contain any mix of objects
-- **Factor**: Stores categorical data efficiently with predefined levels
+**Key Differences:** 
+ 
+- **Vector & Matrix**: All elements must be the same type (numeric, character, etc.)  
+- **Data Frame**: Each column can be a different type (like a spreadsheet)  
+- **List**: Most flexible - can contain any mix of objects  
+- **Factor**: Stores categorical data efficiently with predefined levels  
 
 ---
 
