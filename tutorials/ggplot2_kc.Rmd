@@ -101,7 +101,7 @@ In this tutorial, you will master data visualization with ggplot2:
    - Discrete X, Discrete Y: Bar charts  
    
 8. **Saving a plot**  
-   → Save a plot to file. 
+   - Save a plot to file. 
 
 9. **Interactive Plots**  
    - Making plots interactive with plotly  
