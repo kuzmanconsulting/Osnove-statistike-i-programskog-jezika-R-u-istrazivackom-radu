@@ -133,17 +133,14 @@ Can you guess what %% does?
 
 ---
 
-## Working with Vectors
 
+## Variables and Data Structures
 <div class="callout callout-concept">
 <div class="callout-title">What are Vectors?</div>
 
-Vectors are the fundamental data structure in R. They store multiple values of the **same type** (all numbers, all text, etc.). Think of them as a ordered list of values.
-</div>
-
-### Variables and Data Structures
-
 Variables store values that you can reuse throughout your code. In R, we use the assignment operator `<-` to assign values to variables.
+
+</div>
 
 Create a variable `myFirstNumber` with value `0.1` and a vector `myFirstVector` with `c(2, 3, 7, 8)`. Print `myFirstNumber`:
 
@@ -166,6 +163,8 @@ myFirstVector <- c(2, 3, 7, 8)
 print(myFirstNumber)
 myFirstNumber
 ```
+
+---
 
 ### Data Structures in R
 
@@ -210,42 +209,19 @@ Levels: low medium high
 
 </div>
 
-Create examples of each R data structure: vector, matrix, data frame, list, and factor:
+Here is an examples of how basic R data structure are created: vector, matrix, data frame, list, and factor:
 
 ```{r data-structures-visual, exercise=TRUE}
-# Create examples of each data structure
-
-
-```
-
-```{r data-structures-visual-hint}
-# 1. VECTOR
 my_vector <- c(1, 2, 3, 4, 5)
 my_vector
-
-# 2. MATRIX
-my_matrix <- matrix(1:9, nrow=3, ncol=3)
-my_matrix
-
-# 3. DATA FRAME
-my_df <- data.frame(name = c("Anna", "Bob"), age = c(25, 30))
-my_df
-
-# 4. LIST
-my_list <- list(numbers = 1:5, text = "hello")
-my_list
-
-# 5. FACTOR
-my_factor <- factor(c("low", "high", "medium", "high"), levels = c("low", "medium", "high"))
-my_factor
 ```
 
-```{r data-structures-visual-solution}
-my_vector <- c(1, 2, 3, 4, 5)
-my_vector
-
+```{r data-structures-visual2, exercise=TRUE}
 my_matrix <- matrix(1:9, nrow=3, ncol=3)
 my_matrix
+```
+
+```{r data-structures-visual3, exercise=TRUE}
 
 my_df <- data.frame(
   name = c("Anna", "Bob", "Chris"),
@@ -253,6 +229,8 @@ my_df <- data.frame(
   score = c(95.5, 87.3, 91.0)
 )
 my_df
+```
+```{r data-structures-visual4, exercise=TRUE}
 
 my_list <- list(
   numbers = 1:5,
@@ -260,17 +238,30 @@ my_list <- list(
   data = data.frame(x=1:3, y=4:6)
 )
 my_list
+```
+```{r data-structures-visual5, exercise=TRUE}
 
 my_factor <- factor(c("low", "high", "medium", "high"),
                     levels = c("low", "medium", "high"))
 my_factor
 ```
 
-**Key Differences:**
-- **Vector & Matrix**: All elements must be the same type (numeric, character, etc.)
-- **Data Frame**: Each column can be a different type (like a spreadsheet)
-- **List**: Most flexible - can contain any mix of objects
-- **Factor**: Stores categorical data efficiently with predefined levels
+**Key Differences:**  
+
+- **Vector & Matrix**: All elements must be the same type (numeric, character, etc.)  
+- **Data Frame**: Each column can be a different type (like a spreadsheet)  
+- **List**: Most flexible - can contain any mix of objects  
+- **Factor**: Stores categorical data efficiently with predefined levels  
+
+---
+
+## Working with Vectors
+
+<div class="callout callout-concept">
+<div class="callout-title">What are Vectors?</div>
+
+Vectors are the fundamental data structure in R. They store multiple values of the **same type** (all numbers, all text, etc.). Think of them as a ordered list of values.
+</div>
 
 ### Creating Vectors with c()
 
@@ -636,7 +627,7 @@ myFirstVector[as.logical(someothervector)]
 ---
 
 <!-- NEW MAJOR SECTION: VECTOR OPERATIONS -->
-## Vector Operations
+## -> Vectorised Operations
 
 <!-- STEP 1: EXPLAIN THE CONCEPT -->
 <div class="callout callout-concept">
@@ -801,7 +792,7 @@ myvector * c(0.1, 0.2)
 ---
 
 <!-- NEW CONCEPT: COMPARISONS AND FILTERING -->
-## Comparisons and Subsetting
+## -> Comparisons and Filtering
 
 <!-- STEP 1: EXPLAIN THE CONCEPT -->
 <div class="callout callout-concept">
@@ -1199,7 +1190,7 @@ sd(myvector)
 ---
 
 <!-- STEP 5: GETTING HELP -->
-### Getting Help in R
+## Getting Help in R
 
 <div class="callout callout-info">
 <div class="callout-title">Help Resources</div>
