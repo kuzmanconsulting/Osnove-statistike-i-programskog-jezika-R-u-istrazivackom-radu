@@ -121,10 +121,10 @@ In this tutorial, you will master data visualization with ggplot2:
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-**Installation**  
-- Installing Packages  
-- Loading Libraries  
-- Sample Data  
+1. **Installation**  
+   → Installing packages  
+   - Loading libraries  
+   - Sample data  
 
 </div>
 
@@ -150,6 +150,16 @@ install.packages("ggplot2")
 
 ### Loading Libraries
 
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+1. **Installation**  
+   - Installing packages  
+   → Loading libraries  
+   - Sample data  
+
+</div>
+
 Load them every session. Use `library()` to load **data.table** and **ggplot2**:
 
 ```{r load-libs, exercise=TRUE}
@@ -169,6 +179,16 @@ library(ggplot2)
 ```
 
 ### Sample Data
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+1. **Installation**  
+   - Installing packages  
+   - Loading libraries  
+   → Sample data  
+
+</div>
 
 Preview the `tidy` dataset by typing its name:
 
@@ -193,9 +213,9 @@ tidy
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-**Variable Types**  
-- Categorical Variables  
-- Quantitative Variables  
+2. **Variable Types**  
+   → Categorical variables  
+   - Quantitative variables  
 
 </div>
 
@@ -212,6 +232,15 @@ The type of visualization you choose depends on your **variable types**. Categor
 
 ### Quantitative Variables
 
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+2. **Variable Types**  
+   - Categorical variables  
+   → Quantitative variables  
+
+</div>
+
 - **Discrete** - countable (e.g., number of children)
 - **Continuous** - measurable (e.g., height, weight)
 
@@ -222,9 +251,9 @@ The type of visualization you choose depends on your **variable types**. Categor
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-**Graphs for One Variable**  
-- Categorical Variable: Bar Chart  
-- Quantitative Variable: Density Plot  
+3. **Graphs for One Variable**  
+   → Categorical variable: Bar chart  
+   - Quantitative variable: Density plot  
 
 </div>
 
@@ -251,6 +280,15 @@ ggplot(tidy, aes(Continent)) +
 ```
 
 ### Quantitative Variable: Density Plot
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+3. **Graphs for One Variable**  
+   - Categorical variable: Bar chart  
+   → Quantitative variable: Density plot  
+
+</div>
 
 Create a density plot of `Height`, filled by `Gender`, using `geom_density(alpha = 0.3)` and `theme_light()`:
 
@@ -279,8 +317,10 @@ ggplot(tidy, aes(Height, fill = Gender)) +
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-**Graphs with Two Variables**  
-- Continuous X, Continuous Y: Scatterplot  
+4. **Graphs with Two Variables**  
+   → Continuous X, Continuous Y: Scatterplot  
+   - Discrete X, Continuous Y: Boxplot, Violin plot  
+   - Discrete X, Discrete Y: Bar charts  
 
 </div>
 
@@ -309,6 +349,16 @@ ggplot(tidy, aes(Height, Weight)) +
 ---
 
 ## Discrete X, Continuous Y
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+4. **Graphs with Two Variables**  
+   - Continuous X, Continuous Y: Scatterplot  
+   → Discrete X, Continuous Y: Boxplot, Violin plot  
+   - Discrete X, Discrete Y: Bar charts  
+
+</div>
 
 ### Boxplot
 
@@ -357,6 +407,16 @@ ggplot(tidy, aes(Gender, Height, fill = Gender)) +
 ---
 
 ## Discrete X, Discrete Y: Bar Chart
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+4. **Graphs with Two Variables**  
+   - Continuous X, Continuous Y: Scatterplot  
+   - Discrete X, Continuous Y: Boxplot, Violin plot  
+   → Discrete X, Discrete Y: Bar charts  
+
+</div>
 
 ### Simple Bar Chart
 
@@ -409,9 +469,9 @@ ggplot(tidy, aes(Gender, Height, fill = Continent)) +
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-**ggplot2 vs Base R**  
-- Base R Plot  
-- ggplot2 Plot  
+5. **ggplot2 vs Base R**  
+   → Comparing approaches  
+   - Why ggplot2?  
 
 </div>
 
@@ -434,6 +494,15 @@ plot(iris$Sepal.Length, iris$Petal.Length, col = iris$Species)
 ```
 
 ### ggplot2 Plot
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+5. **ggplot2 vs Base R**  
+   - Comparing approaches  
+   → Why ggplot2?  
+
+</div>
 
 Now recreate the same plot using `ggplot()` with `geom_point()`, coloring by `Species`, and `theme_light()`:
 
@@ -487,8 +556,11 @@ ggplot2 is based on the **Grammar of Graphics** - a consistent system for buildi
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-**Basic ggplot Logic**  
-- ggplot(data, aes(x, y))  
+6. **Basic ggplot Logic**  
+   → The ggplot() function  
+   - Mapping aesthetics with aes()  
+   - Layers and the + operator  
+   - Geometric objects (geoms)  
 
 </div>
 
@@ -601,6 +673,17 @@ We use `+` to add layers:
 
 ## Geometric Objects (geoms)
 
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+6. **Basic ggplot Logic**  
+   - The ggplot() function  
+   - Mapping aesthetics with aes()  
+   - Layers and the + operator  
+   → Geometric objects (geoms)  
+
+</div>
+
 <div class="callout callout-info">
 <div class="callout-title">Common Geoms Reference</div>
 
@@ -634,11 +717,10 @@ Common geoms:
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-**Example 1: Step-by-Step**  
-- Step 1: Set Basic Layout  
-- Step 2: Add points  
-- Step 3:  Color and Boxplot   
-- Step 4: Add Boxplot Layer  
+7. **Practical Examples**  
+   → Step-by-step plot building  
+   - Adding layers and customization  
+   - Faceting for subplots  
 
 </div>
 
@@ -767,14 +849,7 @@ p + geom_point(aes(color = Petal.Length)) +
 
 ## Example 2: Numerical vs Numerical
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
 
-**Example 2: Numerical vs Numerical**  
-- Step 1: Set Layout  
-- Step 2: Add Points  
-
-</div>
 
 ### Step 1: Set Layout
 
@@ -1050,6 +1125,14 @@ ggplot(df, aes(recommend, fill = recommend)) +
 
 ## Interactive Plots with plotly
 
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+8. **Interactive Plots**  
+   → Making plots interactive with plotly  
+
+</div>
+
 ### Make Plots Interactive
 
 Load `plotly`, create a ggplot scatterplot of `Sepal.Length` vs `Petal.Length` colored by `Species`, then wrap it with `ggplotly()` to make it interactive:
@@ -1114,6 +1197,20 @@ Save this completed tutorial as an HTML file for future reference.
 
 ```{r download-ui, echo=FALSE}
 HTML('<button onclick="window.downloadTutorial(); return false;" class="btn-download-tutorial" style="display: block; margin: 20px auto;">📥 Download Tutorial as HTML</button>')
+```
+
+---
+
+## Please Give Feedback!
+
+<div class="callout callout-success">
+<div class="callout-title">💬 Your Feedback Matters</div>
+
+Help us improve this tutorial! Share your experience and suggestions.
+</div>
+
+```{r feedback-ui, echo=FALSE}
+HTML('<a href="https://forms.gle/B7Wy7G29wQTuEKjU9" target="_blank" style="display: block; margin: 20px auto; padding: 15px 30px; background-color: #28a745; color: white; text-align: center; text-decoration: none; border-radius: 5px; font-weight: bold; max-width: 300px;">📝 Please Give Feedback!</a>')
 ```
 
 ---

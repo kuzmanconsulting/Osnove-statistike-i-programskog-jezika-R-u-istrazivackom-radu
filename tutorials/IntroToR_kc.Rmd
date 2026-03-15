@@ -113,10 +113,9 @@ In this tutorial, you will master the fundamentals of R programming:
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-**Getting Started with R**  
-- How can we use R and RStudio?  
-- Try it!  
-- What have we learned so far?  
+1. **Getting Started with R**  
+   → Using R as a calculator  
+   - Understanding the modulo operator  
 
 </div>
 
@@ -149,6 +148,15 @@ Try using R as a calculator. Type `1 + 1` and run the code:
 ```
 
 ### Try it!
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+1. **Getting Started with R**  
+   - Using R as a calculator  
+   → Understanding the modulo operator  
+
+</div>
 
 <div class="callout callout-tip">
 <div class="callout-title">Understanding the %% Operator</div>
@@ -193,8 +201,9 @@ Can you guess what %% does?
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-**Variables and Data Structures**  
-- Data Structures in R  
+2. **Variables and Data Structures**  
+   → Creating variables and vectors  
+   - Understanding R data structures (vectors, matrices, data frames, lists, factors)  
 
 </div>
 
@@ -230,6 +239,15 @@ myFirstNumber
 ---
 
 ### Data Structures in R
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+2. **Variables and Data Structures**  
+   - Creating variables and vectors  
+   → Understanding R data structures (vectors, matrices, data frames, lists, factors)  
+
+</div>
 
 <div class="callout callout-concept">
 <div class="callout-title">R Data Structures Overview</div>
@@ -322,19 +340,12 @@ my_factor
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-**Working with Vectors**  
-- Creating Vectors with c()  
-- Subsetting with [ ]  
-- Demonstration: Accessing Single Elements  
-- Demonstration: Accessing Multiple Elements  
-- Your Turn: Practice Subsetting by Position  
-- Access by Logical Vector  
-- Demonstration: Using TRUE/FALSE to Select Elements  
-- Demonstration: Storing Logical Vectors  
-- Your Turn: Practice Logical Subsetting  
-- Understanding Type Conversion  
-- Demonstration: Numbers as Logical Vectors  
-- Demonstration: Explicit Conversion with as.logical()  
+3. **Working with Vectors**  
+   → Creating vectors with `c()`  
+   - Subsetting with `[ ]`  
+   - Accessing single and multiple elements  
+   - Using logical vectors for subsetting  
+   - Understanding type conversion  
 
 </div>
 
@@ -372,6 +383,18 @@ myFirstSequence
 
 ### Subsetting with [ ]
 
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+3. **Working with Vectors**  
+   - Creating vectors with `c()`  
+   → Subsetting with `[ ]`  
+   - Accessing single and multiple elements  
+   - Using logical vectors for subsetting  
+   - Understanding type conversion  
+
+</div>
+
 <!-- STEP 1: EXPLAIN THE CONCEPT -->
 <div class="callout callout-concept">
 <div class="callout-title">Subsetting Vectors</div>
@@ -387,6 +410,18 @@ myFirstSequence
 
 <!-- STEP 2: DEMONSTRATE - Simple Example -->
 ### Demonstration: Accessing Single Elements
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+3. **Working with Vectors**  
+   - Creating vectors with `c()`  
+   - Subsetting with `[ ]`  
+   → Accessing single and multiple elements  
+   - Using logical vectors for subsetting  
+   - Understanding type conversion  
+
+</div>
 
 Let's start simple - getting just one element by its position:
 
@@ -499,6 +534,18 @@ myvector[c(2, 4)]  # Returns 16 and 18
 
 <!-- NEW CONCEPT: LOGICAL SUBSETTING -->
 ### Access by Logical Vector
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+3. **Working with Vectors**  
+   - Creating vectors with `c()`  
+   - Subsetting with `[ ]`  
+   - Accessing single and multiple elements  
+   → Using logical vectors for subsetting  
+   - Understanding type conversion  
+
+</div>
 
 <!-- STEP 1: EXPLAIN THE CONCEPT -->
 <div class="callout callout-concept">
@@ -621,6 +668,18 @@ myvector[c(FALSE, TRUE, FALSE, TRUE, FALSE)]
 <!-- NEW CONCEPT: TYPE CONVERSION -->
 ### Understanding Type Conversion
 
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+3. **Working with Vectors**  
+   - Creating vectors with `c()`  
+   - Subsetting with `[ ]`  
+   - Accessing single and multiple elements  
+   - Using logical vectors for subsetting  
+   → Understanding type conversion  
+
+</div>
+
 <!-- STEP 1: EXPLAIN THE CONCEPT -->
 <div class="callout callout-concept">
 <div class="callout-title">Automatic Type Conversion</div>
@@ -713,11 +772,10 @@ myFirstVector[as.logical(someothervector)]
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-**Vector Operations**  
-- Demonstration: Multiplication by a Constant  
-- Demonstration: Multiplying Two Vectors (Same Length)  
-- Demonstration: Different Size Vectors (Recycling)  
-- Your Turn: Practice Vector Operations  
+4. **Vector Operations**  
+   → Multiplication by constants  
+   - Element-wise operations  
+   - Vector recycling  
 
 </div>
 
@@ -766,6 +824,16 @@ someothervector * 0.5
 <!-- STEP 3: DEMONSTRATE - Vector by Vector (Same Size) -->
 ### Demonstration: Multiplying Two Vectors (Same Length)
 
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+4. **Vector Operations**  
+   - Multiplication by constants  
+   → Element-wise operations  
+   - Vector recycling  
+
+</div>
+
 Multiply `someothervector` by `1:5` (element by element) and observe the result:
 
 ```{r mult-same-demo, exercise=TRUE, exercise.setup="shared-data"}
@@ -796,6 +864,16 @@ someothervector * 1:5
 
 <!-- STEP 4: DEMONSTRATE - Vector Recycling -->
 ### Demonstration: Different Size Vectors (Recycling)
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+4. **Vector Operations**  
+   - Multiplication by constants  
+   - Element-wise operations  
+   → Vector recycling  
+
+</div>
 
 Multiply `someothervector` (length 5) by `c(0.3, 0.1)` (length 2) and observe how R recycles the shorter vector:
 
@@ -889,10 +967,9 @@ myvector * c(0.1, 0.2)
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-**Comparisons and Subsetting**  
-- Demonstration: Comparison Operators  
-- Demonstration: Conditional Subsetting  
-- Your Turn: Practice Conditional Subsetting  
+5. **Comparisons and Subsetting**  
+   → Using comparison operators  
+   - Conditional subsetting and filtering  
 
 </div>
 
@@ -946,6 +1023,15 @@ someothervector > 0
 
 <!-- STEP 3: DEMONSTRATE - Using Comparisons for Subsetting -->
 ### Demonstration: Conditional Subsetting
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+5. **Comparisons and Subsetting**  
+   - Using comparison operators  
+   → Conditional subsetting and filtering  
+
+</div>
 
 Subset `someothervector` to get only elements greater than 0:
 
@@ -1026,11 +1112,9 @@ myvector[myvector < 17]  # Returns 15 and 16
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-**Logical Operators**  
-- Demonstration: Basic Logical Operations  
-- Demonstration: Multi-Condition Filtering  
-- Your Turn: Practice Logical Operators  
-- Extra Challenge!  
+6. **Logical Operators**  
+   → Understanding AND, OR, NOT  
+   - Multi-condition filtering  
 
 </div>
 
@@ -1089,6 +1173,15 @@ firstLogical | secondLogical
 
 <!-- STEP 3: DEMONSTRATE - Combining Conditions for Filtering -->
 ### Demonstration: Multi-Condition Filtering
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+6. **Logical Operators**  
+   - Understanding AND, OR, NOT  
+   → Multi-condition filtering  
+
+</div>
 
 Create a `numbers` vector `c(5, 10, 15, 20, 25)`. Use `&` to find numbers between 10 and 20 (inclusive), then use the condition for subsetting:
 
@@ -1188,11 +1281,10 @@ myvector[c(FALSE, TRUE)]  # Uses recycling: positions 2 and 4
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-**Functions and Help**  
-- Demonstration: Vector Structure Functions  
-- Demonstration: Mathematical Functions  
-- Your Turn: Practice Using Functions  
-- Getting Help in R  
+7. **Functions and Help**  
+   → Vector structure functions  
+   - Mathematical functions  
+   - Getting help in R
 
 </div>
 
@@ -1244,6 +1336,16 @@ table(someothervector)
 
 <!-- STEP 3: DEMONSTRATE - Math Functions -->
 ### Demonstration: Mathematical Functions
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+7. **Functions and Help**  
+   - Vector structure functions  
+   → Mathematical functions  
+   - Getting help in R
+
+</div>
 
 Calculate `sum()`, `mean()`, `sd()`, and `summary()` of `someothervector`:
 
@@ -1316,6 +1418,16 @@ sd(myvector)
 <!-- STEP 5: GETTING HELP -->
 ### Getting Help in R
 
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+7. **Functions and Help**  
+   - Vector structure functions  
+   - Mathematical functions  
+   → Getting help in R
+
+</div>
+
 <div class="callout callout-info">
 <div class="callout-title">Help Resources</div>
 
@@ -1386,4 +1498,18 @@ Save this completed tutorial as an HTML file for future reference.
 
 ```{r download-ui, echo=FALSE}
 HTML('<button onclick="window.downloadTutorial(); return false;" class="btn-download-tutorial" style="display: block; margin: 20px auto;">📥 Download Tutorial as HTML</button>')
+```
+
+---
+
+## Please Give Feedback!
+
+<div class="callout callout-success">
+<div class="callout-title">💬 Your Feedback Matters</div>
+
+Help us improve this tutorial! Share your experience and suggestions.
+</div>
+
+```{r feedback-ui, echo=FALSE}
+HTML('<a href="https://forms.gle/B7Wy7G29wQTuEKjU9" target="_blank" style="display: block; margin: 20px auto; padding: 15px 30px; background-color: #28a745; color: white; text-align: center; text-decoration: none; border-radius: 5px; font-weight: bold; max-width: 300px;">📝 Please Give Feedback!</a>')
 ```
