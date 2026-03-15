@@ -64,7 +64,61 @@ Welcome to **Introduction to R**
 
 ---
 
+## What You Will Learn
+
+<div class="callout callout-success">
+<div class="callout-title">Tutorial Contents</div>
+
+In this tutorial, you will master the fundamentals of R programming:
+
+1. **Getting Started with R**  
+   - Using R as a calculator  
+   - Understanding the modulo operator  
+   
+2. **Variables and Data Structures**  
+   - Creating variables and vectors  
+   - Understanding R data structures (vectors, matrices, data frames, lists, factors)  
+   
+3. **Working with Vectors**  
+   - Creating vectors with `c()`  
+   - Subsetting with `[ ]`  
+   - Accessing single and multiple elements  
+   - Using logical vectors for subsetting  
+   - Understanding type conversion  
+   
+4. **Vector Operations**  
+   - Multiplication by constants  
+   - Element-wise operations  
+   - Vector recycling  
+   
+5. **Comparisons and Subsetting**  
+   - Using comparison operators  
+   - Conditional subsetting and filtering  
+   
+6. **Logical Operators**  
+   - Understanding AND, OR, NOT  
+   - Multi-condition filtering  
+   
+7. **Functions and Help**  
+   - Vector structure functions  
+   - Mathematical functions  
+   - Getting help in R
+
+</div>
+
+---
+
 ## Getting Started with R
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Getting Started with R**  
+- How can we use R and RStudio?  
+- Try it!  
+- What have we learned so far?  
+
+</div>
 
 <div class="callout callout-info">
 <div class="callout-title">R as a Calculator</div>
@@ -135,6 +189,15 @@ Can you guess what %% does?
 
 
 ## Variables and Data Structures
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Variables and Data Structures**  
+- Data Structures in R  
+
+</div>
+
 <div class="callout callout-concept">
 <div class="callout-title">What are Vectors?</div>
 
@@ -211,17 +274,17 @@ Levels: low medium high
 
 Here is an examples of how basic R data structure are created: vector, matrix, data frame, list, and factor:
 
-```{r data-structures-visual, exercise=TRUE}
+```{r data-structures-visual, exercise=TRUE, exercise.setup="shared-data"}
 my_vector <- c(1, 2, 3, 4, 5)
 my_vector
 ```
 
-```{r data-structures-visual2, exercise=TRUE}
+```{r data-structures-visual2, exercise=TRUE, exercise.setup="shared-data"}
 my_matrix <- matrix(1:9, nrow=3, ncol=3)
 my_matrix
 ```
 
-```{r data-structures-visual3, exercise=TRUE}
+```{r data-structures-visual3, exercise=TRUE, exercise.setup="shared-data"}
 
 my_df <- data.frame(
   name = c("Anna", "Bob", "Chris"),
@@ -230,7 +293,7 @@ my_df <- data.frame(
 )
 my_df
 ```
-```{r data-structures-visual4, exercise=TRUE}
+```{r data-structures-visual4, exercise=TRUE, exercise.setup="shared-data"}
 
 my_list <- list(
   numbers = 1:5,
@@ -239,23 +302,41 @@ my_list <- list(
 )
 my_list
 ```
-```{r data-structures-visual5, exercise=TRUE}
+```{r data-structures-visual5, exercise=TRUE, exercise.setup="shared-data"}
 
 my_factor <- factor(c("low", "high", "medium", "high"),
                     levels = c("low", "medium", "high"))
 my_factor
 ```
 
-**Key Differences:**  
-
-- **Vector & Matrix**: All elements must be the same type (numeric, character, etc.)  
-- **Data Frame**: Each column can be a different type (like a spreadsheet)  
-- **List**: Most flexible - can contain any mix of objects  
-- **Factor**: Stores categorical data efficiently with predefined levels  
+**Key Differences:**
+- **Vector & Matrix**: All elements must be the same type (numeric, character, etc.)
+- **Data Frame**: Each column can be a different type (like a spreadsheet)
+- **List**: Most flexible - can contain any mix of objects
+- **Factor**: Stores categorical data efficiently with predefined levels
 
 ---
 
 ## Working with Vectors
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Working with Vectors**  
+- Creating Vectors with c()  
+- Subsetting with [ ]  
+- Demonstration: Accessing Single Elements  
+- Demonstration: Accessing Multiple Elements  
+- Your Turn: Practice Subsetting by Position  
+- Access by Logical Vector  
+- Demonstration: Using TRUE/FALSE to Select Elements  
+- Demonstration: Storing Logical Vectors  
+- Your Turn: Practice Logical Subsetting  
+- Understanding Type Conversion  
+- Demonstration: Numbers as Logical Vectors  
+- Demonstration: Explicit Conversion with as.logical()  
+
+</div>
 
 <div class="callout callout-concept">
 <div class="callout-title">What are Vectors?</div>
@@ -627,7 +708,18 @@ myFirstVector[as.logical(someothervector)]
 ---
 
 <!-- NEW MAJOR SECTION: VECTOR OPERATIONS -->
-## -> Vectorised Operations
+## Vector Operations
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Vector Operations**  
+- Demonstration: Multiplication by a Constant  
+- Demonstration: Multiplying Two Vectors (Same Length)  
+- Demonstration: Different Size Vectors (Recycling)  
+- Your Turn: Practice Vector Operations  
+
+</div>
 
 <!-- STEP 1: EXPLAIN THE CONCEPT -->
 <div class="callout callout-concept">
@@ -792,7 +884,17 @@ myvector * c(0.1, 0.2)
 ---
 
 <!-- NEW CONCEPT: COMPARISONS AND FILTERING -->
-## -> Comparisons and Filtering
+## Comparisons and Subsetting
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Comparisons and Subsetting**  
+- Demonstration: Comparison Operators  
+- Demonstration: Conditional Subsetting  
+- Your Turn: Practice Conditional Subsetting  
+
+</div>
 
 <!-- STEP 1: EXPLAIN THE CONCEPT -->
 <div class="callout callout-concept">
@@ -920,6 +1022,17 @@ myvector[myvector < 17]  # Returns 15 and 16
 
 <!-- NEW CONCEPT: LOGICAL OPERATORS -->
 ## Logical Operators
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Logical Operators**  
+- Demonstration: Basic Logical Operations  
+- Demonstration: Multi-Condition Filtering  
+- Your Turn: Practice Logical Operators  
+- Extra Challenge!  
+
+</div>
 
 <!-- STEP 1: EXPLAIN THE CONCEPT -->
 <div class="callout callout-concept">
@@ -1072,6 +1185,17 @@ myvector[c(FALSE, TRUE)]  # Uses recycling: positions 2 and 4
 <!-- NEW CONCEPT: FUNCTIONS -->
 ## Functions and Help
 
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Functions and Help**  
+- Demonstration: Vector Structure Functions  
+- Demonstration: Mathematical Functions  
+- Your Turn: Practice Using Functions  
+- Getting Help in R  
+
+</div>
+
 <!-- STEP 1: EXPLAIN THE CONCEPT -->
 <div class="callout callout-concept">
 <div class="callout-title">Built-in Functions</div>
@@ -1190,7 +1314,7 @@ sd(myvector)
 ---
 
 <!-- STEP 5: GETTING HELP -->
-## Getting Help in R
+### Getting Help in R
 
 <div class="callout callout-info">
 <div class="callout-title">Help Resources</div>

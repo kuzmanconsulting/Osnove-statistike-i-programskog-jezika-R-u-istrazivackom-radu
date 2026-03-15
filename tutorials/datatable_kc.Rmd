@@ -74,9 +74,64 @@ Welcome to **Data.table in R**
 - **Memory efficient** - works by reference, not copies
 </div>
 
+<div class="callout callout-success">
+<div class="callout-title">What You Will Learn</div>
+
+In this tutorial, you will master data.table for high-performance data manipulation:
+
+1. **Getting Started**  
+   - Introduction to data.table  
+   - Installing and loading data.table  
+   - Converting to data.table  
+   - Understanding DT[i, j, by] syntax  
+   
+2. **Basic Operations**  
+   - Selecting rows  
+   - Selecting columns  
+   - Column selection with variables  
+   - Range and exclusion operations  
+   
+3. **Aggregations and Groups**  
+   - Operations on columns  
+   - Grouping with by  
+   - Multiple statistics by group  
+   - Using .N for counting  
+   - Grouping by multiple variables  
+   
+4. **Modifying Data**  
+   - The := operator  
+   - Adding new columns  
+   - Adding multiple columns  
+   - Sub-assignment by reference  
+   
+5. **Advanced Features**  
+   - Keys for faster operations  
+   - .SD and .SDcols  
+   - .I and .GRP special symbols  
+   - Reshaping with melt and dcast  
+   - Merging and joining data tables  
+   - Rolling and overlapping joins  
+
+</div>
+
 ---
 
 ## Getting Started
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Getting Started**  
+- Introduction  
+- Sample Data  
+- Loading the Library  
+- Installation  
+- Loading  
+- Converting to data.table  
+- data.table Syntax  
+- All You Need to Know:  
+
+</div>
 
 <div class="callout callout-info">
 <div class="callout-title">What is data.table?</div>
@@ -205,6 +260,23 @@ ddf_dt
 ---
 
 ## Basic Operations
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Basic Operations**  
+- Selecting Rows  
+- Example: Height > 180  
+- Selecting Columns  
+- Show Age and Continent of First 5 People  
+- Using Column Names as Variables  
+- More Column Selection  
+- Range of Columns  
+- Exclude Columns  
+- Negate Selection  
+- Exercise 1: iris Basics  
+
+</div>
 
 <div class="callout callout-concept">
 <div class="callout-title">The DT[i, j, by] Syntax</div>
@@ -403,6 +475,21 @@ iris_dt[Sepal.Length < 6.7, .(Sepal.Length, Species)]
 ## Aggregations and Groups
 
 <div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Aggregations and Groups**  
+- Operations on Columns  
+- Calculate Mean  
+- Mean by Groups  
+- Multiple Statistics by Group  
+- Special Symbols: .N  
+- Group by Multiple Variables  
+- Exercise: Count by Group  
+- Exercise 2: iris Operations  
+
+</div>
+
+<div class="callout callout-success">
 <div class="callout-title">Group Operations</div>
 
 The `by` parameter is where data.table truly shines. Compute statistics **by groups** with lightning-fast performance - essential for data analysis!
@@ -594,6 +681,19 @@ iris_dt[Sepal.Length < 6.7 & Species == "virginica", .N, by = .(Sepal.Width > 3)
 
 ## Modifying Data
 
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Modifying Data**  
+- Adding New Columns  
+- Use := to Add a Column  
+- Add Multiple Columns  
+- Exercise 3: Add Columns to iris  
+- Special Symbols: .I and .GRP  
+- Exercise 4: Advanced Operations  
+
+</div>
+
 <div class="callout callout-concept">
 <div class="callout-title">The Walrus Operator: :=</div>
 
@@ -775,6 +875,29 @@ iris_dt
 ---
 
 ## Advanced Features
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Advanced Features**  
+- Keys for Faster Operations  
+- Apply function to multiple columns  
+- Select first and last row per group  
+- Exercise 5: Advanced .SD  
+- Reshape with dcast & melt  
+- Suppress Output with {}  
+- Exercise: How many people are obese (BMI > 25)?  
+- Merging Data Tables  
+- Define Dummy Data  
+- Merge by Variable  
+- Other Join Types  
+- data.table Join Syntax  
+- Rolling Joins  
+- Forward Join  
+- Backward Join  
+- Overlapping Joins  
+
+</div>
 
 <div class="callout callout-tip">
 <div class="callout-title">Advanced Techniques</div>

@@ -72,17 +72,61 @@ Welcome to **Data Visualization with ggplot2**
 
 
 <div class="callout callout-success">
-<div class="callout-title">What You'll Learn</div>
+<div class="callout-title">What You Will Learn</div>
 
-- Creating visualizations using the Grammar of Graphics  
-- Mastering ggplot2's layered approach  
-- Customizing plots with themes, colors, and facets  
-- Making publication-ready graphics
+In this tutorial, you will master data visualization with ggplot2:
+
+1. **Installation**  
+   - Installing packages  
+   - Loading libraries  
+   - Sample data  
+   
+2. **Variable Types**  
+   - Categorical variables  
+   - Quantitative variables  
+   
+3. **Graphs for One Variable**  
+   - Categorical variable: Bar chart  
+   - Quantitative variable: Density plot  
+   
+4. **Graphs with Two Variables**  
+   - Continuous X, Continuous Y: Scatterplot  
+   - Discrete X, Continuous Y: Boxplot, Violin plot  
+   - Discrete X, Discrete Y: Bar charts  
+   
+5. **ggplot2 vs Base R**  
+   - Comparing approaches  
+   - Why ggplot2?  
+   
+6. **Basic ggplot Logic**  
+   - The ggplot() function  
+   - Mapping aesthetics with aes()  
+   - Layers and the + operator  
+   - Geometric objects (geoms)  
+   
+7. **Practical Examples**  
+   - Step-by-step plot building  
+   - Adding layers and customization  
+   - Faceting for subplots  
+   
+8. **Interactive Plots**  
+   - Making plots interactive with plotly  
+
 </div>
 
 ---
 
 ## Installation
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Installation**  
+- Installing Packages  
+- Loading Libraries  
+- Sample Data  
+
+</div>
 
 ### Installing Packages
 
@@ -146,6 +190,15 @@ tidy
 
 ## Variable Types
 
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Variable Types**  
+- Categorical Variables  
+- Quantitative Variables  
+
+</div>
+
 <div class="callout callout-concept">
 <div class="callout-title">Choosing the Right Visualization</div>
 
@@ -165,6 +218,15 @@ The type of visualization you choose depends on your **variable types**. Categor
 ---
 
 ## Graphs for One Variable
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Graphs for One Variable**  
+- Categorical Variable: Bar Chart  
+- Quantitative Variable: Density Plot  
+
+</div>
 
 ### Categorical Variable: Bar Chart
 
@@ -213,6 +275,14 @@ ggplot(tidy, aes(Height, fill = Gender)) +
 ---
 
 ## Graphs with Two Variables
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Graphs with Two Variables**  
+- Continuous X, Continuous Y: Scatterplot  
+
+</div>
 
 ### Continuous X, Continuous Y: Scatterplot
 
@@ -336,6 +406,15 @@ ggplot(tidy, aes(Gender, Height, fill = Continent)) +
 
 ## ggplot2 vs Base R
 
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**ggplot2 vs Base R**  
+- Base R Plot  
+- ggplot2 Plot  
+
+</div>
+
 ### Base R Plot
 
 Use base R `plot()` to create a scatterplot of `iris$Sepal.Length` vs `iris$Petal.Length`, colored by `iris$Species`:
@@ -404,6 +483,14 @@ ggplot2 is based on the **Grammar of Graphics** - a consistent system for buildi
 ---
 
 ## Basic ggplot Logic
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Basic ggplot Logic**  
+- ggplot(data, aes(x, y))  
+
+</div>
 
 <div class="callout callout-info">
 <div class="callout-title">The ggplot2 Formula</div>
@@ -544,6 +631,17 @@ Common geoms:
 
 ## Example 1: Step-by-Step
 
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Example 1: Step-by-Step**  
+- Step 1: Set Basic Layout  
+- Step 2: Add points  
+- Step 3:  Color and Boxplot   
+- Step 4: Add Boxplot Layer  
+
+</div>
+
 ### Step 1: Set Basic Layout
 
 X axis is categorical, Y axis is numerical.
@@ -668,6 +766,15 @@ p + geom_point(aes(color = Petal.Length)) +
 ---
 
 ## Example 2: Numerical vs Numerical
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+**Example 2: Numerical vs Numerical**  
+- Step 1: Set Layout  
+- Step 2: Add Points  
+
+</div>
 
 ### Step 1: Set Layout
 
