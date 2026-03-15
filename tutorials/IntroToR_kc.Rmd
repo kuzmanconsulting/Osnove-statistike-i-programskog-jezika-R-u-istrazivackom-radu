@@ -25,11 +25,28 @@ setup_branding_server()
 ```
 
 ```{r shared-data, exercise.setup=TRUE, include=FALSE}
-# Shared data for exercises
+# Load shared data for exercises
+library(data.table)
+
+# IntroToR variables
 myFirstNumber <- 0.1
 myFirstVector <- c("some words","p","awesome", "last one")
 myFirstSequence <- 1:4
 someothervector <- c(1,0,1,0,1)
+myvector <- c(15, 16, 17, 18, 20)
+
+# data.table datasets
+ddf <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/tidyData.txt", header=T)
+ddf_dt <- as.data.table(ddf)
+iris_dt <- as.data.table(iris)
+
+# ggplot2 datasets
+tidy <- ddf
+works <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/works.txt", header = T)
+works$Grade <- factor(works$Grade, levels=c("Extremely bad", "Below average", "Average", "Good", "Excellent"))
+df <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/df.txt", header=TRUE, fill=T)
+colnames(df) <- "recommend"
+df$recommend <- factor(df$recommend, levels=c("Strongly no","No", "Maybe", "Yes", "Strongly yes"))
 ```
 
 ## Welcome
@@ -61,9 +78,20 @@ R can perform mathematical operations just like a calculator. This is your first
 - Script
 - Notebook (add new chunk: Ctrl + Alt + I)
 
-```{r calculator-demo, exercise=TRUE}
-1 + 1
+Try using R as a calculator. Type `1 + 1` and run the code:
 
+```{r calculator-demo, exercise=TRUE}
+# Use R as a calculator
+
+
+```
+
+```{r calculator-demo-hint}
+1 + 1
+```
+
+```{r calculator-demo-solution}
+1 + 1
 ```
 
 ### Try it!
@@ -117,11 +145,24 @@ Vectors are the fundamental data structure in R. They store multiple values of t
 
 Variables store values that you can reuse throughout your code. In R, we use the assignment operator `<-` to assign values to variables.
 
+Create a variable `myFirstNumber` with value `0.1` and a vector `myFirstVector` with `c(2, 3, 7, 8)`. Print `myFirstNumber`:
+
 ```{r variables-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Create variables and print them
+
+
+```
+
+```{r variables-demo-hint}
 myFirstNumber <- 0.1
 myFirstVector <- c(2, 3, 7, 8)
+print(myFirstNumber)
+myFirstNumber
+```
 
-# Call the variable by name
+```{r variables-demo-solution}
+myFirstNumber <- 0.1
+myFirstVector <- c(2, 3, 7, 8)
 print(myFirstNumber)
 myFirstNumber
 ```
@@ -169,18 +210,43 @@ Levels: low medium high
 
 </div>
 
-```{r data-structures-visual, exercise=TRUE}
-# Examples of each data structure:
+Create examples of each R data structure: vector, matrix, data frame, list, and factor:
 
-# 1. VECTOR (atomic, homogeneous)
+```{r data-structures-visual, exercise=TRUE}
+# Create examples of each data structure
+
+
+```
+
+```{r data-structures-visual-hint}
+# 1. VECTOR
 my_vector <- c(1, 2, 3, 4, 5)
 my_vector
 
-# 2. MATRIX (2D, homogeneous)
+# 2. MATRIX
 my_matrix <- matrix(1:9, nrow=3, ncol=3)
 my_matrix
 
-# 3. DATA FRAME (2D table, heterogeneous columns)
+# 3. DATA FRAME
+my_df <- data.frame(name = c("Anna", "Bob"), age = c(25, 30))
+my_df
+
+# 4. LIST
+my_list <- list(numbers = 1:5, text = "hello")
+my_list
+
+# 5. FACTOR
+my_factor <- factor(c("low", "high", "medium", "high"), levels = c("low", "medium", "high"))
+my_factor
+```
+
+```{r data-structures-visual-solution}
+my_vector <- c(1, 2, 3, 4, 5)
+my_vector
+
+my_matrix <- matrix(1:9, nrow=3, ncol=3)
+my_matrix
+
 my_df <- data.frame(
   name = c("Anna", "Bob", "Chris"),
   age = c(25, 30, 22),
@@ -188,7 +254,6 @@ my_df <- data.frame(
 )
 my_df
 
-# 4. LIST (can contain anything)
 my_list <- list(
   numbers = 1:5,
   text = "hello",
@@ -196,7 +261,6 @@ my_list <- list(
 )
 my_list
 
-# 5. FACTOR (categorical)
 my_factor <- factor(c("low", "high", "medium", "high"),
                     levels = c("low", "medium", "high"))
 my_factor
@@ -212,11 +276,24 @@ my_factor
 
 You can make a vector using the function `c()` (concatenate).
 
+Create `myFirstVector` with `c("some words", "p", "awesome", "last one")` and `myFirstSequence` with `1:4`, then print them:
+
 ```{r vector-creation, exercise=TRUE, exercise.setup="shared-data"}
+# Create vectors and display them
+
+
+```
+
+```{r vector-creation-hint}
 myFirstVector <- c("some words", "p", "awesome", "last one")
 myFirstSequence <- 1:4
+myFirstVector
+myFirstSequence
+```
 
-# Print the vectors
+```{r vector-creation-solution}
+myFirstVector <- c("some words", "p", "awesome", "last one")
+myFirstSequence <- 1:4
 myFirstVector
 myFirstSequence
 ```
@@ -241,12 +318,24 @@ myFirstSequence
 
 Let's start simple - getting just one element by its position:
 
+Display `myFirstVector` and `myFirstSequence`, then get the 3rd element from each using `[3]`:
+
 ```{r subsetting-single, exercise=TRUE, exercise.setup="shared-data"}
-# Look at our vectors first
+# Get the 3rd element from each vector
+
+
+```
+
+```{r subsetting-single-hint}
 myFirstVector
 myFirstSequence
+myFirstVector[3]
+myFirstSequence[3]
+```
 
-# Get the 3rd element from each
+```{r subsetting-single-solution}
+myFirstVector
+myFirstSequence
 myFirstVector[3]
 myFirstSequence[3]
 ```
@@ -263,11 +352,22 @@ myFirstSequence[3]
 
 Now let's get multiple elements at once:
 
+Get elements at positions 1 and 3 from `myFirstVector` using `c()`, then try storing positions in a variable:
+
 ```{r subsetting-multiple-demo, exercise=TRUE, exercise.setup="shared-data"}
 # Get elements at positions 1 and 3
-myFirstVector[c(1, 3)]
 
-# We can also use a variable to store positions
+
+```
+
+```{r subsetting-multiple-demo-hint}
+myFirstVector[c(1, 3)]
+positions <- c(1, 2, 4)
+myFirstVector[positions]
+```
+
+```{r subsetting-multiple-demo-solution}
+myFirstVector[c(1, 3)]
 positions <- c(1, 2, 4)
 myFirstVector[positions]
 ```
@@ -344,13 +444,22 @@ The logical vector must be the same length as your data vector.
 <!-- STEP 2: DEMONSTRATE - Simple Example -->
 ### Demonstration: Using TRUE/FALSE to Select Elements
 
-```{r logical-subsetting-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Our vector
-myFirstVector
+Use `TRUE/FALSE` values to select elements from `myFirstVector`. Select the 1st and 3rd elements:
 
-# Use TRUE/FALSE to select
+```{r logical-subsetting-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Use TRUE/FALSE to select elements
+
+
+```
+
+```{r logical-subsetting-demo-hint}
+myFirstVector
 myFirstVector[c(TRUE, FALSE, TRUE, FALSE)]
-# Result: 1st and 3rd elements (where TRUE)
+```
+
+```{r logical-subsetting-demo-solution}
+myFirstVector
+myFirstVector[c(TRUE, FALSE, TRUE, FALSE)]
 ```
 
 **What's happening here?**
@@ -366,11 +475,21 @@ myFirstVector[c(TRUE, FALSE, TRUE, FALSE)]
 
 You can save logical vectors in variables:
 
-```{r logical-variable-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Create a logical vector
-my_selection <- c(TRUE, TRUE, FALSE, FALSE)
+Create a logical vector `my_selection` and use it to subset `myFirstVector`:
 
-# Use it for subsetting
+```{r logical-variable-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Store a logical vector and use it for subsetting
+
+
+```
+
+```{r logical-variable-demo-hint}
+my_selection <- c(TRUE, TRUE, FALSE, FALSE)
+myFirstVector[my_selection]
+```
+
+```{r logical-variable-demo-solution}
+my_selection <- c(TRUE, TRUE, FALSE, FALSE)
 myFirstVector[my_selection]
 ```
 
@@ -446,11 +565,21 @@ You can also convert explicitly using `as.logical()`, `as.numeric()`, etc.
 <!-- STEP 2: DEMONSTRATE - Automatic Conversion -->
 ### Demonstration: Numbers as Logical Vectors
 
-```{r conversion-demo, exercise=TRUE, exercise.setup="shared-data"}
-# A numeric vector with 0s and 1s
-someothervector <- c(1, 0, 1, 0, 1)
+Use `someothervector` (which contains 1s and 0s) to subset `myFirstVector`. Observe how R converts numbers to logical:
 
-# Use it to subset (R converts to logical!)
+```{r conversion-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Use a numeric vector with 0s and 1s to subset
+
+
+```
+
+```{r conversion-demo-hint}
+someothervector <- c(1, 0, 1, 0, 1)
+myFirstVector[someothervector]
+```
+
+```{r conversion-demo-solution}
+someothervector <- c(1, 0, 1, 0, 1)
 myFirstVector[someothervector]
 ```
 
@@ -465,13 +594,23 @@ myFirstVector[someothervector]
 <!-- STEP 3: DEMONSTRATE - Explicit Conversion -->
 ### Demonstration: Explicit Conversion with as.logical()
 
+Explicitly convert `someothervector` to logical using `as.logical()` and use it to subset `myFirstVector`:
+
 ```{r explicit-conversion-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Explicitly convert to logical and subset
+
+
+```
+
+```{r explicit-conversion-demo-hint}
 someothervector <- c(1, 0, 1, 0, 1)
-
-# Explicitly convert to logical
 as.logical(someothervector)
+myFirstVector[as.logical(someothervector)]
+```
 
-# Use for subsetting
+```{r explicit-conversion-demo-solution}
+someothervector <- c(1, 0, 1, 0, 1)
+as.logical(someothervector)
 myFirstVector[as.logical(someothervector)]
 ```
 
@@ -516,7 +655,20 @@ One of R's most powerful features is **vectorized operations**:
 <!-- STEP 2: DEMONSTRATE - Simple Operations -->
 ### Demonstration: Multiplication by a Constant
 
+Multiply `someothervector` by `0.5` and observe the element-wise result:
+
 ```{r mult-constant-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Multiply vector by a constant
+
+
+```
+
+```{r mult-constant-demo-hint}
+someothervector
+someothervector * 0.5
+```
+
+```{r mult-constant-demo-solution}
 someothervector
 someothervector * 0.5
 ```
@@ -531,11 +683,23 @@ someothervector * 0.5
 <!-- STEP 3: DEMONSTRATE - Vector by Vector (Same Size) -->
 ### Demonstration: Multiplying Two Vectors (Same Length)
 
+Multiply `someothervector` by `1:5` (element by element) and observe the result:
+
 ```{r mult-same-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Multiply two vectors of same length
+
+
+```
+
+```{r mult-same-demo-hint}
 someothervector
 1:5
+someothervector * 1:5
+```
 
-# Element-by-element multiplication
+```{r mult-same-demo-solution}
+someothervector
+1:5
 someothervector * 1:5
 ```
 
@@ -550,11 +714,23 @@ someothervector * 1:5
 <!-- STEP 4: DEMONSTRATE - Vector Recycling -->
 ### Demonstration: Different Size Vectors (Recycling)
 
-```{r mult-recycle-demo, exercise=TRUE, exercise.setup="shared-data"}
-someothervector  # Length 5
-c(0.3, 0.1)      # Length 2
+Multiply `someothervector` (length 5) by `c(0.3, 0.1)` (length 2) and observe how R recycles the shorter vector:
 
-# R recycles the shorter vector
+```{r mult-recycle-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Multiply vectors of different lengths (recycling)
+
+
+```
+
+```{r mult-recycle-demo-hint}
+someothervector
+c(0.3, 0.1)
+someothervector * c(0.3, 0.1)
+```
+
+```{r mult-recycle-demo-solution}
+someothervector
+c(0.3, 0.1)
 someothervector * c(0.3, 0.1)
 ```
 
@@ -647,13 +823,23 @@ These logical vectors can be used for **conditional subsetting** - one of the mo
 <!-- STEP 2: DEMONSTRATE - Simple Comparisons -->
 ### Demonstration: Comparison Operators
 
+Check which elements of `someothervector` equal 1 (`== 1`) and which are greater than 0 (`> 0`):
+
 ```{r comparison-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Use comparison operators
+
+
+```
+
+```{r comparison-demo-hint}
 someothervector
-
-# Which elements equal 1?
 someothervector == 1
+someothervector > 0
+```
 
-# Which elements are greater than 0?
+```{r comparison-demo-solution}
+someothervector
+someothervector == 1
 someothervector > 0
 ```
 
@@ -668,10 +854,21 @@ someothervector > 0
 <!-- STEP 3: DEMONSTRATE - Using Comparisons for Subsetting -->
 ### Demonstration: Conditional Subsetting
 
-```{r subset-by-comparison-demo, exercise=TRUE, exercise.setup="shared-data"}
-someothervector
+Subset `someothervector` to get only elements greater than 0:
 
-# Get only elements greater than 0
+```{r subset-by-comparison-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Filter to keep only elements > 0
+
+
+```
+
+```{r subset-by-comparison-demo-hint}
+someothervector
+someothervector[someothervector > 0]
+```
+
+```{r subset-by-comparison-demo-solution}
+someothervector
 someothervector[someothervector > 0]
 ```
 
@@ -750,17 +947,27 @@ These let you create complex filters: "values greater than 10 AND less than 20"
 <!-- STEP 2: DEMONSTRATE - AND, OR, NOT -->
 ### Demonstration: Basic Logical Operations
 
+Create `firstLogical` and `secondLogical` vectors. Then test AND (`&`), OR (`|`), and NOT (`!`) operators:
+
 ```{r logical-ops-demo, exercise=TRUE}
+# Test logical operators: &, |, !
+
+
+```
+
+```{r logical-ops-demo-hint}
 firstLogical <- c(TRUE, TRUE, FALSE, FALSE) 
 secondLogical <- c(TRUE, FALSE, TRUE, FALSE)
-
-# AND: both must be TRUE
 firstLogical & secondLogical
-
-# OR: at least one must be TRUE
 firstLogical | secondLogical
+!firstLogical
+```
 
-# NOT: flip the values
+```{r logical-ops-demo-solution}
+firstLogical <- c(TRUE, TRUE, FALSE, FALSE) 
+secondLogical <- c(TRUE, FALSE, TRUE, FALSE)
+firstLogical & secondLogical
+firstLogical | secondLogical
 !firstLogical
 ```
 
@@ -779,13 +986,23 @@ firstLogical | secondLogical
 <!-- STEP 3: DEMONSTRATE - Combining Conditions for Filtering -->
 ### Demonstration: Multi-Condition Filtering
 
+Create a `numbers` vector `c(5, 10, 15, 20, 25)`. Use `&` to find numbers between 10 and 20 (inclusive), then use the condition for subsetting:
+
 ```{r multi-condition-demo, exercise=TRUE}
+# Filter numbers between 10 and 20
+
+
+```
+
+```{r multi-condition-demo-hint}
 numbers <- c(5, 10, 15, 20, 25)
-
-# Get numbers between 10 and 20 (inclusive)
 numbers >= 10 & numbers <= 20
+numbers[numbers >= 10 & numbers <= 20]
+```
 
-# Use for subsetting
+```{r multi-condition-demo-solution}
+numbers <- c(5, 10, 15, 20, 25)
+numbers >= 10 & numbers <= 20
 numbers[numbers >= 10 & numbers <= 20]
 ```
 
@@ -881,16 +1098,25 @@ Functions take input (arguments) and return output.
 <!-- STEP 2: DEMONSTRATE - Structure Functions -->
 ### Demonstration: Vector Structure Functions
 
+Use `length()`, `unique()`, and `table()` on `someothervector`:
+
 ```{r func-structure-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Explore vector structure with functions
+
+
+```
+
+```{r func-structure-demo-hint}
 someothervector
-
-# How many elements?
 length(someothervector)
-
-# What unique values?
 unique(someothervector)
+table(someothervector)
+```
 
-# Count each value
+```{r func-structure-demo-solution}
+someothervector
+length(someothervector)
+unique(someothervector)
 table(someothervector)
 ```
 
@@ -904,14 +1130,28 @@ table(someothervector)
 <!-- STEP 3: DEMONSTRATE - Math Functions -->
 ### Demonstration: Mathematical Functions
 
-```{r math-functions-demo, exercise=TRUE, exercise.setup="shared-data"}
-someothervector
+Calculate `sum()`, `mean()`, `sd()`, and `summary()` of `someothervector`:
 
-# Calculate statistics
-sum(someothervector)       # Add all elements
-mean(someothervector)      # Average
-sd(someothervector)        # Standard deviation
-summary(someothervector)   # Quick overview
+```{r math-functions-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Calculate statistics on someothervector
+
+
+```
+
+```{r math-functions-demo-hint}
+someothervector
+sum(someothervector)
+mean(someothervector)
+sd(someothervector)
+summary(someothervector)
+```
+
+```{r math-functions-demo-solution}
+someothervector
+sum(someothervector)
+mean(someothervector)
+sd(someothervector)
+summary(someothervector)
 ```
 
 **What's happening here?**
@@ -976,8 +1216,20 @@ help.search("average")
 ```
 </div>
 
+Try `?mean` and `example(runif)` to explore R's help system:
+
 ```{r help-demo, exercise=TRUE, eval=FALSE}
-# Try these commands:
+# Try getting help on functions
+
+
+```
+
+```{r help-demo-hint, eval=FALSE}
+?mean
+example(runif)
+```
+
+```{r help-demo-solution, eval=FALSE}
 ?mean
 example(runif)
 ```

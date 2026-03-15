@@ -27,9 +27,27 @@ setup_branding_server()
 
 ```{r shared-data, exercise.setup=TRUE, include=FALSE}
 # Load shared data for exercises
+library(data.table)
+
+# data.table datasets
 ddf <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/tidyData.txt", header=T)
 ddf_dt <- as.data.table(ddf)
 iris_dt <- as.data.table(iris)
+
+# ggplot2 datasets
+tidy <- ddf
+works <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/works.txt", header = T)
+works$Grade <- factor(works$Grade, levels=c("Extremely bad", "Below average", "Average", "Good", "Excellent"))
+df <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/df.txt", header=TRUE, fill=T)
+colnames(df) <- "recommend"
+df$recommend <- factor(df$recommend, levels=c("Strongly no","No", "Maybe", "Yes", "Strongly yes"))
+
+# IntroToR variables
+myFirstNumber <- 0.1
+myFirstVector <- c("some words","p","awesome", "last one")
+myFirstSequence <- 1:4
+someothervector <- c(1,0,1,0,1)
+myvector <- c(15, 16, 17, 18, 20)
 ```
 
 ## Welcome
@@ -72,13 +90,37 @@ Welcome to **Data.table in R**
 
 We'll use this dataset for examples:
 
+Display the `ddf` dataset by typing its name:
+
 ```{r data-preview, exercise=TRUE, exercise.setup="shared-data"}
+# Display the ddf dataset
+
+
+```
+
+```{r data-preview-hint}
+ddf
+```
+
+```{r data-preview-solution}
 ddf
 ```
 
 And you'll practice on the `iris` dataset:
 
+Display the built-in `iris` dataset:
+
 ```{r iris-preview, exercise=TRUE}
+# Display the iris dataset
+
+
+```
+
+```{r iris-preview-hint}
+iris
+```
+
+```{r iris-preview-solution}
 iris
 ```
 
@@ -90,7 +132,19 @@ iris
 
 If you don't have the package, install it (only once):
 
+Use `install.packages()` to install data.table:
+
 ```{r install-dt, exercise=TRUE, eval=FALSE}
+# Install data.table
+
+
+```
+
+```{r install-dt-hint, eval=FALSE}
+install.packages("data.table")
+```
+
+```{r install-dt-solution, eval=FALSE}
 install.packages("data.table")
 ```
 
@@ -98,7 +152,19 @@ install.packages("data.table")
 
 Load it every session:
 
+Load the data.table library using `library()`:
+
 ```{r load-dt, exercise=TRUE}
+# Load data.table
+
+
+```
+
+```{r load-dt-hint}
+library(data.table)
+```
+
+```{r load-dt-solution}
 library(data.table)
 ```
 
@@ -106,7 +172,20 @@ library(data.table)
 
 If you already have a data frame:
 
+Convert `ddf` to a data.table using `as.data.table()` and display it:
+
 ```{r convert-dt, exercise=TRUE, exercise.setup="shared-data"}
+# Convert ddf to data.table
+
+
+```
+
+```{r convert-dt-hint}
+ddf_dt <- as.data.table(ddf)
+ddf_dt
+```
+
+```{r convert-dt-solution}
 ddf_dt <- as.data.table(ddf)
 ddf_dt
 ```
@@ -144,7 +223,20 @@ This unified syntax makes data.table incredibly powerful and consistent!
 
 How many people are taller than 180?
 
+Filter `ddf_dt` for rows where `Height > 180`, then count how many there are using `nrow()`:
+
 ```{r select-rows, exercise=TRUE, exercise.setup="shared-data"}
+# Select rows where Height > 180 and count them
+
+
+```
+
+```{r select-rows-hint}
+ddf_dt[Height > 180]
+nrow(ddf_dt[Height > 180])
+```
+
+```{r select-rows-solution}
 ddf_dt[Height > 180]
 nrow(ddf_dt[Height > 180])
 ```
@@ -173,7 +265,19 @@ In data.table use **`.`** instead of `c()`
 
 In data.table use `.` instead of `c()` (`.` is short for `list()`):
 
+Select the first 5 rows and only the `Age` and `Continent` columns using `.()` syntax:
+
 ```{r select-cols, exercise=TRUE, exercise.setup="shared-data"}
+# Select Age and Continent for first 5 rows
+
+
+```
+
+```{r select-cols-hint}
+ddf_dt[1:5, .(Age, Continent)]
+```
+
+```{r select-cols-solution}
 ddf_dt[1:5, .(Age, Continent)]
 ```
 
@@ -185,7 +289,20 @@ ddf_dt[1:5, .(Age, Continent)]
 Use the `..` prefix to reference column names stored in variables. The two dots tell data.table: "look up one level in the calling environment".
 </div>
 
+Store column names in a variable `cnames` and use `..` prefix to select those columns for the first 5 rows:
+
 ```{r select-cols-vars, exercise=TRUE, exercise.setup="shared-data"}
+# Use variable with .. prefix to select columns
+
+
+```
+
+```{r select-cols-vars-hint}
+cnames <- c("Age", "Continent")
+ddf_dt[1:5, ..cnames]
+```
+
+```{r select-cols-vars-solution}
 cnames <- c("Age", "Continent")
 ddf_dt[1:5, ..cnames]
 ```
@@ -196,19 +313,55 @@ ddf_dt[1:5, ..cnames]
 
 ### Range of Columns
 
+Select a range of columns from `Age` to `Continent` for the first 3 rows:
+
 ```{r select-range, exercise=TRUE, exercise.setup="shared-data"}
+# Select range of columns
+
+
+```
+
+```{r select-range-hint}
+ddf_dt[1:3, Age:Continent]
+```
+
+```{r select-range-solution}
 ddf_dt[1:3, Age:Continent]
 ```
 
 ### Exclude Columns
 
+Exclude the columns from `Age` to `Continent` using `-()` for the first 3 rows:
+
 ```{r select-exclude, exercise=TRUE, exercise.setup="shared-data"}
+# Exclude a range of columns
+
+
+```
+
+```{r select-exclude-hint}
+ddf_dt[1:3, -(Age:Continent)]
+```
+
+```{r select-exclude-solution}
 ddf_dt[1:3, -(Age:Continent)]
 ```
 
 ### Negate Selection
 
+Negate a selection using `!()` to exclude columns from `Age` to `Gender` for the first 3 rows:
+
 ```{r select-negate, exercise=TRUE, exercise.setup="shared-data"}
+# Negate column selection
+
+
+```
+
+```{r select-negate-hint}
+ddf_dt[1:3, !(Age:Gender)]
+```
+
+```{r select-negate-solution}
 ddf_dt[1:3, !(Age:Gender)]
 ```
 
@@ -259,13 +412,37 @@ The `by` parameter is where data.table truly shines. Compute statistics **by gro
 
 ### Calculate Mean
 
+Calculate the mean of `Height` from `ddf_dt`:
+
 ```{r calc-mean, exercise=TRUE, exercise.setup="shared-data"}
+# Calculate mean Height
+
+
+```
+
+```{r calc-mean-hint}
+ddf_dt[, mean(Height)]
+```
+
+```{r calc-mean-solution}
 ddf_dt[, mean(Height)]
 ```
 
 ### Mean by Groups
 
+Calculate the mean of `Height` grouped by `Gender`:
+
 ```{r mean-by-group, exercise=TRUE, exercise.setup="shared-data"}
+# Mean Height by Gender
+
+
+```
+
+```{r mean-by-group-hint}
+ddf_dt[, mean(Height), by = Gender]
+```
+
+```{r mean-by-group-solution}
 ddf_dt[, mean(Height), by = Gender]
 ```
 
@@ -275,7 +452,25 @@ ddf_dt[, mean(Height), by = Gender]
 
 Calculate mean, sd, max, min for Height, and count per Gender, ordered by mean:
 
+Calculate mean, sd, min, max of Height and count (`.N`) by Gender, then order by mean:
+
 ```{r multiple-stats, exercise=TRUE, exercise.setup="shared-data"}
+# Multiple statistics by Gender, ordered by mean
+
+
+```
+
+```{r multiple-stats-hint}
+ddf_dt[, 
+       .(mean = mean(Height),
+         sd = sd(Height),
+         min_x = min(Height),
+         max_x = max(Height),
+         N = .N),
+       by = Gender][order(mean)]
+```
+
+```{r multiple-stats-solution}
 ddf_dt[, 
        .(mean = mean(Height),
          sd = sd(Height),
@@ -299,7 +494,20 @@ ddf_dt[,
 
 Use `.N` to count rows in your data or within groups:
 
+Use `.N` to count total rows and count rows by `Gender`:
+
 ```{r dot-n, exercise=TRUE, exercise.setup="shared-data"}
+# Count total rows and by Gender
+
+
+```
+
+```{r dot-n-hint}
+ddf_dt[, .N]
+ddf_dt[, .N, by = Gender]
+```
+
+```{r dot-n-solution}
 ddf_dt[, .N]
 ddf_dt[, .N, by = Gender]
 ```
@@ -312,7 +520,19 @@ ddf_dt[, .N, by = Gender]
 You can group by **expressions**, not just column names! This allows for flexible on-the-fly categorization like `Height > 180` without creating new columns.
 </div>
 
+Count rows grouped by `Gender` and whether `Height > 180`:
+
 ```{r multiple-groups, exercise=TRUE, exercise.setup="shared-data"}
+# Count by Gender and Height > 180
+
+
+```
+
+```{r multiple-groups-hint}
+ddf_dt[, .N, by = .(Gender, Height > 180)]
+```
+
+```{r multiple-groups-solution}
 ddf_dt[, .N, by = .(Gender, Height > 180)]
 ```
 
@@ -393,7 +613,20 @@ The `:=` operator modifies data tables **by reference** (in-place) without makin
 
 ### Use := to Add a Column
 
+Add a column `N` with the total count using `:=`:
+
 ```{r add-column, exercise=TRUE, exercise.setup="shared-data"}
+# Add N column with total count
+
+
+```
+
+```{r add-column-hint}
+ddf_dt[, N := .N]
+ddf_dt[1:3]
+```
+
+```{r add-column-solution}
 ddf_dt[, N := .N]
 ddf_dt[1:3]
 ```
@@ -408,7 +641,22 @@ Use `:=` as a **function** to assign multiple columns at once. Wrap assignments 
 
 Use `:=` as a function:
 
+Add multiple columns (`N_grp` and `mean`) using `:=` as a function, grouped by Gender and Continent:
+
 ```{r add-multiple, exercise=TRUE, exercise.setup="shared-data"}
+# Add N_grp and mean columns by Gender and Continent
+
+
+```
+
+```{r add-multiple-hint}
+ddf_dt[, 
+       ':='(N_grp = .N, mean = mean(Height)),
+       by = .(Gender, Continent)]
+ddf_dt
+```
+
+```{r add-multiple-solution}
 ddf_dt[, 
        ':='(N_grp = .N, mean = mean(Height)),
        by = .(Gender, Continent)]
@@ -461,13 +709,37 @@ These make complex operations simple and readable!
 
 ### .I holds row numbers
 
+Use `.I` to show row numbers alongside `Gender` and `Continent`:
+
 ```{r dot-i, exercise=TRUE, exercise.setup="shared-data"}
+# Show row numbers with .I
+
+
+```
+
+```{r dot-i-hint}
+ddf_dt[, .(row_id = .I, Gender, Continent)]
+```
+
+```{r dot-i-solution}
 ddf_dt[, .(row_id = .I, Gender, Continent)]
 ```
 
 ### .GRP holds unique group number
 
+Use `.GRP` to get unique group numbers for each Gender-Continent combination:
+
 ```{r dot-grp, exercise=TRUE, exercise.setup="shared-data"}
+# Show group numbers with .GRP
+
+
+```
+
+```{r dot-grp-hint}
+ddf_dt[, .GRP, by = .(Gender, Continent)]
+```
+
+```{r dot-grp-solution}
 ddf_dt[, .GRP, by = .(Gender, Continent)]
 ```
 
@@ -514,7 +786,20 @@ data.table includes powerful features like **keys** (for fast lookups), **.SD** 
 
 Set a key for faster manipulation (especially merging)!
 
+Set keys on `Gender`, `Continent`, and `Height` using `setkey()` and display the result:
+
 ```{r keys, exercise=TRUE, exercise.setup="shared-data"}
+# Set keys for faster operations
+
+
+```
+
+```{r keys-hint}
+setkey(ddf_dt, Gender, Continent, Height)
+ddf_dt
+```
+
+```{r keys-solution}
 setkey(ddf_dt, Gender, Continent, Height)
 ddf_dt
 ```
@@ -525,19 +810,55 @@ ddf_dt
 
 ### .SD selects all columns or subset
 
+Use `.SD` with `.SDcols` to select columns 2, 4, and 5:
+
 ```{r sd-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Select specific columns using .SD and .SDcols
+
+
+```
+
+```{r sd-demo-hint}
+ddf_dt[, .SD, .SDcols = c(2, 4, 5)]
+```
+
+```{r sd-demo-solution}
 ddf_dt[, .SD, .SDcols = c(2, 4, 5)]
 ```
 
 ### Apply function to multiple columns
 
+Apply `mean` to columns 2, 4, and 5 grouped by `Gender` using `lapply(.SD, mean)`:
+
 ```{r sd-apply, exercise=TRUE, exercise.setup="shared-data"}
+# Apply mean to multiple columns by Gender
+
+
+```
+
+```{r sd-apply-hint}
+ddf_dt[, lapply(.SD, mean), by = Gender, .SDcols = c(2, 4, 5)]
+```
+
+```{r sd-apply-solution}
 ddf_dt[, lapply(.SD, mean), by = Gender, .SDcols = c(2, 4, 5)]
 ```
 
 ### Select first and last row per group
 
+Select first and last row per `Gender` group using `.SD[c(1, .N)]`:
+
 ```{r sd-firstlast, exercise=TRUE, exercise.setup="shared-data"}
+# Get first and last row per group
+
+
+```
+
+```{r sd-firstlast-hint}
+ddf_dt[, .SD[c(1, .N)], by = Gender]
+```
+
+```{r sd-firstlast-solution}
 ddf_dt[, .SD[c(1, .N)], by = Gender]
 ```
 
@@ -570,7 +891,21 @@ iris_dt[order(Petal.Width)][1:3][, lapply(.SD, mean), .SDcols = 1:4]
 
 ### Reshape with dcast & melt
 
+Use `melt()` to reshape `ddf_dt` by Gender and Continent, then use `dcast()` to pivot it back:
+
 ```{r reshape, exercise=TRUE, exercise.setup="shared-data"}
+# Reshape data with melt and dcast
+
+
+```
+
+```{r reshape-hint}
+molten <- melt(ddf_dt, id.vars = c("Gender", "Continent"))
+dcast(ddf_dt, Gender + Age ~ Continent)
+dcast(ddf_dt, Gender + Age ~ Continent, fun.aggregate = mean)
+```
+
+```{r reshape-solution}
 molten <- melt(ddf_dt, id.vars = c("Gender", "Continent"))
 dcast(ddf_dt, Gender + Age ~ Continent)
 dcast(ddf_dt, Gender + Age ~ Continent, fun.aggregate = mean)
@@ -584,7 +919,24 @@ Calculate BMI without saving intermediate steps!
 
 **BMI = Weight / (Height in meters)²**
 
+Calculate BMI (`Weight / (Height/100)^2`) using `{}` to suppress intermediate output, and add it as a column:
+
 ```{r bmi, exercise=TRUE, exercise.setup="shared-data"}
+# Calculate and add BMI column
+
+
+```
+
+```{r bmi-hint}
+ddf_dt[, BMI := {
+    heightinmeters <- Height / 100
+    heightinmeterssquared <- heightinmeters^2
+    Weight / heightinmeterssquared
+}]
+ddf_dt
+```
+
+```{r bmi-solution}
 ddf_dt[, BMI := {
     heightinmeters <- Height / 100
     heightinmeterssquared <- heightinmeters^2
@@ -620,7 +972,22 @@ nrow(ddf_dt[BMI > 25])
 
 ### Define Dummy Data
 
+Create two data.tables `dt1` and `dt2` and display them:
+
 ```{r merge-setup, exercise=TRUE}
+# Create dt1 and dt2
+
+
+```
+
+```{r merge-setup-hint}
+dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
+dt2 <- data.table(x = c("a", "b", "k"), y = c(10, 15, 20), z = c("one", "two", "three"))
+dt1
+dt2
+```
+
+```{r merge-setup-solution}
 dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
 dt2 <- data.table(x = c("a", "b", "k"), y = c(10, 15, 20), z = c("one", "two", "three"))
 dt1
@@ -629,26 +996,65 @@ dt2
 
 ### Merge by Variable
 
+Merge `dt1` and `dt2` by the `x` column using `merge()`:
+
 ```{r merge-demo, exercise=TRUE}
+# Create the data and merge by x
+
+
+```
+
+```{r merge-demo-hint}
 dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
 dt2 <- data.table(x = c("a", "b", "k"), y = c(10, 15, 20), z = c("one", "two", "three"))
+merge(dt1, dt2, by = "x")
+```
 
+```{r merge-demo-solution}
+dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
+dt2 <- data.table(x = c("a", "b", "k"), y = c(10, 15, 20), z = c("one", "two", "three"))
 merge(dt1, dt2, by = "x")
 ```
 
 ### Other Join Types
 
+Try a left join (`all.x = TRUE`) and a right join (`all.y = TRUE`):
+
 ```{r merge-types, exercise=TRUE, eval=FALSE}
+# Left and right joins
+
+
+```
+
+```{r merge-types-hint, eval=FALSE}
+merge(dt1, dt2, by = "x", all.x = TRUE)  # Left join
+merge(dt1, dt2, by = "x", all.y = TRUE)  # Right join
+```
+
+```{r merge-types-solution, eval=FALSE}
 merge(dt1, dt2, by = "x", all.x = TRUE)  # Left join
 merge(dt1, dt2, by = "x", all.y = TRUE)  # Right join
 ```
 
 ### data.table Join Syntax
 
+Use data.table's join syntax `dt1[dt2, on = .(x)]` to join the two tables:
+
 ```{r dt-join, exercise=TRUE}
+# Join using data.table syntax
+
+
+```
+
+```{r dt-join-hint}
 dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
 dt2 <- data.table(x = c("a", "b", "k"), y = c(10, 15, 20), z = c("one", "two", "three"))
+dt1[dt2, on = .(x)]
+```
 
+```{r dt-join-solution}
+dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
+dt2 <- data.table(x = c("a", "b", "k"), y = c(10, 15, 20), z = c("one", "two", "three"))
 dt1[dt2, on = .(x)]
 ```
 
@@ -660,10 +1066,23 @@ dt1[dt2, on = .(x)]
 
 Merge on closest smaller numerical value in dt2:
 
+Use a forward rolling join with `roll = TRUE` to match on the `y` column:
+
 ```{r roll-forward, exercise=TRUE}
+# Forward rolling join
+
+
+```
+
+```{r roll-forward-hint}
 dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
 dt2 <- data.table(x = c("a", "b", "k"), y = c(10, 15, 20), z = c("one", "two", "three"))
+dt2[dt1, on = .(y), roll = TRUE]
+```
 
+```{r roll-forward-solution}
+dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
+dt2 <- data.table(x = c("a", "b", "k"), y = c(10, 15, 20), z = c("one", "two", "three"))
 dt2[dt1, on = .(y), roll = TRUE]
 ```
 
@@ -671,10 +1090,23 @@ dt2[dt1, on = .(y), roll = TRUE]
 
 Merge on closest larger numerical value:
 
+Use a backward rolling join with `roll = -4` to match on the closest larger value:
+
 ```{r roll-backward, exercise=TRUE}
+# Backward rolling join
+
+
+```
+
+```{r roll-backward-hint}
 dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
 dt2 <- data.table(x = c("a", "b", "k"), y = c(10, 15, 20), z = c("one", "two", "three"))
+dt2[dt1, on = .(y), roll = -4]
+```
 
+```{r roll-backward-solution}
+dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
+dt2 <- data.table(x = c("a", "b", "k"), y = c(10, 15, 20), z = c("one", "two", "three"))
 dt2[dt1, on = .(y), roll = -4]
 ```
 
@@ -682,14 +1114,29 @@ dt2[dt1, on = .(y), roll = -4]
 
 ### Overlapping Joins
 
+Use `foverlaps()` to find overlapping ranges between `dt1` and `dt3`:
+
 ```{r foverlaps, exercise=TRUE}
+# Overlapping joins with foverlaps
+
+
+```
+
+```{r foverlaps-hint}
 dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
 dt3 <- data.table(min_y = c(0, 10, 15, 20), max_y = c(10, 15, 20, 30))
-
 setkey(dt3, min_y, max_y)
 dt1[, `:=`(dt1_y_end = c(13, 25, 10, 22), dt1_y = y)]
 setkey(dt1, dt1_y, dt1_y_end)
+foverlaps(dt1, dt3, type = "any")
+```
 
+```{r foverlaps-solution}
+dt1 <- data.table(x = c("a", "b", "c", "d"), y = c(11.9, 21.4, 5.7, 18))
+dt3 <- data.table(min_y = c(0, 10, 15, 20), max_y = c(10, 15, 20, 30))
+setkey(dt3, min_y, max_y)
+dt1[, `:=`(dt1_y_end = c(13, 25, 10, 22), dt1_y = y)]
+setkey(dt1, dt1_y, dt1_y_end)
 foverlaps(dt1, dt3, type = "any")
 ```
 
