@@ -385,7 +385,7 @@ p <- ggplot(iris)
 p
 ```
 
-```{r ggplot-init-hint-3}
+```{r ggplot-init-solution}
 p <- ggplot()
 p <- ggplot(iris)
 p <- ggplot(iris, aes(Sepal.Length, Petal.Length))
