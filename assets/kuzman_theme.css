@@ -16,7 +16,24 @@
   font-weight: 500;
 }
 
-/* Sidebar Navigation Links */
+/* Sidebar Navigation Links - Remove all borders */
+.topicsContainer *,
+.topicsContainer a,
+.topicsContainer li,
+.topicsContainer ul {
+  border: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  outline: none !important;
+}
+
+/* Keep the right border on the container itself */
+.topicsContainer {
+  border-right: 1px solid #E0E0E0 !important;
+}
+
 .topicsList a {
   color: #455A64;
   transition: all 0.2s;
@@ -25,7 +42,6 @@
 /* Active/Current Section */
 .topicsList a.current {
   background-color: #FFF3E0;
-  border-left: 3px solid #FF8A50;
   color: #FF6B35;
   font-weight: 500;
 }
@@ -33,7 +49,6 @@
 /* Hover State */
 .topicsList a:hover {
   background-color: #FAFAFA;
-  border-left: 3px solid #FFB74D;
 }
 
 /* Main Content Headers */
