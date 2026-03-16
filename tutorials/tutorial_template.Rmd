@@ -57,6 +57,9 @@ Welcome to [Your Workshop Name]
 
 ## Section 1: Your Topic
 
+```{r}
+```
+
 Brief introduction to your topic.
 
 <!-- Example: How to add callout boxes -->

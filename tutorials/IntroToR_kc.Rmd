@@ -9,6 +9,7 @@ runtime: shiny_prerendered
 
 ```{r setup, include=FALSE}
 library(learnr)
+library(ggplot2)
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
@@ -27,7 +28,8 @@ setup_branding_server()
 ```{r shared-data, exercise.setup=TRUE, include=FALSE}
 # Load shared data for exercises
 library(data.table)
-
+# Reinitialize data.table options (stripped by learnr exercise environment)
+if (is.null(getOption("datatable.alloccol"))) data.table:::.onLoad()
 # IntroToR variables
 myFirstNumber <- 0.1
 myFirstVector <- c("some words","p","awesome", "last one")
@@ -73,36 +75,37 @@ In this tutorial, you will master the fundamentals of R programming:
 
 1. **Getting Started with R**  
    - Using R as a calculator  
-   - Understanding the modulo operator  
+   - Manually calculate mean in R  
    
 2. **Variables and Data Structures**  
    - Creating variables and vectors  
+   - Descriptive statistics (sd, var, median, range, IQR, quantiles)  
    - Understanding R data structures (vectors, matrices, data frames, lists, factors)  
    
-3. **Working with Vectors**  
+3. **Functions and Help**  
+   - Vector structure functions  
+   - Mathematical functions  
+   - Getting help in R  
+   
+4. **Working with Vectors**  
    - Creating vectors with `c()`  
    - Subsetting with `[ ]`  
    - Accessing single and multiple elements  
    - Using logical vectors for subsetting  
    - Understanding type conversion  
    
-4. **Vector Operations**  
+5. **Vector Operations**  
    - Multiplication by constants  
    - Element-wise operations  
    - Vector recycling  
    
-5. **Comparisons and Subsetting**  
+6. **Comparisons and Subsetting**  
    - Using comparison operators  
    - Conditional subsetting and filtering  
    
-6. **Logical Operators**  
+7. **Logical Operators**  
    - Understanding AND, OR, NOT  
-   - Multi-condition filtering  
-   
-7. **Functions and Help**  
-   - Vector structure functions  
-   - Mathematical functions  
-   - Getting help in R
+   - Multi-condition filtering
 
 </div>
 
@@ -115,7 +118,7 @@ In this tutorial, you will master the fundamentals of R programming:
 
 1. **Getting Started with R**  
    → Using R as a calculator  
-   - Understanding the modulo operator  
+   - Manually calculate mean in R  
 
 </div>
 
@@ -154,37 +157,34 @@ Try using R as a calculator. Type `1 + 1` and run the code:
 
 1. **Getting Started with R**  
    - Using R as a calculator  
-   → Understanding the modulo operator  
+   → Manually calculate mean in R  
 
 </div>
 
 <div class="callout callout-tip">
-<div class="callout-title">Understanding the %% Operator</div>
+<div class="callout-title">Calculating the Mean</div>
 
-The `%%` operator performs modulo division, which returns the **remainder** after division. For example, `13 %% 3` returns `1` because 13 divided by 3 is 4 with a remainder of 1.
+The **mean** (average) is calculated by adding all numbers together and dividing by how many numbers there are. For example, the mean of 2, 4, and 6 is `(2 + 4 + 6) / 3 = 4`.
 </div>
 
-Add your calculation here. Calculate the result of 13%%3, 12%%3, 15%%3.  
-Can you guess what %% does?
+Calculate the mean value of the numbers 3, 5, 7, and 9 using the operators `+`, `/`, and `()`.
 
-```{r modulo-exercise, exercise=TRUE}
-# Calculate modulo operations
-13 %% 3
+```{r mean-exercise, exercise=TRUE}
+# Calculate the mean of 3, 5, 7, 9
+
 
 ```
 
-```{r modulo-exercise-hint}
-# Try calculating:
-# 12 %% 3
-# 15 %% 3
-# The %% operator gives you the remainder after division
+```{r mean-exercise-hint}
+# Add all numbers together: (3 + 5 + 7 + 9)
+# Then divide by how many numbers there are: / 4
+# Put it together: (3 + 5 + 7 + 9) / 4
 ```
 
-```{r modulo-exercise-solution}
-13 %% 3  # Result: 1
-12 %% 3  # Result: 0
-15 %% 3  # Result: 0
-# %% gives the remainder (modulo operation)
+```{r mean-exercise-solution}
+# Calculate the mean
+(3 + 5 + 7 + 9) / 4
+# Result: 6
 ```
 
 ### What have we learned so far?
@@ -209,13 +209,40 @@ Can you guess what %% does?
 </div>
 
 <div class="callout callout-concept">
-<div class="callout-title">What are Vectors?</div>
+<div class="callout-title">What are Variables?</div>
 
-Variables store values that you can reuse throughout your code. In R, we use the assignment operator `<-` to assign values to variables.
+A **variable** is a named container that stores a value in memory. Think of it as a labeled box — you put something inside (a number, text, a whole dataset), and later you can retrieve it by its name.
+
+**Why use variables?**  
+- Avoid repeating the same value over and over  
+- Make code readable — `height` is clearer than `173.5`  
+- Store results of calculations for later use  
+
+**Naming rules:**  
+- Must start with a letter (not a number)  
+- Can contain letters, numbers, `.` and `_`  
+- Case-sensitive: `myVar` and `myvar` are different  
 
 </div>
 
-Create a variable `myFirstNumber` with value `0.1` and a vector `myFirstVector` with `c(2, 3, 7, 8)`. Print `myFirstNumber`:
+<div class="callout callout-info">
+<div class="callout-title">Working with Variables</div>
+
+In R, we create variables using the **assignment operator** `<-`:
+
+```r
+x <- 5         # x now holds the value 5
+name <- "Maja"  # name now holds the text "Maja"
+```
+
+- To see the value stored in a variable, simply type its name to print its content  
+- To store multiple values in a variable, use `c()` — this creates a **vector**  
+
+</div>
+
+- Create a variable `myFirstNumber` with value `0.1` and a vector `myFirstVector` with `c(3, 5, 7, 9)`.   
+- Print `myFirstNumber`.  
+- now calculate the mean of the four numbers 3,5,7,9 by writing mean(myFirstVector).  
 
 ```{r variables-demo, exercise=TRUE, exercise.setup="shared-data"}
 # Create variables and print them
@@ -225,16 +252,104 @@ Create a variable `myFirstNumber` with value `0.1` and a vector `myFirstVector` 
 
 ```{r variables-demo-hint}
 myFirstNumber <- 0.1
-myFirstVector <- c(2, 3, 7, 8)
+myFirstVector <- c(3, 5, 7, 9)
 print(myFirstNumber)
 myFirstNumber
 ```
 
 ```{r variables-demo-solution}
 myFirstNumber <- 0.1
-myFirstVector <- c(2, 3, 7, 8)
+myFirstVector <- c(3, 5, 7, 9)
 print(myFirstNumber)
-myFirstNumber
+mean(myFirstVector)
+```
+
+Now use `myFirstVector` to calculate:
+
+1. The **standard deviation** using `sd()`
+2. The **variance** using `var()`
+3. The **median** using `median()`
+4. The **range** (min and max) using `range()`
+
+```{r variables-stats, exercise=TRUE, exercise.setup="shared-data"}
+myFirstVector <- c(3, 5, 7, 9)
+
+# Calculate standard deviation
+
+
+# Calculate variance
+
+
+# Calculate median
+
+
+# Calculate range (min and max)
+
+
+```
+
+```{r variables-stats-hint}
+# Standard deviation
+sd(myFirstVector)
+# Variance
+var(myFirstVector)
+```
+
+```{r variables-stats-hint-2}
+# Median
+median(myFirstVector)
+# Range
+range(myFirstVector)
+```
+
+```{r variables-stats-solution}
+myFirstVector <- c(3, 5, 7, 9)
+sd(myFirstVector)      # 2.581989
+var(myFirstVector)      # 6.666667
+median(myFirstVector)   # 6
+range(myFirstVector)    # 3 9
+```
+
+Now calculate:
+
+1. The **interquartile range (IQR)** using `IQR()`
+2. The **5th percentile** using `quantile()` with `probs = 0.05`
+3. The **95th percentile** using `quantile()` with `probs = 0.95`
+
+```{r variables-quantiles, exercise=TRUE, exercise.setup="shared-data"}
+myFirstVector <- c(3, 5, 7, 9)
+
+# Calculate IQR
+
+
+# Calculate 5th percentile
+
+
+# Calculate 95th percentile
+
+
+```
+
+```{r variables-quantiles-hint}
+# IQR = difference between 75th and 25th percentile
+IQR(myFirstVector)
+# quantile() with probs argument
+quantile(myFirstVector, probs = 0.05)
+```
+
+```{r variables-quantiles-hint-2}
+# 95th percentile
+quantile(myFirstVector, probs = 0.95)
+# You can also get multiple quantiles at once:
+quantile(myFirstVector, probs = c(0.05, 0.95))
+```
+
+```{r variables-quantiles-solution}
+myFirstVector <- c(3, 5, 7, 9)
+IQR(myFirstVector)                          # 3
+quantile(myFirstVector, probs = 0.05)       # 5th percentile
+quantile(myFirstVector, probs = 0.95)       # 95th percentile
+quantile(myFirstVector, probs = c(0.05, 0.95))  # both at once
 ```
 
 ---
@@ -337,12 +452,338 @@ my_factor
 
 ---
 
+<!-- NEW CONCEPT: FUNCTIONS -->
+## Functions and Help
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+3. **Functions and Help**  
+   → Vector structure functions  
+   - Mathematical functions  
+   - Getting help in R
+
+</div>
+
+<!-- STEP 1: EXPLAIN THE CONCEPT -->
+<div class="callout callout-concept">
+<div class="callout-title">Built-in Functions</div>
+
+R has thousands of **built-in functions** that perform common tasks:
+- **Structure functions**: `length()`, `unique()`, `table()`
+- **Math functions**: `sum()`, `mean()`, `sd()`, `median()`
+- **Statistical functions**: `summary()`, `min()`, `max()`
+
+Functions take input (arguments) and return output.
+</div>
+
+---
+
+<!-- STEP 2: DEMONSTRATE - Structure Functions -->
+### Demonstration: Vector Structure Functions
+
+Use `length()`, `unique()`, and `table()` on `someothervector`:
+
+```{r func-structure-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Explore vector structure with functions
+
+
+```
+
+```{r func-structure-demo-hint}
+someothervector
+length(someothervector)
+unique(someothervector)
+table(someothervector)
+```
+
+```{r func-structure-demo-solution}
+someothervector
+length(someothervector)
+unique(someothervector)
+table(someothervector)
+```
+
+**What's happening here?**
+- `length()` returns the number of elements (5)
+- `unique()` removes duplicates (0 and 1)
+- `table()` counts how many times each value appears
+
+---
+
+<!-- STEP 3: DEMONSTRATE - Math Functions -->
+### Demonstration: Mathematical Functions
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+3. **Functions and Help**  
+   - Vector structure functions  
+   → Mathematical functions  
+   - Getting help in R
+
+</div>
+
+Calculate `sum()`, `mean()`, `sd()`, and `summary()` of `someothervector`:
+
+```{r math-functions-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Calculate statistics on someothervector
+
+
+```
+
+```{r math-functions-demo-hint}
+someothervector
+sum(someothervector)
+mean(someothervector)
+sd(someothervector)
+summary(someothervector)
+```
+
+```{r math-functions-demo-solution}
+someothervector
+sum(someothervector)
+mean(someothervector)
+sd(someothervector)
+summary(someothervector)
+```
+
+**What's happening here?**
+- `sum()` adds all elements: 1+0+1+0+1 = 3
+- `mean()` calculates average: 3/5 = 0.6
+- `sd()` measures variability
+- `summary()` gives min, max, median, mean, quartiles
+
+---
+
+### Z-Score (Standardization)
+
+<div class="callout callout-concept">
+<div class="callout-title">What is a Z-Score?</div>
+
+A **z-score** tells you how many standard deviations a value is from the mean. It is calculated as:
+
+$$z = \frac{x - \bar{x}}{s}$$
+
+where $\bar{x}$ is the mean and $s$ is the standard deviation.
+
+**In R you can:**
+- Calculate manually: `(x - mean(x)) / sd(x)`
+- Use the built-in function: `scale(x)`
+
+</div>
+
+**Task:**
+Create a vector `scores <- c(70, 85, 90, 60, 95)` and calculate the z-score for each value.
+
+```{r zscore-exercise, exercise=TRUE}
+scores <- c(70, 85, 90, 60, 95)
+
+# Calculate z-scores manually
+
+
+# Or use the built-in scale() function
+
+
+```
+
+```{r zscore-exercise-hint}
+# Manual z-score: subtract the mean, then divide by sd
+z_manual <- (scores - mean(scores)) / sd(scores)
+z_manual
+```
+
+```{r zscore-exercise-hint-2}
+# Built-in function (returns a matrix, use as.numeric() to get a vector)
+z_builtin <- scale(scores)
+z_builtin
+```
+
+```{r zscore-exercise-solution}
+scores <- c(70, 85, 90, 60, 95)
+
+# Manual calculation
+z_manual <- (scores - mean(scores)) / sd(scores)
+z_manual
+
+# Built-in function
+z_builtin <- scale(scores)
+z_builtin
+```
+
+---
+
+### Skewness and Kurtosis
+
+<div class="callout callout-concept">
+<div class="callout-title">Skewness & Kurtosis</div>
+
+**Skewness** measures the **asymmetry** of a distribution:
+- **Skewness = 0**: Symmetric (like a normal distribution)
+- **Skewness > 0**: Right-skewed (long tail to the right)
+- **Skewness < 0**: Left-skewed (long tail to the left)
+
+**Kurtosis** measures how heavy the **tails** are:
+- **Kurtosis ≈ 3** (or excess kurtosis ≈ 0): Normal distribution
+- **Kurtosis > 3**: Heavier tails (more outliers)
+- **Kurtosis < 3**: Lighter tails (fewer outliers)
+
+R does not have built-in skewness/kurtosis functions, but you can calculate them manually or use a package like `moments`.
+
+**Manual formulas:**
+
+$$\text{skewness} = \frac{1}{n} \sum \left(\frac{x_i - \bar{x}}{s}\right)^3$$
+
+$$\text{kurtosis} = \frac{1}{n} \sum \left(\frac{x_i - \bar{x}}{s}\right)^4$$
+
+</div>
+
+**Task:**
+Using the vector `scores <- c(70, 85, 90, 60, 95)`, calculate skewness and kurtosis manually.
+
+```{r skewness-exercise, exercise=TRUE}
+scores <- c(70, 85, 90, 60, 95)
+
+# Step 1: Standardize (z-scores)
+z <- (scores - mean(scores)) / sd(scores)
+
+# Step 2: Calculate skewness (mean of z^3)
+
+
+# Step 3: Calculate kurtosis (mean of z^4)
+
+
+```
+
+```{r skewness-exercise-hint}
+# Skewness: raise z-scores to the 3rd power, then take the mean
+z <- (scores - mean(scores)) / sd(scores)
+skewness <- mean(z^3)
+skewness
+# Negative value → left-skewed (tail extends to the left)
+```
+
+```{r skewness-exercise-hint-2}
+# Kurtosis: raise z-scores to the 4th power, then take the mean
+z <- (scores - mean(scores)) / sd(scores)
+kurtosis <- mean(z^4)
+kurtosis
+# Excess kurtosis (compared to normal distribution):
+excess_kurtosis <- kurtosis - 3
+excess_kurtosis
+```
+
+```{r skewness-exercise-solution}
+scores <- c(70, 85, 90, 60, 95)
+
+# Standardize
+z <- (scores - mean(scores)) / sd(scores)
+
+# Skewness (mean of z^3)
+skewness <- mean(z^3)
+skewness    # negative → left-skewed
+
+# Kurtosis (mean of z^4)
+kurtosis <- mean(z^4)
+kurtosis
+
+# Excess kurtosis (relative to normal distribution = 3)
+excess_kurtosis <- kurtosis - 3
+excess_kurtosis
+```
+
+---
+
+<!-- STEP 4: EXERCISE -->
+### Your Turn: Practice Using Functions
+
+**Task:** 
+Calculate the sum, mean, and standard deviation of `myvector`.
+
+```{r exercise-functions, exercise=TRUE}
+myvector <- c(15, 16, 17, 18, 20)
+
+# Calculate sum
+
+
+# Calculate mean
+
+
+# Calculate standard deviation
+
+
+```
+
+```{r exercise-functions-hint}
+# Use sum(), mean(), and sd() functions
+sum(myvector)
+mean(myvector)
+sd(myvector)
+```
+
+```{r exercise-functions-solution}
+myvector <- c(15, 16, 17, 18, 20)
+sum(myvector)
+mean(myvector)
+sd(myvector)
+```
+
+---
+
+<!-- STEP 5: GETTING HELP -->
+### Getting Help in R
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+3. **Functions and Help**  
+   - Vector structure functions  
+   - Mathematical functions  
+   → Getting help in R
+
+</div>
+
+<div class="callout callout-info">
+<div class="callout-title">Help Resources</div>
+
+When you need to learn about a function:
+- **`?function_name`** - Opens help documentation
+- **`example(function_name)`** - Shows working examples
+- **`help.search("keyword")`** - Searches help files
+
+```r
+?mean
+example(mean)
+help.search("average")
+```
+</div>
+
+Try `?mean` and `example(runif)` to explore R's help system:
+
+```{r help-demo, exercise=TRUE, eval=FALSE}
+# Try getting help on functions
+
+
+```
+
+```{r help-demo-hint, eval=FALSE}
+?mean
+example(runif)
+```
+
+```{r help-demo-solution, eval=FALSE}
+?mean
+example(runif)
+```
+
+---
+
 ## Working with Vectors
 
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-3. **Working with Vectors**  
+4. **Working with Vectors**  
    → Creating vectors with `c()`  
    - Subsetting with `[ ]`  
    - Accessing single and multiple elements  
@@ -388,7 +829,7 @@ myFirstSequence
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-3. **Working with Vectors**  
+4. **Working with Vectors**  
    - Creating vectors with `c()`  
    → Subsetting with `[ ]`  
    - Accessing single and multiple elements  
@@ -416,7 +857,7 @@ myFirstSequence
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-3. **Working with Vectors**  
+4. **Working with Vectors**  
    - Creating vectors with `c()`  
    - Subsetting with `[ ]`  
    → Accessing single and multiple elements  
@@ -540,7 +981,7 @@ myvector[c(2, 4)]  # Returns 16 and 18
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-3. **Working with Vectors**  
+4. **Working with Vectors**  
    - Creating vectors with `c()`  
    - Subsetting with `[ ]`  
    - Accessing single and multiple elements  
@@ -673,7 +1114,7 @@ myvector[c(FALSE, TRUE, FALSE, TRUE, FALSE)]
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-3. **Working with Vectors**  
+4. **Working with Vectors**  
    - Creating vectors with `c()`  
    - Subsetting with `[ ]`  
    - Accessing single and multiple elements  
@@ -774,7 +1215,7 @@ myFirstVector[as.logical(someothervector)]
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-4. **Vector Operations**  
+5. **Vector Operations**  
    → Multiplication by constants  
    - Element-wise operations  
    - Vector recycling  
@@ -829,7 +1270,7 @@ someothervector * 0.5
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-4. **Vector Operations**  
+5. **Vector Operations**  
    - Multiplication by constants  
    → Element-wise operations  
    - Vector recycling  
@@ -870,7 +1311,7 @@ someothervector * 1:5
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-4. **Vector Operations**  
+5. **Vector Operations**  
    - Multiplication by constants  
    - Element-wise operations  
    → Vector recycling  
@@ -969,7 +1410,7 @@ myvector * c(0.1, 0.2)
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-5. **Comparisons and Subsetting**  
+6. **Comparisons and Subsetting**  
    → Using comparison operators  
    - Conditional subsetting and filtering  
 
@@ -1029,7 +1470,7 @@ someothervector > 0
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-5. **Comparisons and Subsetting**  
+6. **Comparisons and Subsetting**  
    - Using comparison operators  
    → Conditional subsetting and filtering  
 
@@ -1114,7 +1555,7 @@ myvector[myvector < 17]  # Returns 15 and 16
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-6. **Logical Operators**  
+7. **Logical Operators**  
    → Understanding AND, OR, NOT  
    - Multi-condition filtering  
 
@@ -1179,7 +1620,7 @@ firstLogical | secondLogical
 <div class="callout callout-success">
 <div class="callout-title">📍 In This Section</div>
 
-6. **Logical Operators**  
+7. **Logical Operators**  
    - Understanding AND, OR, NOT  
    → Multi-condition filtering  
 
@@ -1277,194 +1718,6 @@ myvector[c(FALSE, TRUE)]  # Uses recycling: positions 2 and 4
 
 ---
 
-<!-- NEW CONCEPT: FUNCTIONS -->
-## Functions and Help
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-7. **Functions and Help**  
-   → Vector structure functions  
-   - Mathematical functions  
-   - Getting help in R
-
-</div>
-
-<!-- STEP 1: EXPLAIN THE CONCEPT -->
-<div class="callout callout-concept">
-<div class="callout-title">Built-in Functions</div>
-
-R has thousands of **built-in functions** that perform common tasks:
-- **Structure functions**: `length()`, `unique()`, `table()`
-- **Math functions**: `sum()`, `mean()`, `sd()`, `median()`
-- **Statistical functions**: `summary()`, `min()`, `max()`
-
-Functions take input (arguments) and return output.
-</div>
-
----
-
-<!-- STEP 2: DEMONSTRATE - Structure Functions -->
-### Demonstration: Vector Structure Functions
-
-Use `length()`, `unique()`, and `table()` on `someothervector`:
-
-```{r func-structure-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Explore vector structure with functions
-
-
-```
-
-```{r func-structure-demo-hint}
-someothervector
-length(someothervector)
-unique(someothervector)
-table(someothervector)
-```
-
-```{r func-structure-demo-solution}
-someothervector
-length(someothervector)
-unique(someothervector)
-table(someothervector)
-```
-
-**What's happening here?**
-- `length()` returns the number of elements (5)
-- `unique()` removes duplicates (0 and 1)
-- `table()` counts how many times each value appears
-
----
-
-<!-- STEP 3: DEMONSTRATE - Math Functions -->
-### Demonstration: Mathematical Functions
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-7. **Functions and Help**  
-   - Vector structure functions  
-   → Mathematical functions  
-   - Getting help in R
-
-</div>
-
-Calculate `sum()`, `mean()`, `sd()`, and `summary()` of `someothervector`:
-
-```{r math-functions-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Calculate statistics on someothervector
-
-
-```
-
-```{r math-functions-demo-hint}
-someothervector
-sum(someothervector)
-mean(someothervector)
-sd(someothervector)
-summary(someothervector)
-```
-
-```{r math-functions-demo-solution}
-someothervector
-sum(someothervector)
-mean(someothervector)
-sd(someothervector)
-summary(someothervector)
-```
-
-**What's happening here?**
-- `sum()` adds all elements: 1+0+1+0+1 = 3
-- `mean()` calculates average: 3/5 = 0.6
-- `sd()` measures variability
-- `summary()` gives min, max, median, mean, quartiles
-
----
-
-<!-- STEP 4: EXERCISE -->
-### Your Turn: Practice Using Functions
-
-**Task:** 
-Calculate the sum, mean, and standard deviation of `myvector`.
-
-```{r exercise-functions, exercise=TRUE}
-myvector <- c(15, 16, 17, 18, 20)
-
-# Calculate sum
-
-
-# Calculate mean
-
-
-# Calculate standard deviation
-
-
-```
-
-```{r exercise-functions-hint}
-# Use sum(), mean(), and sd() functions
-sum(myvector)
-mean(myvector)
-sd(myvector)
-```
-
-```{r exercise-functions-solution}
-myvector <- c(15, 16, 17, 18, 20)
-sum(myvector)
-mean(myvector)
-sd(myvector)
-```
-
----
-
-<!-- STEP 5: GETTING HELP -->
-### Getting Help in R
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-7. **Functions and Help**  
-   - Vector structure functions  
-   - Mathematical functions  
-   → Getting help in R
-
-</div>
-
-<div class="callout callout-info">
-<div class="callout-title">Help Resources</div>
-
-When you need to learn about a function:
-- **`?function_name`** - Opens help documentation
-- **`example(function_name)`** - Shows working examples
-- **`help.search("keyword")`** - Searches help files
-
-```r
-?mean
-example(mean)
-help.search("average")
-```
-</div>
-
-Try `?mean` and `example(runif)` to explore R's help system:
-
-```{r help-demo, exercise=TRUE, eval=FALSE}
-# Try getting help on functions
-
-
-```
-
-```{r help-demo-hint, eval=FALSE}
-?mean
-example(runif)
-```
-
-```{r help-demo-solution, eval=FALSE}
-?mean
-example(runif)
-```
-
----
-
 ## Congratulations!
 
 You've completed the Introduction to R tutorial!
@@ -1473,12 +1726,12 @@ You've completed the Introduction to R tutorial!
 
 - Using R as a calculator  
 - Creating and working with variables  
+- Descriptive statistics (sd, var, median, range, IQR, quantiles)  
 - Understanding vectors and data structures  
+- Useful R functions and getting help in R  
 - Subsetting vectors by position and logical conditions  
 - Vector operations and recycling  
-- Comparison and logical operators  
-- Useful R functions  
-- How to get help in R
+- Comparison and logical operators
 
 ### Next Steps:
 
