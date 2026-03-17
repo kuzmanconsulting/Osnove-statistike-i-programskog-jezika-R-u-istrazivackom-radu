@@ -1,0 +1,1272 @@
+---
+title: "Data Visualization with ggplot2"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+    css: "../assets/kuzman_theme.css"
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(data.table)
+library(ggplot2)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r load-branding, echo=FALSE}
+# Load Kuzman Consulting branding (CSS + logos)
+source("../assets/setup_branding.R", local = knitr::knit_global())
+setup_kuzman_branding()
+```
+
+```{r server-setup, context="server"}
+# Register resource path for logos
+source("../assets/setup_branding.R", local = TRUE)
+setup_branding_server()
+```
+
+```{r shared-data, exercise.setup=TRUE, include=FALSE}
+# Load shared data for exercises
+library(data.table)
+# Reinitialize data.table options (stripped by learnr exercise environment)
+if (is.null(getOption("datatable.alloccol"))) data.table:::.onLoad()
+
+# ggplot2 datasets
+tidy <- fread("http://hex.bioinfo.hr/~mfabijanic/tidyData.txt", header=T)
+works <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/works.txt", header = T)
+works$Grade <- factor(works$Grade, levels=c("Extremely bad", "Below average", "Average", "Good", "Excellent"))
+setnames(works, "GradeNumerical", "Mark")
+df <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/df.txt", header=TRUE, fill=T)
+colnames(df) <- "recommend"
+df$recommend <- factor(df$recommend, levels=c("Strongly no","No", "Maybe", "Yes", "Strongly yes"))
+```
+
+## Welcome
+
+Welcome to **Data Visualization with ggplot2**
+
+### Author
+
+**dr.sc. Maja Kuzman** - Kuzman Consulting d.o.o.
+
+<div class="callout callout-info">
+<div class="callout-title">How to Use This Tutorial</div>
+
+- Click **"Run Code"** to execute R code
+    - ctrl + enter (windows) or command + enter (macos)
+- Click **"Hint"** if you need help
+- Progress is tracked as you complete exercises
+
+</div>
+
+<div class="callout callout-success">
+<div class="callout-title">What You Will Learn</div>
+
+In this tutorial, you will master data visualization with ggplot2:
+
+1. **Installation & Setup**  
+   - Installing and loading packages  
+   - Sample data  
+   
+2. **ggplot2 vs Base R**  
+   - Why ggplot2 is powerful  
+   
+3. **Basic ggplot2 Logic**  
+   - **ggplot() + aes()**: Initialize plots and set scales  
+   - **geom_*()**: Add visual layers (organized by variable types)  
+   - **facet_*()**: Create subplots  
+   - **annotate()**: Add text and labels  
+   
+4. **Complete Example**  
+   - Building a plot from scratch  
+   
+5. **Customization**  
+   - Global customization (entire plot)  
+   - Layer-specific customization  
+   - Fixed aesthetics  
+   
+6. **Final Challenge**  
+   - End-to-end plot with customization  
+
+7. **Advanced Customizations**  
+   - Customizing scales and colors  
+   - Theme customization  
+   
+8. **Saving Plots**  
+   - Using ggsave()  
+   
+9. **Interactive Plots**  
+   - Making plots interactive with plotly  
+
+</div>
+
+---
+
+## Installation & Setup
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+1. **Installation & Setup**  
+   → Installing and loading packages  
+   - Sample data  
+
+</div>
+
+### Installing Packages
+
+You only need to install packages ONCE. Use `install.packages()`:
+
+```{r install-packages, echo=TRUE, eval=FALSE}
+# Install the required packages
+install.packages("data.table")
+install.packages("ggplot2")
+```
+
+### Loading Libraries
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+1. **Installation & Setup**  
+   - Installing and loading packages  
+   → Sample data  
+
+</div>
+
+Load them every session with `library()`:
+
+```{r load-libs, echo=TRUE, eval=FALSE}
+# Load the libraries
+library(data.table)
+library(ggplot2)
+```
+
+### Sample Data
+
+We'll use the built-in `iris` dataset. Preview it:
+
+```{r data-preview, exercise=TRUE}
+# Display the iris dataset
+iris
+```
+
+---
+
+## ggplot2 vs Base R
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+2. **ggplot2 vs Base R**  
+   → Why ggplot2 is powerful  
+
+</div>
+
+### Base R Approach
+
+Create a scatterplot using base R:
+
+```{r base-plot, exercise=TRUE}
+# Base R scatterplot
+plot(iris$Sepal.Length, iris$Petal.Length, col = iris$Species)
+```
+
+### ggplot2 Approach
+
+The same plot with ggplot2:
+
+```{r ggplot-simple, exercise=TRUE}
+# ggplot2 scatterplot
+ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) + 
+    geom_point() +
+    theme_light()
+```
+
+### The Power of ggplot2
+
+<div class="callout callout-success">
+<div class="callout-title">Grammar of Graphics</div>
+
+ggplot2 is based on the **Grammar of Graphics** - a consistent system for building visualizations by combining independent components. Once you learn the logic, you can create almost any plot!  
+
+</div>
+
+Watch how easy it is to enhance the plot. Try running this demo:
+
+```{r ggplot-power, exercise=TRUE}
+# Start simple
+ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) + 
+    geom_point() +
+    theme_light()
+
+# Now enhance it step by step:
+# - Larger points with different shapes
+# - Facet by species
+# - Add linear regression lines
+```
+
+```{r ggplot-power-solution}
+# Enhanced version with many features
+ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species, shape = Species)) + 
+    geom_point(size = 3) +
+    facet_wrap(~Species) + 
+    geom_smooth(method = "lm", linetype = "dashed") +
+    theme_bw() +
+    labs(title = "Sepal vs Petal Length by Species",
+         subtitle = "With linear regression lines",
+         x = "Sepal Length (cm)", 
+         y = "Petal Length (cm)") +
+    annotate("text", x = 6, y = 2, label = "Beautiful!", color = "purple", size = 5)
+```
+
+---
+
+## Basic ggplot2 Logic
+
+<div class="callout callout-info">
+<div class="callout-title">The ggplot2 Formula</div>
+
+**Core pattern:** 
+
+```r
+ggplot(data, aes(x, y, ...)) +    # 1. Initialize + set scales  
+    geom_*(...) +                  # 2. Add visual layers  
+    facet_*(...) +                 # 3. Create subplots (optional)  
+    annotate(...)                  # 4. Add labels (optional)  
+```
+
+</div>
+
+---
+
+### 1. ggplot() + aes(): Initialize & Set Scales
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+3. **Basic ggplot2 Logic**  
+   → **ggplot() + aes()**: Initialize and set scales  
+
+</div>
+
+<div class="callout callout-concept">
+<div class="callout-title">What is ggplot()?</div>
+
+`ggplot()` initializes a plot object and sets up the data and aesthetic mappings.  
+
+**Aesthetics (aes)** map your data to visual properties:  
+- **x, y**: Position on axes  
+- **color**: Color by variable  
+- **fill**: Fill color  
+- **size**: Size of points/lines  
+- **shape**: Point shapes  
+- **alpha**: Transparency  
+
+</div>
+
+#### Three Ways to Initialize
+
+You can initialize a ggplot in three ways:
+
+```{r init-demo, exercise=TRUE}
+# 1. Empty - no data
+p1 <- ggplot()
+p1
+
+# 2. With data only
+p2 <- ggplot(iris)
+p2
+
+# 3. With data + aesthetics
+p3 <- ggplot(iris, aes(Sepal.Length, Petal.Length))
+p3
+```
+
+<div class="callout callout-danger">
+<div class="callout-title">Common Mistake!</div>
+
+Calling `ggplot()` without adding a `geom_*()` layer results in a blank plot! You must add at least one geom to see your data.  
+</div>
+
+#### Your Turn: Initialize a Plot
+
+Create a ggplot with the `iris` dataset, mapping `Species` to x and `Petal.Length` to y:
+
+```{r init-exercise, exercise=TRUE}
+# Initialize with data and aesthetics
+
+
+```
+
+```{r init-exercise-solution}
+p <- ggplot(iris, aes(Species, Petal.Length))
+p
+```
+
+---
+
+### 2. geom_*(): Add Visual Layers
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+3. **Basic ggplot2 Logic**  
+   - ggplot() + aes(): Initialize and set scales  
+   → **geom_*()**: Add visual layers  
+
+</div>
+
+<div class="callout callout-concept">
+<div class="callout-title">What are Geoms?</div>
+
+**Geometric objects (geoms)** define how your data is displayed. The choice of geom depends on:  
+- How many variables you're plotting (1 or 2)  
+- The type of variables (categorical or continuous)  
+
+</div>
+
+<div class="callout callout-info">
+<div class="callout-title">Common Geoms Reference</div>
+
+**Geoms (Visual Layers):**
+
+| Function | Use Case | Example |
+|----------|----------|--------|
+| `geom_point()` | Scatterplot | `geom_point()` |
+| `geom_line()` | Line plot | `geom_line()` |
+| `geom_bar()` | Bar chart (count) | `geom_bar()` |
+| `geom_col()` | Bar chart (values) | `geom_col()` |
+| `geom_histogram()` | Histogram | `geom_histogram(bins = 30)` |
+| `geom_density()` | Density plot | `geom_density(alpha = 0.5)` |
+| `geom_boxplot()` | Box plot | `geom_boxplot()` |
+| `geom_violin()` | Violin plot | `geom_violin()` |
+| `geom_smooth()` | Smoothed line/trend | `geom_smooth(method = "lm")` |
+| `geom_jitter()` | Jittered points | `geom_jitter(width = 0.2)` |
+
+</div>
+
+#### Geoms for ONE Variable
+
+**Categorical variable → Bar chart**
+
+```{r geom-bar-demo, exercise=TRUE}
+# Bar chart of Species
+ggplot(iris, aes(Species)) +
+    geom_bar() +
+    theme_light()
+```
+
+**Continuous variable → Histogram**
+
+```{r geom-hist-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Histogram of Height
+ggplot(tidy, aes(Height)) +
+    geom_histogram(bins = 30, alpha = 0.7, color = "black") +
+    theme_light()
+```
+
+**Continuous variable → Density plot**
+
+```{r geom-density-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Density plot of Height by Gender
+ggplot(tidy, aes(Height, fill = Gender)) +
+    geom_density(alpha = 0.5) +
+    theme_light()
+```
+
+#### Your Turn: One Variable
+
+Create a bar chart of `Continent` from the `tidy` dataset:
+
+```{r one-var-exercise, exercise=TRUE, exercise.setup="shared-data"}
+# Create a bar chart
+
+
+```
+
+```{r one-var-exercise-solution}
+ggplot(tidy, aes(Continent)) +
+    geom_bar() +
+    theme_light()
+```
+
+---
+
+#### Geoms for TWO Variables
+
+The choice depends on variable types:
+
+**Continuous X, Continuous Y → Scatterplot**
+
+```{r geom-point-demo, exercise=TRUE}
+# Scatterplot
+ggplot(iris, aes(Sepal.Length, Petal.Length)) +
+    geom_point() +
+    theme_light()
+```
+
+**Continuous X, Continuous Y → Scatterplot + Smooth line**
+
+```{r geom-smooth-demo, exercise=TRUE}
+# Scatterplot with trend line
+ggplot(iris, aes(Sepal.Length, Petal.Length)) +
+    geom_point() +
+    geom_smooth(method = "lm") +
+    theme_light()
+```
+
+**Discrete X, Continuous Y → Boxplot**
+
+```{r geom-box-demo, exercise=TRUE}
+# Boxplot by Species
+ggplot(iris, aes(Species, Petal.Length)) +
+    geom_boxplot() +
+    theme_light()
+```
+
+**Discrete X, Continuous Y → Violin plot**
+
+```{r geom-violin-demo, exercise=TRUE}
+# Violin plot by Species
+ggplot(iris, aes(Species, Petal.Length)) +
+    geom_violin() +
+    theme_light()
+```
+
+**Discrete X, Discrete Y → Bar chart (with fill)**
+
+```{r geom-bar-fill-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Stacked bar chart
+ggplot(tidy, aes(Gender, fill = Continent)) +
+    geom_bar() +
+    theme_light()
+```
+
+#### Your Turn: Two Variables
+
+Create a scatterplot showing the relationship between `Height` and `Weight` from the `tidy` dataset:
+
+```{r two-var-exercise, exercise=TRUE, exercise.setup="shared-data"}
+# Create a scatterplot
+
+
+```
+
+```{r two-var-exercise-solution}
+ggplot(tidy, aes(Height, Weight)) +
+    geom_point() +
+    theme_light()
+```
+
+---
+
+### 3. facet_*(): Create Subplots
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+3. **Basic ggplot2 Logic**  
+   - ggplot() + aes(): Initialize and set scales  
+   - geom_*(): Add visual layers  
+   → **facet_*()**: Create subplots  
+
+</div>
+
+<div class="callout callout-concept">
+<div class="callout-title">What is Faceting?</div>
+
+**Faceting** creates multiple plots (subplots) based on a categorical variable. Perfect for comparing patterns across groups!
+
+- `facet_wrap(~variable)` - wraps panels into a grid  
+- `facet_grid(row~col)` - arranges panels in rows and columns  
+
+</div>
+
+#### facet_wrap() Example
+
+```{r facet-wrap-demo, exercise=TRUE}
+# Separate plots for each species
+ggplot(iris, aes(Sepal.Length, Petal.Length)) +
+    geom_point(aes(color = Species)) +
+    facet_wrap(~Species) +
+    theme_light()
+```
+
+#### facet_grid() Example
+
+```{r facet-grid-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Grid of plots by Gender and Continent
+ggplot(tidy, aes(Height, Weight)) +
+    geom_point(alpha = 0.3) +
+    facet_grid(Gender ~ Continent) +
+    theme_light()
+```
+
+#### Your Turn: Faceting
+
+Create a histogram of `Petal.Length` faceted by `Species`:
+
+```{r facet-exercise, exercise=TRUE}
+# Create faceted histogram
+
+
+```
+
+```{r facet-exercise-solution}
+ggplot(iris, aes(Petal.Length)) +
+    geom_histogram(bins = 20, alpha = 0.7) +
+    facet_wrap(~Species) +
+    theme_light()
+```
+
+---
+
+### 4. annotate(): Add Text and Labels
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+3. **Basic ggplot2 Logic**  
+   - ggplot() + aes(): Initialize and set scales    
+   - geom_*(): Add visual layers  
+   - facet_*(): Create subplots  
+   → **annotate()**: Add text and labels  
+
+</div>
+
+<div class="callout callout-concept">
+<div class="callout-title">What is annotate()?</div>
+
+`annotate()` adds custom text, shapes, or lines to your plot. Useful for:  
+- Highlighting specific points or regions  
+- Adding explanatory text  
+- Drawing attention to patterns  
+
+</div>
+
+#### Adding Text Annotations
+
+```{r annotate-demo, exercise=TRUE}
+# Scatterplot with annotation
+ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) +
+    geom_point() +
+    annotate("text", x = 7, y = 2, 
+             label = "Interesting pattern!", 
+             color = "red", size = 5) +
+    theme_light()
+```
+
+#### Your Turn: Annotate
+
+Add an annotation to this plot at x=5.5, y=6 that says "High values":
+
+```{r annotate-exercise, exercise=TRUE}
+# Add annotation
+ggplot(iris, aes(Petal.Length, Sepal.Length)) +
+    geom_point() +
+    theme_light()
+```
+
+```{r annotate-exercise-solution}
+ggplot(iris, aes(Petal.Length, Sepal.Length)) +
+    geom_point() +
+    annotate("text", x = 5.5, y = 6, label = "High values", color = "blue") +
+    theme_light()
+```
+
+---
+
+## Complete Example: Build from Scratch
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+4. **Complete Example**  
+   → Building a plot from scratch    
+
+</div>
+
+Now put it all together! Create a plot with the `iris` dataset that:
+
+1. Maps `Petal.Length` to x-axis and `Sepal.Length` to y-axis  
+2. Colors points by `Species`  
+3. Adds points with `geom_point()`  
+4. Adds a smooth line with `geom_smooth(method = "lm")`  
+5. Facets by `Species`    
+6. Adds an annotation of your choice  
+7. Uses `theme_bw()`  
+
+```{r complete-example, exercise=TRUE}
+# Build your complete plot here
+
+
+```
+
+```{r complete-example-hint}
+# Start with ggplot and aes
+ggplot(iris, aes(Petal.Length, Sepal.Length, color = Species)) +
+    # Add your layers here
+```
+
+```{r complete-example-solution}
+ggplot(iris, aes(Petal.Length, Sepal.Length, color = Species)) +
+    geom_point() +
+    geom_smooth(method = "lm") +
+    facet_wrap(~Species) +
+    annotate("text", x = 5, y = 7, label = "Linear trend", size = 3) +
+    theme_bw() +
+    labs(title = "Petal vs Sepal Length",
+         x = "Petal Length (cm)",
+         y = "Sepal Length (cm)")
+```
+
+---
+
+## Customization
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+5. **Customization**  
+   → Global, layer-specific, and fixed aesthetics  
+
+</div>
+
+<div class="callout callout-concept">
+<div class="callout-title">Three Ways to Customize</div>
+
+**1. Global (in ggplot aes)** - applies to all layers    
+**2. Layer-specific (in geom aes)** - applies to one geom only    
+**3. Fixed aesthetics (outside aes)** - constant value for all points    
+
+</div>
+
+### 1. Global Customization
+
+Set aesthetics in `ggplot(aes(...))` - applies to all layers:
+
+```{r custom-global, exercise=TRUE}
+# Color applies to both geom_point and geom_smooth
+ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) +
+    geom_point() +
+    geom_smooth(method = "lm") +
+    theme_light()
+```
+
+### 2. Layer-Specific Customization
+
+Set aesthetics in `geom_*(aes(...))` - applies only to that layer:
+
+```{r custom-layer, exercise=TRUE}
+# Color only applies to points, not smooth line
+ggplot(iris, aes(Sepal.Length, Petal.Length)) +
+    geom_point(aes(color = Species)) +
+    geom_smooth(method = "lm", color = "black") +
+    theme_light()
+```
+
+### 3. Fixed Aesthetics (Outside aes)
+
+Set a constant value outside `aes()` - same for all points:
+
+```{r custom-fixed, exercise=TRUE}
+# All points are blue, size 3, 50% transparent
+ggplot(iris, aes(Sepal.Length, Petal.Length)) +
+    geom_point(color = "blue", size = 3, alpha = 0.5) +
+    theme_light()
+```
+
+### Combining All Three
+
+```{r custom-combined, exercise=TRUE}
+# Global: x and y mapping
+# Layer 1 (points): color by Species, fixed size and alpha
+# Layer 2 (smooth): fixed color black
+ggplot(iris, aes(Sepal.Length, Petal.Length)) +
+    geom_point(aes(color = Species), size = 3, alpha = 0.6) +
+    geom_smooth(method = "lm", color = "black", linetype = "dashed") +
+    theme_light()
+```
+
+### Your Turn: Customize
+
+Create a plot with `iris` where:v
+- x = `Petal.Length`, y = `Petal.Width`  
+- Points colored by `Species` (layer-specific)  
+- Points have fixed size = 4 and alpha = 0.7  
+- Add a black smooth line with `se = FALSE`  
+- Use `theme_minimal()`  
+
+```{r custom-exercise, exercise=TRUE}
+# Create your customized plot
+
+
+```
+
+```{r custom-exercise-solution}
+ggplot(iris, aes(Petal.Length, Petal.Width)) +
+    geom_point(aes(color = Species), size = 4, alpha = 0.7) +
+    geom_smooth(method = "lm", color = "black", se = FALSE) +
+    theme_minimal()
+```
+
+---
+
+## Final Challenge: End-to-End
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+6. **Final Challenge**  
+   → End-to-end plot with customization    
+
+</div>
+
+### Challenge: Complete Visualization
+
+Using the `works` dataset, create a complete visualization that shows the relationship between `Grade` and `Mark`.  
+
+**Requirements:**
+
+1. Map `Grade` to x-axis and `Mark` to y-axis  
+2. Use `geom_jitter(width = 0.2)` to avoid overplotting  
+3. Color points by `Grade` (layer-specific)  
+4. Make points semi-transparent (alpha = 0.7)  
+5. Add a boxplot layer with `alpha = 0.3`  
+6. Use `theme_light()`  
+7. Remove the legend with `theme(legend.position = "none")`  
+8. Add appropriate labels with `labs()`  
+
+First, preview the data:
+
+```{r challenge-data, exercise=TRUE, exercise.setup="shared-data"}
+# View the works dataset
+works
+```
+
+Now create your plot:
+
+```{r challenge-final, exercise=TRUE, exercise.setup="shared-data"}
+# Create your complete visualization
+
+
+```
+
+```{r challenge-final-hint}
+ggplot(works, aes(Grade, Mark)) +
+    # Add jittered points with color
+    # Add boxplot layer
+    # Customize theme and labels
+```
+
+```{r challenge-final-solution}
+ggplot(works, aes(Grade, Mark)) +
+    geom_jitter(aes(color = Grade), width = 0.2, alpha = 0.7) +
+    geom_boxplot(alpha = 0.3, outlier.shape = NA) +
+    theme_light() +
+    theme(legend.position = "none") +
+    labs(
+        title = "Grade vs Mark Distribution",
+        x = "Grade",
+        y = "Mark"
+    )
+```
+
+---
+
+## Advanced Customizations
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+7. **Advanced Customizations**  
+   → Customizing scales and colors  
+   - Theme customization  
+
+</div>
+
+### Customizing Scales and Colors
+
+<div class="callout callout-concept">
+<div class="callout-title">What are Scales?</div>
+
+**Scales** control how data values are mapped to visual properties. You can customize:
+- **Color scales**: `scale_color_*()`, `scale_fill_*()`
+- **Axis scales**: `scale_x_*()`, `scale_y_*()`
+- **Size scales**: `scale_size_*()`
+
+</div>
+
+#### Manual Color Scales
+
+```{r scale-manual-demo, exercise=TRUE}
+# Custom colors for each species
+ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) +
+    geom_point(size = 3) +
+    scale_color_manual(values = c("red", "blue", "green")) +
+    theme_light()
+```
+
+#### Predefined Color Palettes
+
+```{r scale-brewer-demo, exercise=TRUE}
+# Using ColorBrewer palettes
+ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) +
+    geom_point(size = 3) +
+    scale_color_brewer(palette = "Set1") +
+    theme_light()
+```
+
+#### Continuous Color Scales
+
+```{r scale-gradient-demo, exercise=TRUE}
+# Gradient for continuous variables
+ggplot(iris, aes(Sepal.Length, Petal.Length, color = Petal.Width)) +
+    geom_point(size = 3) +
+    scale_color_gradient(low = "yellow", high = "red") +
+    theme_light()
+```
+
+#### Customizing Axes
+
+```{r scale-axes-demo, exercise=TRUE}
+# Custom axis limits and breaks
+ggplot(iris, aes(Sepal.Length, Petal.Length)) +
+    geom_point() +
+    scale_x_continuous(limits = c(4, 8), breaks = seq(4, 8, by = 0.5)) +
+    scale_y_continuous(limits = c(0, 7), breaks = seq(0, 7, by = 1)) +
+    theme_light()
+```
+
+#### Your Turn: Custom Colors
+
+Create a boxplot of `Petal.Length` by `Species` with custom fill colors (your choice of colors):
+
+```{r scale-exercise, exercise=TRUE}
+# Create a boxplot with custom colors
+
+
+```
+
+```{r scale-exercise-solution}
+ggplot(iris, aes(Species, Petal.Length, fill = Species)) +
+    geom_boxplot(alpha = 0.7) +
+    scale_fill_manual(values = c("purple", "orange", "cyan")) +
+    theme_light() +
+    theme(legend.position = "none")
+```
+
+---
+
+### Theme Customization
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+7. **Advanced Customizations**  
+   - Customizing scales and colors  
+   → Theme customization  
+
+</div>
+
+<div class="callout callout-concept">
+<div class="callout-title">What are Themes?</div>
+
+**Themes** control the non-data elements of your plot:
+- Background colors
+- Grid lines
+- Text size and fonts
+- Legend position and appearance
+- Axis text and titles
+
+</div>
+
+#### Built-in Themes
+
+```{r theme-builtin-demo, exercise=TRUE}
+# Try different built-in themes
+p <- ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) +
+    geom_point(size = 2)
+
+# theme_minimal()
+p + theme_minimal()
+
+# theme_classic()
+# p + theme_classic()
+
+# theme_dark()
+# p + theme_dark()
+```
+
+#### Customizing Theme Elements
+
+```{r theme-custom-demo, exercise=TRUE}
+# Customize specific theme elements
+ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) +
+    geom_point(size = 3) +
+    theme_light() +
+    theme(
+        legend.position = "bottom",
+        legend.title = element_text(size = 14, face = "bold"),
+        axis.title = element_text(size = 12, face = "bold"),
+        plot.title = element_text(size = 16, hjust = 0.5),
+        panel.grid.minor = element_blank()
+    ) +
+    labs(title = "Iris Dataset Analysis")
+```
+
+#### Complete Customization Example
+
+```{r theme-complete-demo, exercise=TRUE}
+# Highly customized plot
+ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) +
+    geom_point(size = 3, alpha = 0.7) +
+    scale_color_brewer(palette = "Dark2") +
+    labs(
+        title = "Sepal vs Petal Length",
+        subtitle = "Across three Iris species",
+        x = "Sepal Length (cm)",
+        y = "Petal Length (cm)",
+        color = "Species",
+        caption = "Source: iris dataset"
+    ) +
+    theme_minimal() +
+    theme(
+        plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(size = 12, hjust = 0.5),
+        legend.position = "top",
+        panel.grid.minor = element_blank()
+    )
+```
+
+#### Your Turn: Complete Theme
+
+Create a customized plot with the `tidy` dataset showing `Height` vs `Weight`, colored by `Gender`:
+- Use custom colors
+- Add appropriate labels
+- Customize the theme
+- Place legend at bottom
+
+```{r theme-exercise, exercise=TRUE, exercise.setup="shared-data"}
+# Create your fully customized plot
+
+
+```
+
+```{r theme-exercise-solution}
+ggplot(tidy, aes(Height, Weight, color = Gender)) +
+    geom_point(alpha = 0.5) +
+    scale_color_manual(values = c("steelblue", "coral")) +
+    labs(
+        title = "Height vs Weight by Gender",
+        x = "Height (cm)",
+        y = "Weight (kg)"
+    ) +
+    theme_bw() +
+    theme(
+        legend.position = "bottom",
+        plot.title = element_text(face = "bold", hjust = 0.5)
+    )
+```
+
+---
+
+## Saving Plots
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+8. **Saving Plots**  
+   → Using ggsave()  
+
+</div>
+
+<div class="callout callout-concept">
+<div class="callout-title">Saving with ggsave()</div>
+
+`ggsave()` saves the last plot you created. You can:
+- Change the file format by changing the extension (.pdf, .png, .jpg, .svg)
+- Control dimensions with `width` and `height`
+- Adjust resolution with `dpi`
+
+</div>
+
+### Example: Saving Plots
+
+```{r ggsave-demo, echo=TRUE, eval=FALSE}
+# Create a plot
+plot2 <- ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) +
+    geom_point() +
+    theme_light()
+
+# Display it
+plot2
+
+# Save as PDF
+ggsave("plot2.pdf", width = 8, height = 6)
+
+# Save as PNG with high resolution
+ggsave("plot2.png", width = 8, height = 6, dpi = 300)
+
+# Save specific plot (not just the last one)
+ggsave("plot2_custom.pdf", plot = plot2, width = 10, height = 7)
+```
+
+**Common formats:**
+- `.pdf` - Vector format, scalable
+- `.png` - Raster format, good for web
+- `.jpg` - Raster format, compressed
+- `.svg` - Vector format, web-friendly
+
+---
+
+## Interactive Plots
+
+<div class="callout callout-success">
+<div class="callout-title">📍 In This Section</div>
+
+9. **Interactive Plots**  
+   → Making plots interactive with plotly  
+
+</div>
+
+<div class="callout callout-concept">
+<div class="callout-title">What is plotly?</div>
+
+**plotly** converts your ggplot2 plots into interactive visualizations! Users can:
+- Hover over points to see values
+- Zoom in and out
+- Pan around the plot
+- Toggle legend items on/off
+
+Simply wrap your ggplot with `ggplotly()`!
+
+</div>
+
+### Make Plots Interactive
+
+```{r plotly-demo, exercise=TRUE, eval=FALSE}
+# Load plotly
+library(plotly)
+
+# Create a ggplot
+plot2 <- ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) +
+    geom_point() +
+    theme_light()
+
+# Make it interactive
+ggplotly(plot2)
+```
+
+Try hovering over points to see the values!
+
+### Your Turn: Interactive Plot
+
+Create an interactive scatterplot with the `tidy` dataset showing `Height` vs `Weight`:
+
+```{r plotly-exercise, exercise=TRUE, exercise.setup="shared-data", eval=FALSE}
+# Create an interactive plot
+
+
+```
+
+```{r plotly-exercise-solution, eval=FALSE}
+library(plotly)
+
+p <- ggplot(tidy, aes(Height, Weight, color = Gender)) +
+    geom_point(alpha = 0.5) +
+    theme_light()
+
+ggplotly(p)
+```
+
+---
+
+## Quick Reference: All Functions
+
+<div class="callout callout-info">
+<div class="callout-title">Functions Used in This Tutorial</div>
+
+**Core Functions:**
+
+| Function | Description | Example |
+|----------|-------------|--------|
+| `ggplot()` | Initialize a plot | `ggplot(data, aes(x, y))` |
+| `aes()` | Map aesthetics | `aes(x = col1, y = col2, color = col3)` |
+
+**Geoms (Visual Layers):**
+
+| Function | Use Case | Example |
+|----------|----------|--------|
+| `geom_point()` | Scatterplot | `geom_point()` |
+| `geom_line()` | Line plot | `geom_line()` |
+| `geom_bar()` | Bar chart (count) | `geom_bar()` |
+| `geom_col()` | Bar chart (values) | `geom_col()` |
+| `geom_histogram()` | Histogram | `geom_histogram(bins = 30)` |
+| `geom_density()` | Density plot | `geom_density(alpha = 0.5)` |
+| `geom_boxplot()` | Box plot | `geom_boxplot()` |
+| `geom_violin()` | Violin plot | `geom_violin()` |
+| `geom_smooth()` | Smoothed line/trend | `geom_smooth(method = "lm")` |
+| `geom_jitter()` | Jittered points | `geom_jitter(width = 0.2)` |
+
+**Faceting:**
+
+| Function | Description | Example |
+|----------|-------------|--------|
+| `facet_wrap()` | Wrap facets into grid | `facet_wrap(~Species)` |
+| `facet_grid()` | Arrange in rows/columns | `facet_grid(row~col)` |
+
+**Scales:**
+
+| Function | Description | Example |
+|----------|-------------|--------|
+| `scale_color_manual()` | Manual colors | `scale_color_manual(values = c("red", "blue"))` |
+| `scale_fill_manual()` | Manual fill colors | `scale_fill_manual(values = c("#FF0000", "#0000FF"))` |
+| `scale_color_brewer()` | ColorBrewer palettes | `scale_color_brewer(palette = "Set1")` |
+| `scale_color_gradient()` | Color gradient | `scale_color_gradient(low = "white", high = "red")` |
+| `scale_x_continuous()` | Continuous x-axis | `scale_x_continuous(limits = c(0, 10))` |
+| `scale_y_continuous()` | Continuous y-axis | `scale_y_continuous(breaks = seq(0, 100, 10))` |
+
+**Themes:**
+
+| Function | Description | Example |
+|----------|-------------|--------|
+| `theme_light()` | Light theme | `theme_light()` |
+| `theme_minimal()` | Minimal theme | `theme_minimal()` |
+| `theme_classic()` | Classic theme | `theme_classic()` |
+| `theme_bw()` | Black and white | `theme_bw()` |
+| `theme_dark()` | Dark theme | `theme_dark()` |
+| `theme()` | Customize theme | `theme(legend.position = "bottom")` |
+
+**Labels:**
+
+| Function | Description | Example |
+|----------|-------------|--------|
+| `labs()` | Add labels | `labs(title = "My Plot", x = "X axis", y = "Y axis")` |
+| `xlab()` | X-axis label | `xlab("X variable")` |
+| `ylab()` | Y-axis label | `ylab("Y variable")` |
+| `ggtitle()` | Plot title | `ggtitle("My Title")` |
+
+**Annotations:**
+
+| Function | Description | Example |
+|----------|-------------|--------|
+| `annotate()` | Add text/shapes | `annotate("text", x = 5, y = 10, label = "Note")` |
+
+**Other Functions:**
+
+| Function | Description | Example |
+|----------|-------------|--------|
+| `ggsave()` | Save plot to file | `ggsave("plot.png", width = 8, height = 6)` |
+| `ggplotly()` | Make plot interactive | `ggplotly(plot)` (from plotly package) |
+| `coord_flip()` | Flip coordinates | `coord_flip()` |
+
+**Common Aesthetic Mappings:**
+
+| Aesthetic | Description | Example |
+|-----------|-------------|---------|
+| `x` | X-axis position | `aes(x = height)` |
+| `y` | Y-axis position | `aes(y = weight)` |
+| `color` | Color of points/lines | `aes(color = species)` |
+| `fill` | Fill color | `aes(fill = category)` |
+| `size` | Size of points/lines | `aes(size = population)` |
+| `alpha` | Transparency | `aes(alpha = 0.5)` |
+| `shape` | Point shape | `aes(shape = type)` |
+| `linetype` | Line type | `aes(linetype = group)` |
+
+</div>
+
+---
+
+## Congratulations!
+
+You've completed the ggplot2 tutorial!
+
+### What You've Learned:
+
+- Why ggplot2 is powerful (Grammar of Graphics)
+- **ggplot() + aes()**: Initializing plots and setting scales
+- **geom_*()**: Visual layers for different variable types
+  - One variable: bar, histogram, density
+  - Two variables: point, smooth, boxplot, violin, bar
+- **facet_*()**: Creating subplots
+- **annotate()**: Adding text and labels
+- **Customization**: Global, layer-specific, and fixed aesthetics
+- **Advanced customizations**: Scales, colors, and themes
+- **Saving plots**: Using ggsave()
+- **Interactive plots**: Using plotly
+
+### Next Steps:
+
+In the next tutorial we will get deeper into R - with more practical examples and using tables (data.table) !
+
+
+---
+
+### Download Your Work
+
+<div class="callout callout-tip">
+<div class="callout-title">Save Your Work</div>
+
+Save this completed tutorial as an HTML file for future reference.
+</div>
+
+```{r download-ui, echo=FALSE}
+HTML('<button onclick="window.downloadTutorial(); return false;" class="btn-download-tutorial" style="display: block; margin: 20px auto;">📥 Download Tutorial as HTML</button>')
+```
+
+---
+
+### Please Give Feedback!
+
+<div class="callout callout-success">
+<div class="callout-title">💬 Your Feedback Matters</div>
+
+Help us improve this tutorial! Share your experience and suggestions.
+</div>
+
+```{r feedback-ui, echo=FALSE}
+HTML('<a href="https://forms.gle/B7Wy7G29wQTuEKjU9" target="_blank" style="display: block; margin: 20px auto; padding: 15px 30px; background-color: #28a745; color: white; text-align: center; text-decoration: none; border-radius: 5px; font-weight: bold; max-width: 300px;">📝 Please Give Feedback!</a>')
+```
+
+---
+
+### Quick Reference
+
+<div class="callout callout-info">
+<div class="callout-title">ggplot2 Cheat Sheet</div>
+
+**Basic Structure:**
+```r
+ggplot(data, aes(x, y, ...)) + 
+    geom_*(...) + 
+    facet_*(...) +
+    labs(...) +
+    theme_*()
+```
+
+**Common Geoms:**
+- `geom_point()` - scatter plot
+- `geom_line()` - line plot
+- `geom_bar()` - bar chart
+- `geom_histogram()` - histogram
+- `geom_boxplot()` - box plot
+- `geom_violin()` - violin plot
+- `geom_smooth()` - smooth line
+
+**Common Aesthetics:**
+- Position: `x`, `y`
+- Color: `color`, `fill`
+- Shape: `shape`, `linetype`
+- Size: `size`, `alpha`
+
+</div>
+
+### Additional Resources
+
+- [ggplot2 Documentation](https://ggplot2.tidyverse.org/)
+- [R Graphics Cookbook](https://r-graphics.org/)
+- [ggplot2 Cheat Sheet](https://github.com/rstudio/cheatsheets/blob/main/data-visualization.pdf)
