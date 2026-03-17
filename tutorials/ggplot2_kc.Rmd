@@ -30,6 +30,8 @@ setup_branding_server()
 ```{r shared-data, exercise.setup=TRUE, include=FALSE}
 # Load shared data for exercises
 library(data.table)
+# Reinitialize data.table options (stripped by learnr exercise environment)
+if (is.null(getOption("datatable.alloccol"))) data.table:::.onLoad()
 
 # ggplot2 datasets
 tidy <- fread("http://hex.bioinfo.hr/~mfabijanic/tidyData.txt", header=T)
@@ -126,21 +128,13 @@ In this tutorial, you will master data visualization with ggplot2:
 
 You only need to install packages ONCE. Use `install.packages()` to install **data.table** and **ggplot2**:
 
-```{r install-packages, exercise=TRUE, eval=FALSE}
+```{r install-packages, echo=TRUE, eval=FALSE}
 # Install the required packages
 
-
-```
-
-```{r install-packages-hint}
 install.packages("data.table")
 install.packages("ggplot2")
 ```
 
-```{r install-packages-solution, eval=FALSE}
-install.packages("data.table")
-install.packages("ggplot2")
-```
 
 ### Loading Libraries
 
@@ -156,18 +150,9 @@ install.packages("ggplot2")
 
 Load them every session. Use `library()` to load **data.table** and **ggplot2**:
 
-```{r load-libs, exercise=TRUE}
+```{r load-libs, , echo=TRUE, eval=FALSE}
 # Load the libraries
 
-
-```
-
-```{r load-libs-hint}
-library(data.table)
-library(ggplot2)
-```
-
-```{r load-libs-solution}
 library(data.table)
 library(ggplot2)
 ```
@@ -184,20 +169,12 @@ library(ggplot2)
 
 </div>
 
-Preview the `tidy` dataset by typing its name:
+Preview the `iris` dataset by typing its name:
 
 ```{r data-preview, exercise=TRUE, exercise.setup="shared-data"}
-# Display the tidy dataset
+# Display the iris dataset
+iris
 
-
-```
-
-```{r data-preview-hint}
-tidy
-```
-
-```{r data-preview-solution}
-tidy
 ```
 
 ---
@@ -223,14 +200,6 @@ Use base R `plot()` to create a scatterplot of `iris$Sepal.Length` vs `iris$Peta
 ```{r base-plot, exercise=TRUE}
 # Create a base R scatterplot
 
-
-```
-
-```{r base-plot-hint}
-plot(iris$Sepal.Length, iris$Petal.Length, col = iris$Species)
-```
-
-```{r base-plot-solution}
 plot(iris$Sepal.Length, iris$Petal.Length, col = iris$Species)
 ```
 
@@ -241,16 +210,6 @@ Now recreate the same plot using `ggplot()` with `geom_point()`, coloring by `Sp
 ```{r ggplot-plot, exercise=TRUE}
 # Create the same plot using ggplot2
 
-
-```
-
-```{r ggplot-plot-hint}
-ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) + 
-    geom_point() +
-    theme_light()
-```
-
-```{r ggplot-plot-solution}
 ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) + 
     geom_point() +
     theme_light()
@@ -289,7 +248,10 @@ Lets make this better, just for demonstration purposes. :
 
 
 ```{r ggplot-plot2, exercise=TRUE}
-# Create the same plot using ggplot2
+# Upgrade the plot using ggplot2
+ggplot(iris, aes(Sepal.Length, Petal.Length, color = Species)) + 
+    geom_point() +
+    theme_light()
 
 
 ```
@@ -358,16 +320,21 @@ gggplot(iris, aes(Sepal.Length, Petal.Length, shape=Species)) +
 
 - **ggplot()** = initialize the plot with data
 - **aes()** = aesthetic mappings (which variables go where)
-- **geom_*** = geometric objects (points, bars, lines, etc.)
+- **geom_\*()** = geometric objects (points, bars, lines, etc.)
 - **annotation** = add custom text to annotate the plot and data within it. 
 - **+** = layer components together
 </div>
 
 ### ggplot(data, aes(x, y))
 
-Three ways to initialize:
+Three ways to initialize:  
 
-Try writing the three ways to initialize a ggplot: empty, with data only, and with data + aesthetics:
+Try writing the three ways to initialize a ggplot: 
+empty,  
+with data only, (use the iris dataset)    
+and with data + aesthetics (use the iris dataset, and use Sepal.Length, Petal.Length columns as x and y):   
+
+
 
 ```{r ggplot-init, exercise=TRUE}
 # Three ways to initialize a ggplot

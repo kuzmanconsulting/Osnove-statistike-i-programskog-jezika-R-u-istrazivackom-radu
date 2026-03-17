@@ -28,6 +28,8 @@ setup_branding_server()
 ```{r shared-data, exercise.setup=TRUE, include=FALSE}
 # Load shared data for exercises
 library(data.table)
+# Reinitialize data.table options (stripped by learnr exercise environment)
+if (is.null(getOption("datatable.alloccol"))) data.table:::.onLoad()
 
 # data.table datasets
 ddf <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/tidyData.txt", header=T)

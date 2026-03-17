@@ -1,5 +1,5 @@
 ---
-title: "Introduction to R"
+title: "Introduction to R - Part 1"
 output: 
   learnr::tutorial:
     progressive: true
@@ -57,7 +57,7 @@ df$recommend <- factor(df$recommend, levels=c("Strongly no","No", "Maybe", "Yes"
 
 ## Welcome
 
-Welcome to **Introduction to R**
+Welcome to **Introduction to R - Part 1**
 
 **Author:** dr.sc. Maja Kuzman - Kuzman Consulting d.o.o.
 
@@ -73,9 +73,9 @@ Welcome to **Introduction to R**
 ## What You Will Learn
 
 <div class="callout callout-success">
-<div class="callout-title">Tutorial Contents</div>
+<div class="callout-title">Tutorial Contents - Part 1</div>
 
-In this tutorial, you will master the fundamentals of R programming:
+In this tutorial, you will learn the fundamentals of R programming:
 
 1. **Getting Started with R**  
    - Using R as a calculator  
@@ -89,26 +89,15 @@ In this tutorial, you will master the fundamentals of R programming:
 3. **Functions and Help**  
    - Vector structure functions  
    - Mathematical functions  
+   - Z-scores, skewness, and kurtosis
    - Getting help in R  
    
-4. **Working with Vectors**  
+4. **Working with Vectors** (Introduction)  
    - Creating vectors with `c()`  
    - Subsetting with `[ ]`  
    - Accessing single and multiple elements  
-   - Using logical vectors for subsetting  
-   - Understanding type conversion  
-   
-5. **Comparisons and Subsetting**  
-   - Using comparison operators  
-   - Conditional subsetting and filtering  
-   
-6. **Logical Operators**  
-   - Understanding AND, OR, NOT  
-   - Multi-condition filtering  
 
-**Additional Content:**  
-- Vector Operations (multiplication, element-wise ops, recycling)  
-- Quick Reference: All Functions Used in This Tutorial
+**Note:** Part 2 continues with logical subsetting, type conversion, comparisons, and logical operators.
 
 </div>
 
@@ -755,8 +744,6 @@ example(runif)
    → Creating vectors with `c()`  
    - Subsetting with `[ ]`  
    - Accessing single and multiple elements  
-   - Using logical vectors for subsetting  
-   - Understanding type conversion  
 
 </div>
 
@@ -801,8 +788,6 @@ myFirstSequence
    - Creating vectors with `c()`  
    → Subsetting with `[ ]`  
    - Accessing single and multiple elements  
-   - Using logical vectors for subsetting  
-   - Understanding type conversion  
 
 </div>
 
@@ -829,8 +814,6 @@ myFirstSequence
    - Creating vectors with `c()`   
    - Subsetting with `[ ]`  
    → Accessing single and multiple elements  
-   - Using logical vectors for subsetting  
-   - Understanding type conversion  
 
 </div>
 
@@ -951,725 +934,7 @@ myvector[c(2, 4)]  # Returns 16 and 18
 
 ---
 
-<!-- NEW CONCEPT: LOGICAL SUBSETTING -->
-### Access by Logical Vector
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-4. **Working with Vectors**  
-   - Creating vectors with `c()`  
-   - Subsetting with `[ ]`  
-   - Accessing single and multiple elements  
-   → Using logical vectors for subsetting  
-   - Understanding type conversion  
-
-</div>
-
-<!-- STEP 1: EXPLAIN THE CONCEPT -->
-<div class="callout callout-concept">
-<div class="callout-title">Logical Subsetting</div>
-
-Instead of positions (1, 2, 3...), you can use TRUE/FALSE values to select elements:  
-- **TRUE** = keep this element  
-- **FALSE** = skip this element  
-
-The logical vector must be the same length as your data vector.  
-</div>
-
----
-
-<!-- STEP 2: DEMONSTRATE - Simple Example -->
-### Demonstration: Using TRUE/FALSE to Select Elements
-
-Use `TRUE/FALSE` values to select elements from `mySecondVector`. Select the 1st and 3rd elements:
-
-```{r logical-subsetting-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Use TRUE/FALSE to select elements
-
-
-```
-
-```{r logical-subsetting-demo-hint}
-mySecondVector
-mySecondVector[c(TRUE, FALSE, TRUE, FALSE)]
-```
-
-```{r logical-subsetting-demo-solution}
-mySecondVector
-mySecondVector[c(TRUE, FALSE, TRUE, FALSE)]
-```
-
-**What's happening here?**
-- Position 1: TRUE → include "some words"  
-- Position 2: FALSE → skip "p"  
-- Position 3: TRUE → include "awesome"  
-- Position 4: FALSE → skip "last one"  
-
----
-
-<!-- STEP 3: DEMONSTRATE - Using Variables -->
-### Demonstration: Storing Logical Vectors
-
-You can save logical vectors in variables:
-
-Create a logical vector `my_selection` and use it to subset `mySecondVector`:
-
-```{r logical-variable-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Store a logical vector and use it for subsetting
-
-
-```
-
-```{r logical-variable-demo-hint}
-my_selection <- c(TRUE, TRUE, FALSE, FALSE)
-mySecondVector[my_selection]
-```
-
-```{r logical-variable-demo-solution}
-my_selection <- c(TRUE, TRUE, FALSE, FALSE)
-mySecondVector[my_selection]
-```
-
-**Why is this useful?** 
-- Logical vectors can be created automatically from conditions (coming next!)  
-- Makes code more readable and reusable  
-
----
-
-<!-- STEP 4: TIP -->
-<div class="callout callout-tip">
-<div class="callout-title">Pro Tip: Logical Vector Length</div>
-
-The logical vector should match the length of your data:
-```r
-mySecondVector[c(TRUE, FALSE)]  # Only 2 values for 4-element vector?
-```
-
-R will **recycle** the pattern: TRUE, FALSE, TRUE, FALSE  
-
-This can be useful but also cause errors if unintended!  
-</div>
-
----
-
-<!-- STEP 5: EXERCISE -->
-### Your Turn: Practice Logical Subsetting
-
-**Task:** 
-Use a logical vector to get the 2nd and 4th elements from `myvector`.
-
-Think about which positions should be TRUE vs FALSE.
-
-```{r exercise-logical, exercise=TRUE}
-myvector <- c(15, 16, 17, 18, 20)
-
-# Create a logical vector to select 2nd and 4th elements
-
-
-# Use it to subset myvector
-
-```
-
-```{r exercise-logical-hint}
-# Think: which positions should be TRUE?
-# Position: 1     2     3      4     5
-# Logical:  FALSE TRUE  FALSE TRUE  FALSE
-```
-
-```{r exercise-logical-solution}
-myvector <- c(15, 16, 17, 18, 20)
-myvector[c(FALSE, TRUE, FALSE, TRUE, FALSE)]
-```
-
----
-
-<!-- NEW CONCEPT: TYPE CONVERSION -->
-### Understanding Type Conversion
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-4. **Working with Vectors**  
-   - Creating vectors with `c()`  
-   - Subsetting with `[ ]`  
-   - Accessing single and multiple elements  
-   - Using logical vectors for subsetting  
-   → Understanding type conversion  
-
-</div>
-
-<!-- STEP 1: EXPLAIN THE CONCEPT -->
-<div class="callout callout-concept">
-<div class="callout-title">Automatic Type Conversion</div>
-
-R sometimes converts data types automatically:
-- **Numbers to Logical:** 0 = FALSE, any other number = TRUE
-- When you use numbers where logical values are expected, R converts them
-
-You can also convert explicitly using `as.logical()`, `as.numeric()`, etc.
-</div>
-
----
-
-<!-- STEP 2: DEMONSTRATE - Automatic Conversion -->
-### Demonstration: Numbers as Logical Vectors
-
-Use `someothervector` (which contains 1s and 0s) to subset `mySecondVector`. Observe how R behaves:
-
-```{r conversion-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Use a numeric vector with 0s and 1s to subset
-
-
-```
-
-```{r conversion-demo-hint}
-someothervector <- c(1, 0, 1, 0, 1)
-mySecondVector[someothervector]
-```
-
-```{r conversion-demo-solution}
-someothervector <- c(1, 0, 1, 0, 1)
-mySecondVector[someothervector]
-```
-
-**What's happening here?**
-- R sees `someothervector` contains numbers  
-- Context requires logical (TRUE/FALSE) for subsetting  
-- R does not automatically convert: 1 → TRUE, 0 → FALSE
-- Result: Elements at positions 1, 1, 1
-
----
-
-<!-- STEP 3: DEMONSTRATE - Explicit Conversion -->
-### Demonstration: Explicit Conversion with as.logical()
-
-Explicitly convert `someothervector` to logical using `as.logical()` and use it to subset `myFirstVector`:  
-
-```{r explicit-conversion-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Explicitly convert to logical and subset
-
-
-```
-
-```{r explicit-conversion-demo-hint}
-someothervector <- c(1, 0, 1, 0, 1)
-as.logical(someothervector)
-mySecondVector[as.logical(someothervector)]
-```
-
-```{r explicit-conversion-demo-solution}
-someothervector <- c(1, 0, 1, 0, 1)
-as.logical(someothervector)
-mySecondVector[as.logical(someothervector)]
-```
-
-**Why use explicit conversion?**
-- Makes your code clearer and more readable  
-- Prevents surprises if R's automatic conversion isn't what you expect  
-
----
-
-<!-- STEP 4: INFO CALLOUT -->
-<div class="callout callout-info">
-<div class="callout-title">Conversion Rules</div>
-
-**Numeric to Logical:**
-- 0 → FALSE  
-- Any other number (1, 2, -5, 0.5, etc.) → TRUE  
-
-**Logical to Numeric:**
-- FALSE → 0  
-- TRUE → 1  
-</div>
-
----
-
-<!-- NEW CONCEPT: COMPARISONS AND FILTERING -->
-## Comparisons and Subsetting
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-5. **Comparisons and Subsetting**  
-   → Using comparison operators  
-   - Conditional subsetting and filtering  
-
-</div>
-
-<!-- STEP 1: EXPLAIN THE CONCEPT -->
-<div class="callout callout-concept">
-<div class="callout-title">Filtering Data with Comparisons</div>
-
-**Comparison operators** create TRUE/FALSE vectors automatically:  
-- `==` equals  
-- `!=` not equals  
-- `>` greater than  
-- `<` less than  
-- `>=` greater or equal  
-- `<=` less or equal  
-
-These logical vectors can be used for **conditional subsetting** - one of the most powerful data analysis tools!  
-</div>
-
----
-
-<!-- STEP 2: DEMONSTRATE - Simple Comparisons -->
-### Demonstration: Comparison Operators
-
-Check which elements of `someothervector` equal 1 (`== 1`) and which are greater than 0 (`> 0`):
-
-```{r comparison-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Use comparison operators
-
-
-```
-
-```{r comparison-demo-hint}
-someothervector
-someothervector == 1
-someothervector > 0
-```
-
-```{r comparison-demo-solution}
-someothervector
-someothervector == 1
-someothervector > 0
-```
-
-**What's happening here?**
-- `someothervector == 1` checks each element: is it 1?  
-- Returns: `TRUE FALSE TRUE FALSE TRUE`  
-- `someothervector > 0` checks: is it greater than 0?  
-- Returns logical vector showing which positions meet the condition  
-
----
-
-<!-- STEP 3: DEMONSTRATE - Using Comparisons for Subsetting -->
-### Demonstration: Conditional Subsetting
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-5. **Comparisons and Subsetting**  
-   - Using comparison operators  
-   → Conditional subsetting and filtering  
-
-</div>
-
-Subset `someothervector` to get only elements greater than 0:
-
-```{r subset-by-comparison-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Filter to keep only elements > 0
-
-
-```
-
-```{r subset-by-comparison-demo-hint}
-someothervector
-someothervector[someothervector > 0]
-```
-
-```{r subset-by-comparison-demo-solution}
-someothervector
-someothervector[someothervector > 0]
-```
-
-**What's happening here?**
-1. `someothervector > 0` creates: `TRUE FALSE TRUE FALSE TRUE`  
-2. Use this as subsetting index  
-3. Result: only elements where condition is TRUE (values: 1, 1, 1)  
-
-**This is filtering!** You're selecting data based on conditions.  
-
----
-
-<!-- STEP 4: TIP -->
-<div class="callout callout-tip">
-<div class="callout-title">Breaking Down Complex Subsetting</div>
-
-You can split complex subsetting into steps:
-
-```r
-# Step by step  
-condition <- someothervector > 0  
-condition  # See the TRUE/FALSE pattern  
-someothervector[condition]  # Apply it  
-  
-# Or in one line  
-someothervector[someothervector > 0]  
-```
-
-Both give the same result!
-</div>
-
----
-
-<!-- STEP 5: EXERCISE -->
-### Your Turn: Practice Conditional Subsetting
-
-**Task:** 
-Get only the elements from `myvector` that are **smaller than 17**.  
-
-```{r exercise-comparison, exercise=TRUE}
-myvector <- c(15, 16, 17, 18, 20)  
-
-# Your code here: filter for values < 17
-
-```
-
-```{r exercise-comparison-hint}
-# Use the < operator to create a logical vector
-myvector[myvector < 17]
-```
-
-```{r exercise-comparison-solution}
-myvector <- c(15, 16, 17, 18, 20)
-myvector[myvector < 17]  # Returns 15 and 16
-```
-
----
-
-<!-- NEW CONCEPT: LOGICAL OPERATORS -->
-## Logical Operators
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-6. **Logical Operators**  
-   → Understanding AND, OR, NOT    
-   - Multi-condition filtering  
-
-</div>
-
-<!-- STEP 1: EXPLAIN THE CONCEPT -->
-<div class="callout callout-concept">
-<div class="callout-title">Combining Conditions</div>
-
-Logical operators let you combine multiple TRUE/FALSE conditions:  
-- **AND (`&`)**: Both must be TRUE    
-- **OR (`|`)**: At least one must be TRUE    
-- **NOT (`!`)**: Flips TRUE ↔ FALSE  
-
-These let you create complex filters: "values greater than 10 AND less than 20"
-</div>
-
----
-
-<!-- STEP 2: DEMONSTRATE - AND, OR, NOT -->
-### Demonstration: Basic Logical Operations
-
-Create `firstLogical` and `secondLogical` vectors. Then test AND (`&`), OR (`|`), and NOT (`!`) operators:
-
-```{r logical-ops-demo, exercise=TRUE}
-# Test logical operators: &, |, !
-
-
-```
-
-```{r logical-ops-demo-hint}
-firstLogical <- c(TRUE, TRUE, FALSE, FALSE) 
-secondLogical <- c(TRUE, FALSE, TRUE, FALSE)
-firstLogical & secondLogical
-firstLogical | secondLogical
-!firstLogical
-```
-
-```{r logical-ops-demo-solution}
-firstLogical <- c(TRUE, TRUE, FALSE, FALSE) 
-secondLogical <- c(TRUE, FALSE, TRUE, FALSE)
-firstLogical & secondLogical
-firstLogical | secondLogical
-!firstLogical
-```
-
-**What's happening here?**
-- `&` (AND): TRUE only when BOTH are TRUE  
-  - Position 1: TRUE & TRUE = **TRUE**  
-  - Position 2: TRUE & FALSE = **FALSE**  
-- `|` (OR): TRUE when AT LEAST ONE is TRUE  
-  - Position 2: TRUE | FALSE = **TRUE**  
-  - Position 3: FALSE | TRUE = **TRUE**  
-- `!` (NOT): Flips each value  
-  - TRUE becomes FALSE, FALSE becomes TRUE  
-
----
-
-<!-- STEP 3: DEMONSTRATE - Combining Conditions for Filtering -->
-### Demonstration: Multi-Condition Filtering
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
-
-6. **Logical Operators**  
-   - Understanding AND, OR, NOT    
-   → Multi-condition filtering  
-
-</div>
-
-Create a `numbers` vector `c(5, 10, 15, 20, 25)`. Use `&` to find numbers between 10 and 20 (inclusive), then use the condition for subsetting:
-
-```{r multi-condition-demo, exercise=TRUE}
-# Filter numbers between 10 and 20
-
-
-```
-
-```{r multi-condition-demo-hint}
-numbers <- c(5, 10, 15, 20, 25)
-numbers >= 10 & numbers <= 20
-numbers[numbers >= 10 & numbers <= 20]
-```
-
-```{r multi-condition-demo-solution}
-numbers <- c(5, 10, 15, 20, 25)
-numbers >= 10 & numbers <= 20
-numbers[numbers >= 10 & numbers <= 20]
-```
-
-**What's happening here?**
-1. `numbers >= 10` → `FALSE TRUE TRUE TRUE TRUE`  
-2. `numbers <= 20` → `TRUE TRUE TRUE TRUE FALSE`  
-3. Combine with `&` → `FALSE TRUE TRUE TRUE FALSE`  
-4. Result: 10, 15, 20 (values meeting BOTH conditions)  
-
----
-
-<!-- STEP 4: TIP -->
-<div class="callout callout-tip">
-<div class="callout-title">Truth Table Quick Reference</div>
-
-| A     | B     | A & B | A \| B | !A    |
-|-------|-------|-------|--------|-------|
-| TRUE  | TRUE  | TRUE  | TRUE   | FALSE |
-| TRUE  | FALSE | FALSE | TRUE   | FALSE |
-| FALSE | TRUE  | FALSE | TRUE   | TRUE  |
-| FALSE | FALSE | FALSE | FALSE  | TRUE  |
-</div>
-
----
-
-<!-- STEP 5: EXERCISE -->
-### Extra Challenge!  
-
-Your Turn: Practice Logical Operators
-
-**Task:** 
-Find all elements from `myvector` that are **divisible by 3**.
-
-**Hint:** A number is divisible by 3 if `number %% 3 == 0`
-
-```{r exercise-logical-ops, exercise=TRUE}
-myvector <- c(15, 16, 17, 18, 20)
-
-# Find elements divisible by 3
-
-```
-
-```{r exercise-logical-ops-hint}
-# A number is divisible by 3 if modulo 3 equals 0
-myvector[myvector %% 3 == 0]
-```
-
-```{r exercise-logical-ops-solution}
-myvector <- c(15, 16, 17, 18, 20)
-myvector[myvector %% 3 == 0]  # Returns 15 and 18
-```
-
----
-
-### Extra Challenge!
-
-Return all elements from `myvector` which are on EVEN positions (2, 4, 6, ...).
-
-```{r exercise-even-positions, exercise=TRUE}
-myvector <- c(15, 16, 17, 18, 20)
-
-# Get elements at even positions
-
-```
-
-```{r exercise-even-positions-hint}
-# You can use recycling: c(FALSE, TRUE) will create FALSE, TRUE, FALSE, TRUE, FALSE
-myvector[c(FALSE, TRUE)]
-```
-
-```{r exercise-even-positions-solution}
-myvector <- c(15, 16, 17, 18, 20)
-myvector[c(FALSE, TRUE)]  # Uses recycling: positions 2 and 4
-```
-
----
-
-## Additional Content: Vector Operations
-
-<div class="callout callout-info">
-<div class="callout-title">📍 Additional Content</div>
-
-**Vector Operations**  
-- Multiplication by constants  
-- Element-wise operations  
-- Vector recycling  
-
-</div>
-
-<div class="callout callout-concept">
-<div class="callout-title">Vectorized Operations</div>
-
-One of R's most powerful features is **vectorized operations**:
-- Operations apply to **each element automatically**
-- No need for loops!
-- Works with: `+`, `-`, `*`, `/`, and more
-
-**Example:** `c(1,2,3) * 2` multiplies each element by 2
-</div>
-
----
-
-### Demonstration: Multiplication by a Constant
-
-Multiply `someothervector` by `0.5` and observe the element-wise result:
-
-```{r mult-constant-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Multiply vector by a constant
-
-
-```
-
-```{r mult-constant-demo-hint}
-someothervector
-someothervector * 0.5
-```
-
-```{r mult-constant-demo-solution}
-someothervector
-someothervector * 0.5
-```
-
-**What's happening here?**
-- Each element is multiplied by 0.5
-- No loop needed - R does it automatically
-- Result: `[1] 0.5 0.0 0.5 0.0 0.5`
-
----
-
-### Demonstration: Multiplying Two Vectors (Same Length)
-
-Multiply `someothervector` by `1:5` (element by element) and observe the result:
-
-```{r mult-same-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Multiply two vectors of same length
-
-
-```
-
-```{r mult-same-demo-hint}
-someothervector
-1:5
-someothervector * 1:5
-```
-
-```{r mult-same-demo-solution}
-someothervector
-1:5
-someothervector * 1:5
-```
-
-**What's happening here?**
-- Element 1 × Element 1: `1 × 1 = 1`  
-- Element 2 × Element 2: `0 × 2 = 0`  
-- Element 3 × Element 3: `1 × 3 = 3`  
-- And so on...  
-
----
-
-### Demonstration: Different Size Vectors (Recycling)
-
-Multiply `someothervector` (length 5) by `c(0.3, 0.1)` (length 2) and observe how R recycles the shorter vector:  
-
-```{r mult-recycle-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Multiply vectors of different lengths (recycling)
-
-
-```
-
-```{r mult-recycle-demo-hint}
-someothervector
-c(0.3, 0.1)
-someothervector * c(0.3, 0.1)
-```
-
-```{r mult-recycle-demo-solution}
-someothervector
-c(0.3, 0.1)
-someothervector * c(0.3, 0.1)
-```
-
-**What's happening here?**
-R repeats `c(0.3, 0.1)` to match the length:  
-- Position 1: `1 × 0.3 = 0.3`  
-- Position 2: `0 × 0.1 = 0.0`  
-- Position 3: `1 × 0.3 = 0.3` (recycled!)  
-- Position 4: `0 × 0.1 = 0.0` (recycled!)  
-- Position 5: `1 × 0.3 = 0.3` (recycled again!)  
-
----
-
-<div class="callout callout-warning">
-<div class="callout-title">Vector Recycling: Power & Peril</div>
-
-**Recycling** repeats the shorter vector to match the longer one.
-
-**Useful for:**
-```r
-c(1, 2, 3, 4) * 2  # Same as c(1, 2, 3, 4) * c(2, 2, 2, 2)
-```
-
-**Dangerous if unexpected:**
-```r
-c(1, 2, 3, 4, 5) * c(1, 2)  # Did you mean this?
-# Result: 1×1, 2×2, 3×1, 4×2, 5×1
-```
-
-Always check vector lengths match if you don't intend recycling!
-</div>
-
----
-
-### Your Turn: Practice Vector Operations
-
-**Task:** 
-1. Create `myvector` with values 15, 16, 17, 18, 20  
-2. Multiply it by `c(0.1, 0.2)`  
-3. Think about what recycling will do before running!  
-
-```{r exercise-mult, exercise=TRUE}
-# Step 1: Create your vector
-
-
-# Step 2: Multiply by c(0.1, 0.2)
-
-
-# Step 3: What did you get? Was it what you expected?
-
-
-```
-
-```{r exercise-mult-hint}
-# Expected pattern:
-# 15 × 0.1, 16 × 0.2, 17 × 0.1, 18 × 0.2, 20 × 0.1
-myvector * c(0.1, 0.2)
-```
-
-```{r exercise-mult-solution}
-myvector <- c(15, 16, 17, 18, 20)
-myvector * c(0.1, 0.2)
-# Result: 1.5, 3.2, 1.7, 3.6, 2.0
-```
-
----
-
-## Quick Reference: All Functions
+## Quick Reference: Functions Used in Part 1
 
 <div class="callout callout-info">
 <div class="callout-title">Functions Used in This Tutorial</div>
@@ -1683,6 +948,7 @@ myvector * c(0.1, 0.2)
 | `data.frame()` | Create a data frame | `data.frame(x=1:3, y=4:6)` |
 | `list()` | Create a list | `list(a=1, b="text")` |
 | `factor()` | Create a factor (categorical) | `factor(c("low", "high"))` |
+| `:` | Sequence operator | `1:10` creates 1,2,3...10 |
 
 **Descriptive Statistics:**
 
@@ -1709,12 +975,11 @@ myvector * c(0.1, 0.2)
 | `unique()` | Remove duplicates | `unique(x)` |
 | `table()` | Frequency table | `table(x)` |
 
-**Type Conversion:**
+**Subsetting:**
 
-| Function | Description | Example |
+| Operator | Description | Example |
 |----------|-------------|--------|
-| `as.logical()` | Convert to TRUE/FALSE | `as.logical(c(1,0,1))` |
-| `as.numeric()` | Convert to numbers | `as.numeric(c(TRUE, FALSE))` |
+| `[ ]` | Extract elements by position | `x[1]`, `x[c(1,3)]` |
 
 **Output & Help:**
 
@@ -1731,22 +996,27 @@ myvector * c(0.1, 0.2)
 
 ## Congratulations!
 
-You've completed the Introduction to R tutorial!
+You've completed Part 1 of the Introduction to R tutorial!
 
 ### What You've Learned:
 
 - Using R as a calculator  
 - Creating and working with variables  
+- Understanding R data structures (vectors, matrices, data frames, lists, factors)  
 - Descriptive statistics (sd, var, median, range, IQR, quantiles)  
-- Understanding vectors and data structures  
-- Useful R functions and getting help in R  
-- Subsetting vectors by position and logical conditions  
-- Comparison and logical operators  
-- Vector operations and recycling (Additional Content)
+- Calculating z-scores, skewness, and kurtosis
+- Using R functions and getting help
+- Creating vectors with `c()`  
+- Subsetting vectors by position using `[ ]`
 
 ### Next Steps:
 
-Continue exploring R programming and data visualization with ggplot2!
+**Continue with Part 2** to learn about:
+- Logical subsetting (using TRUE/FALSE)
+- Type conversion  
+- Comparison operators and conditional filtering  
+- Logical operators (AND, OR, NOT)  
+- Vector operations and recycling  
 
 ### Additional Resources
 
