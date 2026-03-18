@@ -1,12 +1,12 @@
----
-title: "Basic Data Analysis with data.table and Statistics"
-output: 
-  learnr::tutorial:
-    progressive: true
-    allow_skip: true
-    css: "../assets/kuzman_theme.css"
-runtime: shiny_prerendered
----
+---  
+title: "Basic Data Analysis with data.table and Statistics"  
+output:   
+  learnr::tutorial:  
+    progressive: true  
+    allow_skip: true  
+    css: "../assets/kuzman_theme.css"  
+runtime: shiny_prerendered  
+---  
 
 ```{r setup, include=FALSE}
 library(learnr)
@@ -31,6 +31,7 @@ setup_branding_server()
 # Load shared data for exercises
 library(data.table)
 library(ggplot2)
+library(openxlsx)
 # Reinitialize data.table options (stripped by learnr exercise environment)
 if (is.null(getOption("datatable.alloccol"))) data.table:::.onLoad()
 
@@ -111,28 +112,28 @@ growth_summary[, ci_lower := mean_growth - 1.96 * se_growth]
 growth_summary[, ci_upper := mean_growth + 1.96 * se_growth]
 ```
 
-## Welcome
+## 1. Welcome  
 
-Welcome to **Basic Data Analysis with data.table and Statistics**
+Welcome to **Basic Data Analysis with data.table and Statistics**  
 
-### Author
+### 1.1. Author  
 
-**dr.sc. Maja Kuzman** - Kuzman Consulting d.o.o.
+**dr.sc. Maja Kuzman** - Kuzman Consulting d.o.o.  
 
-<div class="callout callout-info">
-<div class="callout-title">How to Use This Tutorial</div>
+<div class="callout callout-info">  
+<div class="callout-title">How to Use This Tutorial</div>  
 
-- Click **"Run Code"** to execute R code
-    - ctrl + enter (windows) or command + enter (macos)
-- Click **"Hint"** if you need help
-- Progress is tracked as you complete exercises
+- Click **"Run Code"** to execute R code  
+    - ctrl + enter (windows) or command + enter (macos)  
+- Click **"Hint"** if you need help  
+- Progress is tracked as you complete exercises  
 
-</div>
+</div>  
 
-<div class="callout callout-success">
-<div class="callout-title">What You Will Learn</div>
+<div class="callout callout-success">  
+<div class="callout-title">What You Will Learn</div>  
 
-This tutorial combines data manipulation with statistical analysis:
+This tutorial combines data manipulation with statistical analysis:  
 
 1. **Introduction to data.table**  
    - Why data.table?  
@@ -165,46 +166,230 @@ This tutorial combines data manipulation with statistical analysis:
    - Complete analysis examples  
    - From data manipulation to visualization to testing  
 
-</div>
+</div>  
 
----
+---  
 
-## Introduction to data.table
+## 2. Quick Review: Subsetting and Conditions  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+Before diving into data.table, let's review key concepts from **IntroToR** that are essential for data manipulation and filtering.  
+
+### 2.1. Logical Subsetting  
+
+You can subset vectors using TRUE/FALSE (logical) values:  
+
+```{r logical-review, exercise=TRUE}
+# Create a vector
+numbers <- c(10, 25, 30, 15, 40)
+
+# Create a logical vector
+selection <- c(TRUE, FALSE, TRUE, FALSE, TRUE)
+
+# Subset: keep only TRUE positions
+numbers[selection]  # Returns: 10, 30, 40
+```
+
+<div class="callout callout-info">  
+**💡 Key Concept:** When you put a logical vector inside `[ ]`, R keeps only elements where the value is TRUE.  
+</div>  
+
+---  
+
+### 2.2. Comparison Operators  
+
+**Comparison operators** automatically create TRUE/FALSE vectors:  
+
+```{r comparison-review, exercise=TRUE}
+ages <- c(18, 22, 35, 17, 40, 16, 25)
+
+# Check which ages are greater than 18
+ages > 18  # Returns: FALSE TRUE TRUE FALSE TRUE FALSE TRUE
+
+# Check which ages equal 25
+ages == 25  # Returns: FALSE FALSE FALSE FALSE FALSE FALSE TRUE
+
+# Check which ages are NOT 18
+ages != 18  # Returns: FALSE TRUE TRUE TRUE TRUE TRUE TRUE
+```
+
+<div class="callout callout-concept">  
+<div class="callout-title">Comparison Operators</div>  
+
+- `==` equals  
+- `!=` not equals  
+- `>` greater than  
+- `<` less than  
+- `>=` greater than or equal  
+- `<=` less than or equal  
+
+</div>  
+
+**Your Turn:** Create a logical vector that checks which temperatures are below 20 degrees, then display it:  
+
+```{r comparison-exercise, exercise=TRUE}
+temperatures <- c(18, 22, 15, 25, 19, 30, 12)
+
+# Check which temperatures are below 20
+
+```
+
+```{r comparison-exercise-hint}
+# Use the < operator
+temperatures < 20
+```
+
+```{r comparison-exercise-solution}
+temperatures <- c(18, 22, 15, 25, 19, 30, 12)
+temperatures < 20
+# Returns: TRUE FALSE TRUE FALSE TRUE FALSE TRUE
+```
+
+---  
+
+### 2.3. Conditional Subsetting (Filtering)  
+
+Combine comparisons with subsetting to **filter data based on conditions**:  
+
+```{r conditional-review, exercise=TRUE}
+ages <- c(18, 22, 35, 17, 40, 16, 25)
+
+# Get only ages greater than 18 (adults)
+adults <- ages[ages > 18]
+adults  # Returns: 22, 35, 40, 25
+
+# Get only ages between 18 and 30
+young_adults <- ages[ages >= 18 & ages <= 30]
+young_adults  # Returns: 18, 22, 25
+```
+
+**What's happening:**  
+1. `ages > 18` creates a TRUE/FALSE vector  
+2. Use it as an index: `ages[ages > 18]`  
+3. R keeps only values where the condition is TRUE  
+
+**Your Turn:** From the `heights` vector, get only the heights that are 170 or greater:  
+
+```{r filtering-exercise, exercise=TRUE}
+heights <- c(165, 180, 155, 172, 190, 168, 175)
+
+# Filter to keep only heights >= 170
+
+```
+
+```{r filtering-exercise-hint}
+# Use heights >= 170 as the condition inside [ ]
+heights[heights >= 170]
+```
+
+```{r filtering-exercise-solution}
+heights <- c(165, 180, 155, 172, 190, 168, 175)
+heights[heights >= 170]
+# Returns: 180, 172, 190, 175
+```
+
+---  
+
+### 2.4. Logical Operators  
+
+Combine multiple conditions using logical operators:  
+
+```{r logical-operators-review, exercise=TRUE}
+scores <- c(45, 75, 82, 91, 68, 55, 88)
+
+# AND (&): Both conditions must be TRUE
+# Get scores between 70 and 85
+scores[scores >= 70 & scores <= 85]  # Returns: 75, 82
+
+# OR (|): At least one condition must be TRUE
+# Get scores below 50 or above 90
+scores[scores < 50 | scores > 90]  # Returns: 45, 91
+
+# NOT (!): Flip TRUE/FALSE
+# Get scores NOT between 60 and 80
+scores[!(scores >= 60 & scores <= 80)]  # Returns: 45, 82, 91, 55, 88
+```
+
+<div class="callout callout-concept">  
+<div class="callout-title">Logical Operators</div>  
+
+- `&` (AND): Both must be TRUE  
+- `|` (OR): At least one must be TRUE  
+- `!` (NOT): Flips TRUE ↔ FALSE  
+
+**Example:** `x > 10 & x < 20` means "greater than 10 AND less than 20"  
+
+</div>  
+
+**Your Turn:** From the `values` vector, get only values that are either less than 15 OR greater than 25:  
+
+```{r logical-ops-exercise, exercise=TRUE}
+values <- c(10, 20, 30, 12, 28, 18, 35)
+
+# Filter for values < 15 OR > 25
+
+```
+
+```{r logical-ops-exercise-hint}
+# Use the | (OR) operator
+values[values < 15 | values > 25]
+```
+
+```{r logical-ops-exercise-solution}
+values <- c(10, 20, 30, 12, 28, 18, 35)
+values[values < 15 | values > 25]
+# Returns: 10, 30, 12, 28, 35
+```
+
+---  
+
+<div class="callout callout-tip">  
+<div class="callout-title">Why This Matters for data.table</div>  
+
+These concepts are **fundamental to data.table**:  
+- The `i` in `DT[i, j, by]` uses these exact filtering techniques  
+- You'll write conditions like: `DT[Age > 18 & Gender == "female"]`  
+- Understanding logical subsetting makes data.table intuitive!  
+
+</div>  
+
+---  
+
+## 3. Introduction to data.table  
+
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 1. **Introduction to data.table**  
    → Why data.table?  
    - Converting to data.table  
    - The DT[i, j, by] syntax  
 
-</div>
+</div>  
 
-### Why data.table?
+### 3.1. Why data.table?  
 
-<div class="callout callout-info">
-<div class="callout-title">Why Use data.table?</div>
+<div class="callout callout-info">  
+<div class="callout-title">Why Use data.table?</div>  
 
-**data.table** is a powerful package for working with data in R:
+**data.table** is a powerful package for working with data in R:  
 
 - **Fast** - extremely efficient with large datasets  
 - **Concise** - less typing, clearer code  
 - **Powerful** - complex operations made simple  
-- **Integrates well** - works seamlessly with ggplot2 and statistical functions
+- **Integrates well** - works seamlessly with ggplot2 and statistical functions  
 
-</div>
+</div>  
 
-### Installing and Loading
+### 3.2. Installing and Loading  
 
-Install data.table once:
+Install data.table once:  
 
 ```{r install-dt, echo=TRUE, eval=FALSE}
 # Install data.table (only once)
 install.packages("data.table")
 ```
 
-Load it every session:
+Load it every session:  
 
 ```{r load-dt, echo=TRUE, eval=FALSE}
 # Load data.table
@@ -212,21 +397,93 @@ library(data.table)
 library(ggplot2)  # We'll use this for visualization
 ```
 
----
+---  
 
-### Converting to data.table
+### 3.3. Converting to data.table  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 1. **Introduction to data.table**  
    - Why data.table?  
    → Converting to data.table  
    - The DT[i, j, by] syntax  
 
-</div>
+</div>  
 
-Use `as.data.table()` to convert a data.frame:
+#### 3.3.1. Reading from Excel Files  
+
+In practice, you'll often receive data in Excel format. Here's the typical workflow:  
+
+```r
+# Install openxlsx package if needed
+# install.packages("openxlsx")
+
+# Load library
+library(openxlsx)
+library(data.table)
+
+# Read Excel file
+my_data <- read.xlsx("path/to/your/file.xlsx")
+
+# Convert to data.table
+my_dt <- as.data.table(my_data)
+```
+
+<div class="callout callout-info">  
+**💡 Tip:** The `read.xlsx()` function from the `openxlsx` package reads Excel files into a regular data.frame. Use `as.data.table()` to convert it to data.table format for efficient manipulation.  
+</div>  
+
+#### 3.3.2. Reading Text Files with fread()  
+
+The `fread()` function (**f**ast **read**) is data.table's powerful function for reading text-based files. It automatically detects file format, separators, and data types, making it very convenient and much faster than base R functions.  
+
+<div class="callout callout-concept">  
+<div class="callout-title">🎯 Why use fread()?</div>  
+
+- **Automatic detection**: Detects separators (comma, tab, semicolon, etc.), column types, and headers  
+- **Speed**: Much faster than `read.csv()` or `read.table()` for large files  
+- **Direct to data.table**: Returns a data.table object directly (no conversion needed)  
+- **Flexible**: Works with CSV, TSV, TXT, and other delimited files  
+- **URLs supported**: Can read directly from web URLs  
+
+</div>  
+
+```{r fread-example, exercise=TRUE, exercise.setup="shared-data"}
+# Example 1: Reading from a URL (like we did with tidy dataset)
+# fread automatically creates a data.table
+tidy_data <- fread("http://hex.bioinfo.hr/~mfabijanic/tidyData.txt")
+head(tidy_data)
+
+# Example 2: CSV file (comma-separated)
+# fread("mydata.csv")
+
+# Example 3: TSV file (tab-separated)
+# fread("mydata.tsv")
+
+# Example 4: TXT file with custom separator
+# fread("mydata.txt", sep="|")  # pipe-separated
+
+# Example 5: Specifying options explicitly
+# fread("mydata.csv", 
+#       header = TRUE,        # First row is column names
+#       sep = ",",           # Comma separator (auto-detected usually)
+#       na.strings = "NA")   # What represents missing values
+```
+
+<div class="callout callout-info">  
+**💡 Common file formats:**  
+
+- **CSV** (Comma-Separated Values): `mydata.csv` - values separated by commas  
+- **TSV** (Tab-Separated Values): `mydata.tsv` or `mydata.tab` - values separated by tabs  
+- **TXT** (Text file): `mydata.txt` - can use any delimiter (space, tab, comma, semicolon, pipe, etc.)  
+
+`fread()` automatically detects the separator in most cases, so you usually just need: `fread("filename")`  
+</div>  
+
+#### 3.3.3. Converting Built-in Datasets  
+
+You can also convert R's built-in datasets to data.table:  
 
 ```{r convert-example, exercise=TRUE}
 # Look at regular iris
@@ -237,63 +494,45 @@ iris_dt <- as.data.table(iris)
 head(iris_dt)
 ```
 
-**Your Turn:** Convert the `mtcars` dataset to a data.table called `mtcars_dt` and display it:
+---  
 
-```{r convert-exercise, exercise=TRUE}
-# Convert mtcars to data.table
+### 3.4. The DT[i, j, by] Syntax  
 
-
-```
-
-```{r convert-exercise-hint}
-mtcars_dt <- as.data.table(mtcars)
-mtcars_dt
-```
-
-```{r convert-exercise-solution}
-mtcars_dt <- as.data.table(mtcars)
-mtcars_dt
-```
-
----
-
-### The DT[i, j, by] Syntax
-
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 1. **Introduction to data.table**  
    - Why data.table?  
    - Converting to data.table  
    → The DT[i, j, by] syntax  
 
-</div>
+</div>  
 
-<div class="callout callout-concept">
-<div class="callout-title">The Magic Formula: DT[i, j, by]</div>
+<div class="callout callout-concept">  
+<div class="callout-title">The Magic Formula: DT[i, j, by]</div>  
 
-Think of a data.table like a spreadsheet where you can:
+Think of a data.table like a spreadsheet where you can:  
 
 - **i** = which **rows** (filter/subset)  
 - **j** = what to do with **columns** (select/compute)  
 - **by** = grouped **by** what (grouping variable)  
 
 **Example:** `DT[Gender == "Female", mean(Height), by = Continent]`  
-→ For female rows, calculate mean height, separately for each continent
+→ For female rows, calculate mean height, separately for each continent  
 
-</div>
+</div>  
 
-Let's see this in action:
+Let's see this in action:  
 
 ```{r syntax-demo, exercise=TRUE, exercise.setup="shared-data"}
 # All rows, all columns
-iris_dt[1:5]
+iris_dt
 
 # Filter rows: only setosa
-iris_dt[Species == "setosa"][1:5]
+iris_dt[Species == "setosa"]
 
 # Select columns
-iris_dt[, .(Species, Sepal.Length)][1:5]
+iris_dt[, .(Species, Sepal.Length)]
 
 # Compute: mean sepal length
 iris_dt[, mean(Sepal.Length)]
@@ -302,12 +541,12 @@ iris_dt[, mean(Sepal.Length)]
 iris_dt[, mean(Sepal.Length), by = Species]
 ```
 
----
+---  
 
-## Basic Data Operations
+## 4. Basic Data Operations  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 2. **Basic Data Operations**  
    → Selecting rows (filtering)  
@@ -315,37 +554,37 @@ iris_dt[, mean(Sepal.Length), by = Species]
    - Computing summaries  
    - Grouping data  
 
-</div>
+</div>  
 
-### Selecting Rows (Filtering)
+### 4.1. Selecting Rows (Filtering)  
 
 **About the `tidy` dataset:**  
-This dataset contains information about people including their Gender ("male" or "female"), Height (in cm), Weight (in kg), Age (in years), and Continent.
+This dataset contains information about people including their Gender ("male" or "female"), Height (in cm), Weight (in kg), Age (in years), and Continent.  
 
-Use logical conditions in the **i** position to filter rows:
+Use logical conditions in the **i** position to filter rows:  
 
-**Example 1: Filter by a single condition**
+**Example 1: Filter by a single condition**  
 
 ```{r filter-demo1, exercise=TRUE, exercise.setup="shared-data"}
 # Select only females
-tidy[Gender == "female"][1:5]
+tidy[Gender == "female"]
 ```
 
-**Example 2: Filter by numeric condition**
+**Example 2: Filter by numeric condition**  
 
 ```{r filter-demo2, exercise=TRUE, exercise.setup="shared-data"}
 # Select people taller than 180 cm
-tidy[Height > 180][1:5]
+tidy[Height > 180]
 ```
 
-**Example 3: Combine multiple conditions**
+**Example 3: Combine multiple conditions**  
 
 ```{r filter-demo3, exercise=TRUE, exercise.setup="shared-data"}
 # Select females taller than 170 cm
-tidy[Gender == "female" & Height > 170][1:5]
+tidy[Gender == "female" & Height > 170]
 ```
 
-**Your Turn:** From the `iris_dt` data, select only rows where `Sepal.Length > 6`:
+**Your Turn:** From the `iris_dt` data, select only rows where `Sepal.Length > 6`:  
 
 ```{r filter-exercise, exercise=TRUE, exercise.setup="shared-data"}
 # Filter iris for Sepal.Length > 6
@@ -361,12 +600,12 @@ iris_dt[Sepal.Length > 6]
 iris_dt[Sepal.Length > 6]
 ```
 
----
+---  
 
-### Selecting Columns
+### 4.2. Selecting Columns  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 2. **Basic Data Operations**  
    - Selecting rows (filtering)  
@@ -374,33 +613,33 @@ iris_dt[Sepal.Length > 6]
    - Computing summaries  
    - Grouping data  
 
-</div>
+</div>  
 
-Use `.()` or `list()` in the **j** position to select columns:
+Use `.()` or `list()` in the **j** position to select columns:  
 
-**Example 1: Select one column**
+**Example 1: Select one column**  
 
 ```{r select-demo1, exercise=TRUE, exercise.setup="shared-data"}
 # Select one column (returns a vector)
-tidy[, Gender][1:10]
+tidy[, Gender]
 ```
 
-**Example 2: Select multiple columns**
+**Example 2: Select multiple columns**  
 
 ```{r select-demo2, exercise=TRUE, exercise.setup="shared-data"}
 # Select multiple columns (returns a data.table)
 # Using .() which is shorthand for list()
-tidy[, .(Gender, Age, Height)][1:5]
+tidy[, .(Gender, Age, Height)]
 ```
 
-**Example 3: Alternative syntax**
+**Example 3: Alternative syntax**  
 
 ```{r select-demo3, exercise=TRUE, exercise.setup="shared-data"}
 # Can also use list() directly
-tidy[, list(Gender, Height)][1:5]
+tidy[, list(Gender, Height)]
 ```
 
-**Your Turn:** Select the `Species` and `Petal.Length` columns from `iris_dt`:
+**Your Turn:** Select the `Species` and `Petal.Length` columns from `iris_dt`:  
 
 ```{r select-exercise, exercise=TRUE, exercise.setup="shared-data"}
 # Select Species and Petal.Length
@@ -416,12 +655,12 @@ iris_dt[, .(Species, Petal.Length)]
 iris_dt[, .(Species, Petal.Length)]
 ```
 
----
+---  
 
-### Computing Summaries
+### 4.3. Computing Summaries  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 2. **Basic Data Operations**  
    - Selecting rows (filtering)  
@@ -429,26 +668,76 @@ iris_dt[, .(Species, Petal.Length)]
    → Computing summaries  
    - Grouping data  
 
-</div>
+</div>  
 
-Put functions in the **j** position to compute statistics:
+In the **j** position, you can do more than just select existing columns - you can also **create new columns with computations**:  
+
+**Creating New Columns:**  
+
+```{r compute-new-cols, exercise=TRUE, exercise.setup="shared-data"}
+# Create a new column: ratio of Height to Weight
+tidy[, .(Gender, Height, Weight, Height_Weight_Ratio = Height / Weight)]
+
+# Multiple new computed columns
+tidy[, .(
+  Gender,
+  Height,
+  Weight,
+  Height_m = Height / 100,          # Convert cm to meters
+  BMI = Weight / (Height/100)^2     # Calculate BMI
+)]
+```
+
+<div class="callout callout-info">  
+**💡 Key Concept:** Inside `.()` in the j position:  
+- Column names alone select existing columns: `.(Gender, Height)`  
+- `name = expression` creates new computed columns: `.(BMI = Weight / (Height/100)^2)`  
+- You can mix both: select existing and create new columns together!  
+</div>  
+
+---  
+
+**Computing Summary Statistics:**  
+
+Now for something powerful: instead of just listing or modifying columns, we can **collapse the entire dataset into summary statistics**!  
+
+<div class="callout callout-concept">  
+<div class="callout-title">🎯 From Data to Summaries</div>  
+
+When you use **functions** like `mean()`, `median()`, `sd()` in the j position, data.table:  
+- **Aggregates** all rows into a single summary value  
+- Returns the computed statistic(s), not the original data  
+- Can compute **multiple summaries at once** inside `.()`   
+
+This is fundamentally different from selecting or computing columns!  
+
+</div>  
 
 ```{r compute-demo, exercise=TRUE, exercise.setup="shared-data"}
-# Mean height
+# Single summary: Mean height (returns one number)
 tidy[, mean(Height)]
 
-# Multiple statistics
+# Multiple summaries at once (returns a data.table with one row)
 tidy[, .(
   mean_height = mean(Height),
   median_height = median(Height),
-  sd_height = sd(Height)
+  sd_height = sd(Height),
+  min_height = min(Height),
+  max_height = max(Height)
 )]
 
-# Count rows
+# Special variable .N = count number of rows
 tidy[, .N]
 ```
 
-**Your Turn:** Calculate the mean and standard deviation of `Sepal.Length` from `iris_dt`:
+<div class="callout callout-tip">  
+**💡 Notice:**   
+- **One summary:** `DT[, mean(col)]` returns a single value  
+- **Multiple summaries:** `DT[, .(stat1 = mean(col), stat2 = sd(col))]` returns a data.table with one row containing all statistics  
+- **Combining makes sense:** Get mean, median, sd, min, max all at once!  
+</div>  
+
+**Your Turn:** Calculate the mean and standard deviation of `Sepal.Length` from `iris_dt`:  
 
 ```{r compute-exercise, exercise=TRUE, exercise.setup="shared-data"}
 # Calculate mean and sd of Sepal.Length
@@ -467,12 +756,12 @@ iris_dt[, .(
 )]
 ```
 
----
+---  
 
-### Grouping Data
+### 4.4. Grouping Data  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 2. **Basic Data Operations**  
    - Selecting rows (filtering)  
@@ -480,9 +769,9 @@ iris_dt[, .(
    - Computing summaries  
    → Grouping data  
 
-</div>
+</div>  
 
-Use **by** to compute statistics for each group:
+Use **by** to compute statistics for each group:  
 
 ```{r group-demo, exercise=TRUE, exercise.setup="shared-data"}
 # Mean height by gender
@@ -498,7 +787,7 @@ tidy[, .(
 tidy[, mean(Height), by = .(Gender, Continent)]
 ```
 
-**Your Turn:** Calculate the mean `Petal.Length` for each `Species` in `iris_dt`:
+**Your Turn:** Calculate the mean `Petal.Length` for each `Species` in `iris_dt`:  
 
 ```{r group-exercise, exercise=TRUE, exercise.setup="shared-data"}
 # Mean Petal.Length by Species
@@ -514,16 +803,16 @@ iris_dt[, mean(Petal.Length), by = Species]
 iris_dt[, .(mean_petal_length = mean(Petal.Length)), by = Species]
 ```
 
----
+---  
 
-### Practice: Combining Operations
+### 4.5. Practice: Combining Operations  
 
-Now combine filtering, selecting, and grouping:
+Now combine filtering, selecting, and grouping:  
 
-**Challenge:** From the `tidy` data:
-1. Filter for people with Height > 165
-2. Calculate mean Age and count
-3. Group by Gender
+**Challenge:** From the `tidy` data:  
+1. Filter for people with Height > 165  
+2. Calculate mean Age and count  
+3. Group by Gender  
 
 ```{r combine-exercise, exercise=TRUE, exercise.setup="shared-data"}
 # Your code here
@@ -542,28 +831,28 @@ Now combine filtering, selecting, and grouping:
 tidy[Height > 165, .(mean_age = mean(Age), count = .N), by = Gender]
 ```
 
----
+---  
 
-## Categorical Data Analysis
+## 5. Categorical Data Analysis  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 3. **Categorical Data Analysis**  
    → Visualizing categorical data  
    - Chi-squared test  
    - Fisher's exact test  
 
-</div>
+</div>  
 
-### Visualizing Categorical Data
+### 5.1. Visualizing Categorical Data  
 
 **About the `smoking_disease` dataset:**  
-This dataset contains data from 300 people, including their smoking status (Smoker or Non-smoker) and disease status (Disease or Healthy). We want to know if smoking is associated with disease.
+This dataset contains data from 300 people, including their smoking status (Smoker or Non-smoker) and disease status (Disease or Healthy). We want to know if smoking is associated with disease.  
 
-Before testing, always visualize your data!
+Before testing, always visualize your data!  
 
-**Example 1: Single variable bar chart**
+**Example 1: Single variable bar chart**  
 
 ```{r cat-viz-demo1, exercise=TRUE, exercise.setup="shared-data"}
 # Bar chart showing count of smokers vs non-smokers
@@ -573,7 +862,7 @@ ggplot(smoking_disease, aes(smoking, fill = smoking)) +
     labs(title = "Smoking Status Distribution", y = "Count")
 ```
 
-**Example 2: Stacked proportional bar chart**
+**Example 2: Stacked proportional bar chart**  
 
 ```{r cat-viz-demo2, exercise=TRUE, exercise.setup="shared-data"}
 # Stacked bar chart showing disease within each smoking group
@@ -586,7 +875,7 @@ ggplot(smoking_disease, aes(smoking, fill = disease)) +
     )
 ```
 
-**Your Turn:** Create a bar chart showing the distribution of `Species` in `iris_dt`:
+**Your Turn:** Create a bar chart showing the distribution of `Species` in `iris_dt`:  
 
 ```{r cat-viz-exercise, exercise=TRUE, exercise.setup="shared-data"}
 # Create bar chart of Species
@@ -601,22 +890,22 @@ ggplot(iris_dt, aes(Species, fill = Species)) +
     labs(title = "Iris Species Distribution")
 ```
 
----
+---  
 
-### Chi-Squared Test
+### 5.2. Chi-Squared Test  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 3. **Categorical Data Analysis**  
    - Visualizing categorical data  
    → Chi-squared test  
    - Fisher's exact test  
 
-</div>
+</div>  
 
-<div class="callout callout-concept">
-<div class="callout-title">When to Use Chi-Squared Test</div>
+<div class="callout callout-concept">  
+<div class="callout-title">When to Use Chi-Squared Test</div>  
 
 **Purpose:** Test if two categorical variables are independent  
 
@@ -631,56 +920,56 @@ ggplot(iris_dt, aes(Species, fill = Species)) +
 - H₀: Variables are independent (no relationship)  
 - H₁: Variables are related  
 
-</div>
+</div>  
 
-First, create a contingency table:
+First, create a contingency table:  
 
 ```{r chi-table, exercise=TRUE, exercise.setup="shared-data"}
-# Create a table using data.table
-smoking_table <- dcast(smoking_disease, smoking ~ disease, fun.aggregate = length)
-smoking_table
+# Count observations using .N
+smoking_disease[, .N, by = .(smoking, disease)]
 
-# Or use base R table()
-table(smoking_disease$smoking, smoking_disease$disease)
+# Create contingency table for the test
+smoking_table <- table(smoking_disease[,smoking], smoking_disease[,disease])
+smoking_table
 ```
 
-Now perform the chi-squared test:
+Now perform the chi-squared test:  
 
 ```{r chi-test, exercise=TRUE, exercise.setup="shared-data"}
 # Chi-squared test
-test_result <- chisq.test(smoking_disease$smoking, smoking_disease$disease)
+test_result <- chisq.test(smoking_disease[,smoking], smoking_disease[,disease])
 test_result
 
 # Extract p-value
 test_result$p.value
 ```
 
-<div class="callout callout-tip">
-<div class="callout-title">Interpreting Results</div>
+<div class="callout callout-tip">  
+<div class="callout-title">Interpreting Results</div>  
 
 - **p-value < 0.05**: Reject H₀ → Variables are related  
 - **p-value ≥ 0.05**: Fail to reject H₀ → No evidence of relationship  
 
-In our example, if p < 0.05, smoking status and disease are related!
+In our example, if p < 0.05, smoking status and disease are related!  
 
-</div>
+</div>  
 
----
+---  
 
-### Fisher's Exact Test
+### 5.3. Fisher's Exact Test  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 3. **Categorical Data Analysis**  
    - Visualizing categorical data  
    - Chi-squared test  
    → Fisher's exact test  
 
-</div>
+</div>  
 
-<div class="callout callout-concept">
-<div class="callout-title">When to Use Fisher's Exact Test</div>
+<div class="callout callout-concept">  
+<div class="callout-title">When to Use Fisher's Exact Test</div>  
 
 **Purpose:** Test independence for **small sample sizes**  
 
@@ -688,14 +977,14 @@ In our example, if p < 0.05, smoking status and disease are related!
 - Sample size is small (< 5 expected counts in any cell)  
 - Chi-squared assumptions are violated  
 
-**Same hypotheses as chi-squared test**
+**Same hypotheses as chi-squared test**  
 
-</div>
+</div>  
 
 **About the `small_study` dataset:**  
-This dataset contains results from a small clinical trial with 20 patients. Half received a Drug and half received a Placebo. We measured whether each patient Improved or Not_Improved.
+This dataset contains results from a small clinical trial with 20 patients. Half received a Drug and half received a Placebo. We measured whether each patient Improved or Not_Improved.  
 
-**Visualize the data:**
+**Visualize the data:**  
 
 ```{r fisher-viz, exercise=TRUE, exercise.setup="shared-data"}
 # Visualize treatment outcomes
@@ -708,18 +997,18 @@ ggplot(small_study, aes(treatment, fill = outcome)) +
     )
 
 # Look at the table
-table(small_study$treatment, small_study$outcome)
+table(small_study[,treatment], small_study[,outcome])
 ```
 
-**Perform Fisher's exact test:**
+**Perform Fisher's exact test:**  
 
 ```{r fisher-test, exercise=TRUE, exercise.setup="shared-data"}
 # Fisher's exact test
-fisher_result <- fisher.test(small_study$treatment, small_study$outcome)
+fisher_result <- fisher.test(small_study[,treatment], small_study[,outcome])
 fisher_result
 ```
 
-**Your Turn:** Test if there's a relationship between `Continent` and `Gender` in the `tidy` dataset:
+**Your Turn:** Test if there's a relationship between `Continent` and `Gender` in the `tidy` dataset:  
 
 ```{r chi-practice, exercise=TRUE, exercise.setup="shared-data"}
 # 1. Visualize the relationship
@@ -736,7 +1025,7 @@ ggplot(tidy, aes(Continent, fill = Gender)) +
     theme_light()
 
 # Test
-chisq.test(tidy$Continent, tidy$Gender)
+chisq.test(tidy[,Continent], tidy[,Gender])
 ```
 
 ```{r chi-practice-solution}
@@ -747,18 +1036,18 @@ ggplot(tidy, aes(Continent, fill = Gender)) +
     labs(title = "Gender Distribution by Continent", y = "Proportion")
 
 # Table
-table(tidy$Continent, tidy$Gender)
+table(tidy[,Continent], tidy[,Gender])
 
 # Chi-squared test
-chisq.test(tidy$Continent, tidy$Gender)
+chisq.test(tidy[,Continent], tidy[,Gender])
 ```
 
----
+---  
 
-## Comparing Means: t-tests
+## 6. Comparing Means: t-tests  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 4. **Comparing Means: t-tests**  
    → One-sample t-test  
@@ -766,12 +1055,12 @@ chisq.test(tidy$Continent, tidy$Gender)
    - Paired samples t-test  
    - Visualizing group differences  
 
-</div>
+</div>  
 
-### One-Sample t-test
+### 6.1. One-Sample t-test  
 
-<div class="callout callout-concept">
-<div class="callout-title">When to Use One-Sample t-test</div>
+<div class="callout callout-concept">  
+<div class="callout-title">When to Use One-Sample t-test</div>  
 
 **Purpose:** Test if a sample mean differs from a known value  
 
@@ -786,12 +1075,12 @@ chisq.test(tidy$Continent, tidy$Gender)
 - H₀: μ = known value  
 - H₁: μ ≠ known value  
 
-</div>
+</div>  
 
 **About the `bp_data` dataset:**  
-This dataset contains systolic blood pressure measurements from 25 patients. Normal systolic blood pressure is around 120 mmHg. We want to test if our sample mean differs from this normal value.
+This dataset contains systolic blood pressure measurements from 25 patients. Normal systolic blood pressure is around 120 mmHg. We want to test if our sample mean differs from this normal value.  
 
-**Step 1: Visualize and summarize the data**
+**Step 1: Visualize and summarize the data**  
 
 ```{r onesample-viz, exercise=TRUE, exercise.setup="shared-data"}
 # Summary statistics
@@ -810,14 +1099,14 @@ ggplot(bp_data, aes(systolic_bp)) +
     labs(title = "Blood Pressure Distribution", x = "Systolic BP (mmHg)", y = "Count")
 ```
 
-**Step 2: Perform the one-sample t-test**
+**Step 2: Perform the one-sample t-test**  
 
 ```{r onesample-test, exercise=TRUE, exercise.setup="shared-data"}
 # Test if mean BP differs from 120
-t.test(bp_data$systolic_bp, mu = 120)
+t.test(bp_data[,systolic_bp], mu = 120)
 ```
 
-**Your Turn:** Test if the mean `Sepal.Length` in iris differs from 6:
+**Your Turn:** Test if the mean `Sepal.Length` in iris differs from 6:  
 
 ```{r onesample-exercise, exercise=TRUE, exercise.setup="shared-data"}
 # 1. Calculate mean Sepal.Length
@@ -832,7 +1121,7 @@ t.test(bp_data$systolic_bp, mu = 120)
 iris_dt[, mean(Sepal.Length)]
 
 # Test
-t.test(iris_dt$Sepal.Length, mu = 6)
+t.test(iris_dt[,Sepal.Length], mu = 6)
 ```
 
 ```{r onesample-exercise-solution}
@@ -847,15 +1136,15 @@ ggplot(iris_dt, aes(Sepal.Length)) +
     labs(title = "Sepal Length Distribution", x = "Sepal Length")
 
 # Test
-t.test(iris_dt$Sepal.Length, mu = 6)
+t.test(iris_dt[,Sepal.Length], mu = 6)
 ```
 
----
+---  
 
-### Two-Sample t-test
+### 6.2. Two-Sample t-test  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 4. **Comparing Means: t-tests**  
    - One-sample t-test  
@@ -863,10 +1152,10 @@ t.test(iris_dt$Sepal.Length, mu = 6)
    - Paired samples t-test  
    - Visualizing group differences  
 
-</div>
+</div>  
 
-<div class="callout callout-concept">
-<div class="callout-title">When to Use Two-Sample t-test</div>
+<div class="callout callout-concept">  
+<div class="callout-title">When to Use Two-Sample t-test</div>  
 
 **Purpose:** Compare means between **two independent groups**  
 
@@ -882,9 +1171,9 @@ t.test(iris_dt$Sepal.Length, mu = 6)
 - H₀: μ₁ = μ₂ (means are equal)  
 - H₁: μ₁ ≠ μ₂ (means differ)  
 
-</div>
+</div>  
 
-First, explore the data with data.table:
+First, explore the data with data.table:  
 
 ```{r twosample-explore, exercise=TRUE, exercise.setup="shared-data"}
 # Summary by gender
@@ -895,7 +1184,7 @@ tidy[, .(
 ), by = Gender]
 ```
 
-Visualize the distributions:
+Visualize the distributions:  
 
 ```{r twosample-viz, exercise=TRUE, exercise.setup="shared-data"}
 # Boxplot
@@ -911,7 +1200,7 @@ ggplot(tidy, aes(Height, fill = Gender)) +
     labs(title = "Height Distribution by Gender")
 ```
 
-Perform the two-sample t-test:
+Perform the two-sample t-test:  
 
 ```{r twosample-test, exercise=TRUE, exercise.setup="shared-data"}
 # Two-sample t-test
@@ -923,7 +1212,7 @@ males <- tidy[Gender == "male", Height]
 t.test(females, males)
 ```
 
-**Your Turn:** Compare `Petal.Length` between `setosa` and `versicolor` species in iris:
+**Your Turn:** Compare `Petal.Length` between `setosa` and `versicolor` species in iris:  
 
 ```{r twosample-exercise, exercise=TRUE, exercise.setup="shared-data"}
 # 1. Filter for setosa and versicolor only
@@ -967,12 +1256,12 @@ ggplot(iris_subset, aes(Species, Petal.Length, fill = Species)) +
 t.test(Petal.Length ~ Species, data = iris_subset)
 ```
 
----
+---  
 
-### Paired Samples t-test
+### 6.3. Paired Samples t-test  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 4. **Comparing Means: t-tests**  
    - One-sample t-test  
@@ -980,10 +1269,10 @@ t.test(Petal.Length ~ Species, data = iris_subset)
    → Paired samples t-test  
    - Visualizing group differences  
 
-</div>
+</div>  
 
-<div class="callout callout-concept">
-<div class="callout-title">When to Use Paired Samples t-test</div>
+<div class="callout callout-concept">  
+<div class="callout-title">When to Use Paired Samples t-test</div>  
 
 **Purpose:** Compare means from **same subjects measured twice**  
 
@@ -998,11 +1287,11 @@ t.test(Petal.Length ~ Species, data = iris_subset)
 - H₀: μ_diff = 0 (no change)  
 - H₁: μ_diff ≠ 0 (there is change)  
 
-**Key:** We test the **differences**, not the groups!
+**Key:** We test the **differences**, not the groups!  
 
-</div>
+</div>  
 
-First, calculate the differences:
+First, calculate the differences:  
 
 ```{r paired-prep, exercise=TRUE, exercise.setup="shared-data"}
 # Add difference column
@@ -1017,7 +1306,7 @@ weight_data[, .(
 )]
 ```
 
-Visualize before/after:
+Visualize before/after:  
 
 ```{r paired-viz, exercise=TRUE, exercise.setup="shared-data"}
 # Reshape for visualization
@@ -1042,22 +1331,22 @@ ggplot(weight_data, aes(difference)) +
     labs(title = "Weight Change Distribution", x = "Change (After - Before)")
 ```
 
-Perform the paired t-test:
+Perform the paired t-test:  
 
 ```{r paired-test, exercise=TRUE, exercise.setup="shared-data"}
 # Paired t-test
-t.test(weight_data$after, weight_data$before, paired = TRUE)
+t.test(weight_data[,after], weight_data[,before], paired = TRUE)
 
 # Check: same as one-sample test on differences
-t.test(weight_data$difference, mu = 0)
+t.test(weight_data[,difference], mu = 0)
 ```
 
----
+---  
 
-### Visualizing Group Differences
+### 6.4. Visualizing Group Differences  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 4. **Comparing Means: t-tests**  
    - One-sample t-test  
@@ -1065,9 +1354,9 @@ t.test(weight_data$difference, mu = 0)
    - Paired samples t-test  
    → Visualizing group differences  
 
-</div>
+</div>  
 
-Multiple ways to visualize group comparisons:
+Multiple ways to visualize group comparisons:  
 
 ```{r viz-comparison, exercise=TRUE, exercise.setup="shared-data"}
 # 1. Boxplot with individual points
@@ -1092,24 +1381,24 @@ ggplot(tidy, aes(Height, fill = Gender)) +
     theme_light()
 ```
 
----
+---  
 
-## Comparing Multiple Groups
+## 7. Comparing Multiple Groups  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 5. **Comparing Multiple Groups**  
    → ANOVA (Analysis of Variance)  
    - Visualizing multiple groups  
    - Post-hoc analysis  
 
-</div>
+</div>  
 
-### ANOVA (Analysis of Variance)
+### 7.1. ANOVA (Analysis of Variance)  
 
-<div class="callout callout-concept">
-<div class="callout-title">When to Use ANOVA</div>
+<div class="callout callout-concept">  
+<div class="callout-title">When to Use ANOVA</div>  
 
 **Purpose:** Compare means across **three or more groups**  
 
@@ -1126,14 +1415,14 @@ ggplot(tidy, aes(Height, fill = Gender)) +
 - H₀: All group means are equal  
 - H₁: At least one mean differs  
 
-**Important:** ANOVA tells you if *any* groups differ, not *which* ones!
+**Important:** ANOVA tells you if *any* groups differ, not *which* ones!  
 
-</div>
+</div>  
 
 **About the `growth_data` dataset:**  
-This dataset contains plant growth measurements (in cm) from an experiment with 60 plants. Plants were randomly assigned to three fertilizer groups: Control (no fertilizer), TypeA, and TypeB (20 plants per group).
+This dataset contains plant growth measurements (in cm) from an experiment with 60 plants. Plants were randomly assigned to three fertilizer groups: Control (no fertilizer), TypeA, and TypeB (20 plants per group).  
 
-**Step 1: Explore the data**
+**Step 1: Explore the data**  
 
 ```{r anova-explore, exercise=TRUE, exercise.setup="shared-data"}
 # Summary statistics by fertilizer type
@@ -1144,11 +1433,11 @@ growth_data[, .(
 ), by = fertilizer]
 ```
 
-**Step 2: Visualize the groups**
+**Step 2: Visualize the groups**  
 
-Create visualizations to compare the three groups.
+Create visualizations to compare the three groups.  
 
-**Visualization 1: Boxplot with individual points**
+**Visualization 1: Boxplot with individual points**  
 
 ```{r anova-viz1, exercise=TRUE, exercise.setup="shared-data"}
 # Boxplot showing distribution for each fertilizer type
@@ -1160,7 +1449,7 @@ ggplot(growth_data, aes(x = fertilizer, y = growth_cm, fill = fertilizer)) +
          x = "Fertilizer", y = "Growth (cm)")
 ```
 
-**Visualization 2: Density plot**
+**Visualization 2: Density plot**  
 
 ```{r anova-viz2, exercise=TRUE, exercise.setup="shared-data"}
 # Density plot showing overlapping distributions
@@ -1171,7 +1460,7 @@ ggplot(growth_data, aes(x = growth_cm, fill = fertilizer)) +
          x = "Growth (cm)", y = "Density")
 ```
 
-**Step 3: Perform ANOVA**
+**Step 3: Perform ANOVA**  
 
 ```{r anova-test, exercise=TRUE, exercise.setup="shared-data"}
 # ANOVA test
@@ -1179,30 +1468,30 @@ anova_result <- aov(growth_cm ~ fertilizer, data = growth_data)
 summary(anova_result)
 ```
 
----
+---  
 
-### Post-hoc Analysis
+### 7.2. Post-hoc Analysis  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 5. **Comparing Multiple Groups**  
    - ANOVA (Analysis of Variance)  
    - Visualizing multiple groups  
    → Post-hoc analysis  
 
-</div>
+</div>  
 
-<div class="callout callout-tip">
-<div class="callout-title">After ANOVA: Which Groups Differ?</div>
+<div class="callout callout-tip">  
+<div class="callout-title">After ANOVA: Which Groups Differ?</div>  
 
-If ANOVA is significant (p < 0.05), we know groups differ. But which ones?
+If ANOVA is significant (p < 0.05), we know groups differ. But which ones?  
 
-**Post-hoc tests** compare all pairs of groups, with correction for multiple testing.
+**Post-hoc tests** compare all pairs of groups, with correction for multiple testing.  
 
-</div>
+</div>  
 
-Common post-hoc test: Tukey's HSD (Honest Significant Difference)
+Common post-hoc test: Tukey's HSD (Honest Significant Difference)  
 
 ```{r posthoc-test, exercise=TRUE, exercise.setup="shared-data"}
 # Tukey's HSD test
@@ -1214,7 +1503,7 @@ tukey_result
 plot(tukey_result)
 ```
 
-**Your Turn:** Perform ANOVA comparing `Sepal.Length` across all three iris species:
+**Your Turn:** Perform ANOVA comparing `Sepal.Length` across all three iris species:  
 
 ```{r anova-exercise, exercise=TRUE, exercise.setup="shared-data"}
 # 1. Calculate summary statistics by species
@@ -1257,21 +1546,21 @@ summary(anova_result)
 TukeyHSD(anova_result)
 ```
 
----
+---  
 
-### Visualizing Multiple Groups
+### 7.3. Visualizing Multiple Groups  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 5. **Comparing Multiple Groups**  
    - ANOVA (Analysis of Variance)  
    → Visualizing multiple groups  
    - Post-hoc analysis  
 
-</div>
+</div>  
 
-Advanced visualizations for multiple groups:
+Advanced visualizations for multiple groups:  
 
 ```{r multi-viz, exercise=TRUE, exercise.setup="shared-data"}
 # Boxplot with summary statistics
@@ -1309,44 +1598,44 @@ ggplot(growth_summary, aes(fertilizer, mean_growth, fill = fertilizer)) +
          x = "Fertilizer", y = "Mean Growth (cm)")
 ```
 
----
+---  
 
-## Integrated Workflow
+## 8. Integrated Workflow  
 
-<div class="callout callout-success">
-<div class="callout-title">📍 In This Section</div>
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
 
 6. **Integrated Workflow**  
    → Complete analysis examples  
    - From data manipulation to visualization to testing  
 
-</div>
+</div>  
 
-### Complete Analysis Example 1: Height by Continent
+### 8.1. Complete Analysis Example 1: Height by Continent  
 
-Let's perform a complete analysis from start to finish with explicit step-by-step instructions.
+Let's perform a complete analysis from start to finish with explicit step-by-step instructions.  
 
-**Research Question:** "Do people from different continents have different average heights?"
+**Research Question:** "Do people from different continents have different average heights?"  
 
 **About the analysis:**  
-We'll use ANOVA since we're comparing means across MORE than 2 groups (continents).
+We'll use ANOVA since we're comparing means across MORE than 2 groups (continents).  
 
----
+---  
 
-**STEP 1: Explore the Data**
+**STEP 1: Explore the Data**  
 
-First, count how many observations we have per continent:
+First, count how many observations we have per continent:  
 
 ```{r workflow1-step1, exercise=TRUE, exercise.setup="shared-data"}
 # Count observations per continent
 tidy[, .N, by = Continent]
 ```
 
----
+---  
 
-**STEP 2: Calculate Summary Statistics**
+**STEP 2: Calculate Summary Statistics**  
 
-Calculate mean, standard deviation, and count for each continent:
+Calculate mean, standard deviation, and count for each continent:  
 
 ```{r workflow1-step2, exercise=TRUE, exercise.setup="shared-data"}
 # Summary statistics by continent
@@ -1358,18 +1647,18 @@ height_summary <- tidy[, .(
 height_summary
 ```
 
----
+---  
 
-**STEP 3: Create Visualization**
+**STEP 3: Create Visualization**  
 
-Create a boxplot to visualize height distributions across continents.
+Create a boxplot to visualize height distributions across continents.  
 
-**What to plot:**
-- **x-axis:** Continent
-- **y-axis:** Height
-- **geom:** Use `geom_boxplot()` for the boxes
-- **Add:** Use `geom_jitter()` to show individual points
-- **Color:** Fill boxes by Continent
+**What to plot:**  
+- **x-axis:** Continent  
+- **y-axis:** Height  
+- **geom:** Use `geom_boxplot()` for the boxes  
+- **Add:** Use `geom_jitter()` to show individual points  
+- **Color:** Fill boxes by Continent  
 
 ```{r workflow1-step3, exercise=TRUE, exercise.setup="shared-data"}
 # Boxplot with individual points
@@ -1381,11 +1670,11 @@ ggplot(tidy, aes(x = Continent, y = Height, fill = Continent)) +
     theme(legend.position = "none")
 ```
 
----
+---  
 
-**STEP 4: Perform ANOVA**
+**STEP 4: Perform ANOVA**  
 
-Test if there are significant differences between continents:
+Test if there are significant differences between continents:  
 
 ```{r workflow1-step4, exercise=TRUE, exercise.setup="shared-data"}
 # Perform ANOVA
@@ -1393,11 +1682,11 @@ anova_result <- aov(Height ~ Continent, data = tidy)
 summary(anova_result)
 ```
 
----
+---  
 
-**STEP 5: Post-hoc Test (If ANOVA is Significant)**
+**STEP 5: Post-hoc Test (If ANOVA is Significant)**  
 
-If p < 0.05, find out WHICH continents differ from each other:
+If p < 0.05, find out WHICH continents differ from each other:  
 
 ```{r workflow1-step5, exercise=TRUE, exercise.setup="shared-data"}
 # Tukey's HSD post-hoc test
@@ -1405,23 +1694,23 @@ anova_result <- aov(Height ~ Continent, data = tidy)
 TukeyHSD(anova_result)
 ```
 
----
+---  
 
-### Complete Analysis Example 2: Weight Loss Study
+### 8.2. Complete Analysis Example 2: Weight Loss Study  
 
-**Research Question:** "Is the weight loss program effective?"
+**Research Question:** "Is the weight loss program effective?"  
 
 **About the analysis:**  
-We'll use a PAIRED t-test since we have the same people measured twice (before and after).
+We'll use a PAIRED t-test since we have the same people measured twice (before and after).  
 
 **About the dataset:**  
-`weight_data` contains weight measurements for 30 participants before and after a diet program.
+`weight_data` contains weight measurements for 30 participants before and after a diet program.  
 
----
+---  
 
-**STEP 1: Calculate the Differences**
+**STEP 1: Calculate the Differences**  
 
-Add a new column showing weight change for each participant:
+Add a new column showing weight change for each participant:  
 
 ```{r workflow2-step1, exercise=TRUE, exercise.setup="shared-data"}
 # Calculate weight loss (before - after)
@@ -1429,16 +1718,19 @@ Add a new column showing weight change for each participant:
 weight_data[, weight_loss := before - after]
 
 # View first few rows
-weight_data[1:5]
+weight_data
 ```
 
----
+---  
 
-**STEP 2: Summary Statistics**
+**STEP 2: Summary Statistics**  
 
-Calculate means and standard deviations:
+Calculate means and standard deviations:  
 
 ```{r workflow2-step2, exercise=TRUE, exercise.setup="shared-data"}
+# Calculate weight loss (before - after)
+weight_data[, weight_loss := before - after]
+
 # Summary statistics
 weight_data[, .(
   mean_before = mean(before),
@@ -1448,17 +1740,17 @@ weight_data[, .(
 )]
 ```
 
----
+---  
 
-**STEP 3a: Visualize Before vs After**
+**STEP 3a: Visualize Before vs After**  
 
-Create a boxplot comparing weights before and after.
+Create a boxplot comparing weights before and after.  
 
-**What to plot:**
-- **x-axis:** time (before vs after)
-- **y-axis:** weight
-- **geom:** Use `geom_boxplot()` to compare distributions
-- **Add:** Use `geom_line()` with `group = participant` to show individual changes
+**What to plot:**  
+- **x-axis:** time (before vs after)  
+- **y-axis:** weight  
+- **geom:** Use `geom_boxplot()` to compare distributions  
+- **Add:** Use `geom_line()` with `group = participant` to show individual changes  
 
 ```{r workflow2-step3a, exercise=TRUE, exercise.setup="shared-data"}
 # Note: weight_long is already prepared in shared-data
@@ -1473,17 +1765,17 @@ ggplot(weight_long, aes(x = time, y = weight, fill = time)) +
          x = "Time", y = "Weight (kg)")
 ```
 
----
+---  
 
-**STEP 3b: Visualize the Weight Changes**
+**STEP 3b: Visualize the Weight Changes**  
 
-Create a histogram of the weight changes (differences).
+Create a histogram of the weight changes (differences).  
 
-**What to plot:**
-- **x-axis:** difference (weight change)
-- **geom:** Use `geom_histogram()` to show distribution of changes
-- **Add:** Use `geom_vline()` at x = 0 to show the "no change" line
-- **bins:** Set to 10 for appropriate binning
+**What to plot:**  
+- **x-axis:** difference (weight change)  
+- **geom:** Use `geom_histogram()` to show distribution of changes  
+- **Add:** Use `geom_vline()` at x = 0 to show the "no change" line  
+- **bins:** Set to 10 for appropriate binning  
 
 ```{r workflow2-step3b, exercise=TRUE, exercise.setup="shared-data"}
 # Histogram of weight changes
@@ -1493,30 +1785,33 @@ ggplot(weight_data, aes(x = difference)) +
     theme_light() +
     labs(title = "Weight Change Distribution", 
          x = "Change (After - Before in kg)",
-         subtitle = "Negative values = weight gain, Positive values = weight loss")
+         subtitle = "Negative values = weight loss, Positive values = weight gain")
 ```
 
----
+---  
 
-**STEP 4: Perform Paired t-test**
+**STEP 4: Perform Paired t-test**  
 
-Test if the weight change is significantly different from zero:
+Test if the weight change is significantly different from zero:  
 
 ```{r workflow2-step4, exercise=TRUE, exercise.setup="shared-data"}
 # Paired t-test
-t.test(weight_data$before, weight_data$after, paired = TRUE)
+t.test(weight_data[,before], weight_data[,after], paired = TRUE)
 
 # Or equivalently, test if difference differs from 0
-# t.test(weight_data$difference, mu = 0)
+# t.test(weight_data[,difference], mu = 0)
 ```
 
----
+---  
 
-**STEP 5: Calculate Effect Size (Optional)**
+**STEP 5: Calculate Effect Size (Optional)**  
 
-Cohen's d shows the magnitude of the effect (how big is the change?):
+Cohen's d shows the magnitude of the effect (how big is the change?):  
 
 ```{r workflow2-step5, exercise=TRUE, exercise.setup="shared-data"}
+# Calculate weight loss (before - after)
+weight_data[, weight_loss := before - after]
+
 # Calculate Cohen's d
 weight_data[, .(
   cohens_d = mean(weight_loss) / sd(weight_loss)
@@ -1528,34 +1823,32 @@ weight_data[, .(
 # |d| > 0.8: large effect
 ```
 
----
+---  
 
-### Final Challenge: Your Complete Analysis
+### 8.3. Final Challenge: Your Complete Analysis  
 
-### Final Challenge: Your Complete Analysis
+**Research Question:** "Is there a relationship between Gender and Continent, and do Heights differ by Gender and Continent?"  
 
-**Research Question:** "Is there a relationship between Gender and Continent, and do Heights differ by Gender and Continent?"
+This challenge combines THREE different analyses. Complete each part step-by-step.  
 
-This challenge combines THREE different analyses. Complete each part step-by-step.
+---  
 
----
+**TASK 1: Chi-squared Test - Gender and Continent Relationship**  
 
-**TASK 1: Chi-squared Test - Gender and Continent Relationship**
+Test if Gender distribution is independent of Continent.  
 
-Test if Gender distribution is independent of Continent.
+**Step 1a: Create a stacked bar chart**  
+- Use `ggplot()` with `tidy` dataset  
+- x-axis: `Continent`  
+- fill: `Gender` (to show gender within each continent)  
+- geom: `geom_bar(position = "fill")` (fill to show proportions)  
+- Add labels with `labs()`  
 
-**Step 1a: Create a stacked bar chart**
-- Use `ggplot()` with `tidy` dataset
-- x-axis: `Continent`
-- fill: `Gender` (to show gender within each continent)
-- geom: `geom_bar(position = "fill")` (fill to show proportions)
-- Add labels with `labs()`
+**Step 1b: Create a contingency table**  
+- Use `tidy[,.N,.(Continent,Gender)]`  
 
-**Step 1b: Create a contingency table**
-- Use `table(tidy$Continent, tidy$Gender)`
-
-**Step 1c: Perform chi-squared test**
-- Use `chisq.test(tidy$Continent, tidy$Gender)`
+**Step 1c: Perform chi-squared test**  
+- Use `chisq.test(tidy[,Continent], tidy[,Gender])`  
 
 ```{r final-part1, exercise=TRUE, exercise.setup="shared-data"}
 # TASK 1: Your code here
@@ -1565,25 +1858,25 @@ Test if Gender distribution is independent of Continent.
 
 ```
 
----
+---  
 
-**TASK 2: Two-Sample t-test - Height by Gender**
+**TASK 2: Two-Sample t-test - Height by Gender**  
 
-Compare average heights between males and females.
+Compare average heights between males and females.  
 
-**Step 2a: Calculate summary statistics**
-- Use data.table: `tidy[, .(mean_height = ..., sd_height = ..., n = .N), by = Gender]`
+**Step 2a: Calculate summary statistics**  
+- Use data.table: `tidy[, .(mean_height = ..., sd_height = ..., n = .N), by = Gender]`  
 
-**Step 2b: Create a boxplot**
-- Use `ggplot()` with `tidy` dataset
-- x-axis: `Gender`
-- y-axis: `Height`
-- fill: `Gender`
-- geom: `geom_boxplot(alpha = 0.7)` 
-- Add individual points with `geom_jitter(width = 0.1, alpha = 0.2)`
+**Step 2b: Create a boxplot**  
+- Use `ggplot()` with `tidy` dataset  
+- x-axis: `Gender`  
+- y-axis: `Height`  
+- fill: `Gender`  
+- geom: `geom_boxplot(alpha = 0.7)`   
+- Add individual points with `geom_jitter(width = 0.1, alpha = 0.2)`  
 
-**Step 2c: Perform two-sample t-test**
-- Use `t.test(Height ~ Gender, data = tidy)`
+**Step 2c: Perform two-sample t-test**  
+- Use `t.test(Height ~ Gender, data = tidy)`  
 
 ```{r final-part2, exercise=TRUE, exercise.setup="shared-data"}
 # TASK 2: Your code here
@@ -1593,30 +1886,30 @@ Compare average heights between males and females.
 
 ```
 
----
+---  
 
-**TASK 3: ANOVA - Height by Continent**
+**TASK 3: ANOVA - Height by Continent**  
 
-Compare average heights across all continents.
+Compare average heights across all continents.  
 
-**Step 3a: Calculate summary statistics**
-- Use data.table: `tidy[, .(mean_height = ..., sd_height = ..., n = .N), by = Continent]`
+**Step 3a: Calculate summary statistics**  
+- Use data.table: `tidy[, .(mean_height = ..., sd_height = ..., n = .N), by = Continent]`  
 
-**Step 3b: Create a boxplot**
-- Use `ggplot()` with `tidy` dataset
-- x-axis: `Continent`
-- y-axis: `Height`
-- fill: `Continent`
-- geom: `geom_boxplot(alpha = 0.7)`
-- Add points with `geom_jitter(width = 0.2, alpha = 0.3)`
-- Remove legend with `theme(legend.position = "none")`
+**Step 3b: Create a boxplot**  
+- Use `ggplot()` with `tidy` dataset  
+- x-axis: `Continent`  
+- y-axis: `Height`  
+- fill: `Continent`  
+- geom: `geom_boxplot(alpha = 0.7)`  
+- Add points with `geom_jitter(width = 0.2, alpha = 0.3)`  
+- Remove legend with `theme(legend.position = "none")`  
 
-**Step 3c: Perform ANOVA**
-- Create ANOVA model: `anova_result <- aov(Height ~ Continent, data = tidy)`
-- View results: `summary(anova_result)`
+**Step 3c: Perform ANOVA**  
+- Create ANOVA model: `anova_result <- aov(Height ~ Continent, data = tidy)`  
+- View results: `summary(anova_result)`  
 
-**Step 3d: Perform post-hoc test (if significant)**
-- Use `TukeyHSD(anova_result)`
+**Step 3d: Perform post-hoc test (if significant)**  
+- Use `TukeyHSD(anova_result)`  
 
 ```{r final-part3, exercise=TRUE, exercise.setup="shared-data"}
 # TASK 3: Your code here
@@ -1634,11 +1927,11 @@ ggplot(tidy, aes(x = Continent, fill = Gender)) +
     theme_light() +
     labs(title = "Gender Distribution by Continent", y = "Proportion")
 
-# Step 1b: Table
-table(tidy$Continent, tidy$Gender)
+# Step 1b: Contingency table with .N
+tidy[,.N,.(Continent,Gender)]
 
 # Step 1c: Test
-chisq.test(tidy$Continent, tidy$Gender)
+chisq.test(tidy[,Continent], tidy[,Gender])
 ```
 
 ```{r final-part2-hint}
@@ -1688,11 +1981,11 @@ ggplot(tidy, aes(x = Continent, fill = Gender)) +
     theme_light() +
     labs(title = "Gender Distribution by Continent", y = "Proportion")
 
-# Step 1b: Contingency table
-table(tidy$Continent, tidy$Gender)
+# Step 1b: Contingency table with .N
+tidy[,.N,.(Continent,Gender)]
 
 # Step 1c: Chi-squared test
-chisq.test(tidy$Continent, tidy$Gender)
+chisq.test(tidy[,Continent], tidy[,Gender])
 
 
 # ==================== TASK 2: Height by Gender ====================
@@ -1748,51 +2041,51 @@ anova_2way <- aov(Height ~ Gender * Continent, data = tidy)
 summary(anova_2way)
 ```
 
----
+---  
 
-## Summary and Quick Reference
+## 9. Summary and Quick Reference  
 
-### Congratulations!
+### 9.1. Congratulations!  
 
-You've learned how to combine data manipulation, visualization, and statistical testing!
+You've learned how to combine data manipulation, visualization, and statistical testing!  
 
-### What You've Learned
+### 9.2. What You've Learned  
 
-**Data Manipulation (data.table):**
-- `DT[i, j, by]` syntax for filtering, selecting, computing
-- Grouping with `by`
-- Calculating summaries with `.N`, `mean()`, `sd()`
+**Data Manipulation (data.table):**  
+- `DT[i, j, by]` syntax for filtering, selecting, computing  
+- Grouping with `by`  
+- Calculating summaries with `.N`, `mean()`, `sd()`  
 
-**Statistical Tests:**
+**Statistical Tests:**  
 
-| Test | Purpose | When to Use | R Function |
-|------|---------|-------------|------------|
-| **Chi-squared** | Test independence of categorical variables | 2+ categorical variables, n ≥ 5 per cell | `chisq.test()` |
-| **Fisher's exact** | Test independence (small samples) | 2 categorical variables, small n | `fisher.test()` |
-| **One-sample t-test** | Compare mean to known value | 1 continuous variable vs. reference | `t.test(x, mu = value)` |
-| **Two-sample t-test** | Compare 2 independent group means | 2 groups, continuous outcome | `t.test(y ~ group)` |
-| **Paired t-test** | Compare 2 related measurements | Before/after, matched pairs | `t.test(x, y, paired = TRUE)` |
-| **ANOVA** | Compare 3+ group means | 3+ groups, continuous outcome | `aov(y ~ group)` |
-| **Tukey HSD** | Post-hoc after ANOVA | After significant ANOVA | `TukeyHSD()` |
+| Test | Purpose | When to Use | R Function |  
+|------|---------|-------------|------------|  
+| **Chi-squared** | Test independence of categorical variables | 2+ categorical variables, n ≥ 5 per cell | `chisq.test()` |  
+| **Fisher's exact** | Test independence (small samples) | 2 categorical variables, small n | `fisher.test()` |  
+| **One-sample t-test** | Compare mean to known value | 1 continuous variable vs. reference | `t.test(x, mu = value)` |  
+| **Two-sample t-test** | Compare 2 independent group means | 2 groups, continuous outcome | `t.test(y ~ group)` |  
+| **Paired t-test** | Compare 2 related measurements | Before/after, matched pairs | `t.test(x, y, paired = TRUE)` |  
+| **ANOVA** | Compare 3+ group means | 3+ groups, continuous outcome | `aov(y ~ group)` |  
+| **Tukey HSD** | Post-hoc after ANOVA | After significant ANOVA | `TukeyHSD()` |  
 
-**Visualization (ggplot2):**
-- Bar charts for categorical data
-- Histograms and density plots for distributions
-- Boxplots and violin plots for group comparisons
-- Always visualize before testing!
+**Visualization (ggplot2):**  
+- Bar charts for categorical data  
+- Histograms and density plots for distributions  
+- Boxplots and violin plots for group comparisons  
+- Always visualize before testing!  
 
-### Key Workflow
+### 9.3. Key Workflow  
 
-1. **Explore**: Use data.table to understand your data
-2. **Visualize**: Create plots with ggplot2
-3. **Test**: Choose and perform appropriate statistical test
-4. **Interpret**: Look at p-values and effect sizes
-5. **Communicate**: Report findings clearly
+1. **Explore**: Use data.table to understand your data  
+2. **Visualize**: Create plots with ggplot2  
+3. **Test**: Choose and perform appropriate statistical test  
+4. **Interpret**: Look at p-values and effect sizes  
+5. **Communicate**: Report findings clearly  
 
-### Best Practices
+### 9.4. Best Practices  
 
-<div class="callout callout-tip">
-<div class="callout-title">Analysis Checklist</div>
+<div class="callout callout-tip">  
+<div class="callout-title">Analysis Checklist</div>  
 
 ✓ Always visualize your data first  
 ✓ Check assumptions before testing  
@@ -1801,48 +2094,48 @@ You've learned how to combine data manipulation, visualization, and statistical 
 ✓ Consider practical significance, not just statistical significance  
 ✓ Document your analysis workflow  
 
-</div>
+</div>  
 
----
+---  
 
-### Download Your Work
+### 9.5. Download Your Work  
 
-<div class="callout callout-tip">
-<div class="callout-title">Save Your Work</div>
+<div class="callout callout-tip">  
+<div class="callout-title">Save Your Work</div>  
 
-Save this completed tutorial as an HTML file for future reference.
-</div>
+Save this completed tutorial as an HTML file for future reference.  
+</div>  
 
 ```{r download-ui, echo=FALSE}
 HTML('<button onclick="window.downloadTutorial(); return false;" class="btn-download-tutorial" style="display: block; margin: 20px auto;">📥 Download Tutorial as HTML</button>')
 ```
 
----
+---  
 
-### Please Give Feedback!
+### 9.6. Please Give Feedback!  
 
-<div class="callout callout-success">
-<div class="callout-title">💬 Your Feedback Matters</div>
+<div class="callout callout-success">  
+<div class="callout-title">💬 Your Feedback Matters</div>  
 
-Help us improve this tutorial! Share your experience and suggestions.
-</div>
+Help us improve this tutorial! Share your experience and suggestions.  
+</div>  
 
 ```{r feedback-ui, echo=FALSE}
 HTML('<a href="https://forms.gle/F3xueJLoTrVyPPLM7" target="_blank" style="display: block; margin: 20px auto; padding: 15px 30px; background-color: #28a745; color: white; text-align: center; text-decoration: none; border-radius: 5px; font-weight: bold; max-width: 300px;">📝 Please Give Feedback!</a>')
 ```
 
----
+---  
 
-### Additional Resources
+### 9.7. Additional Resources  
 
-**R Packages:**
-- [data.table documentation](https://rdatatable.gitlab.io/data.table/)
-- [ggplot2 documentation](https://ggplot2.tidyverse.org/)
+**R Packages:**  
+- [data.table documentation](https://rdatatable.gitlab.io/data.table/)  
+- [ggplot2 documentation](https://ggplot2.tidyverse.org/)  
 
-**Statistics Resources:**
-- [Quick-R: Basic Statistics](https://www.statmethods.net/stats/index.html)
-- [R for Data Science](https://r4ds.had.co.nz/)
+**Statistics Resources:**  
+- [Quick-R: Basic Statistics](https://www.statmethods.net/stats/index.html)  
+- [R for Data Science](https://r4ds.had.co.nz/)  
 
-**Statistical Tests:**
-- [Choosing the Right Test](https://www.scribbr.com/statistics/statistical-tests/)
-- [Statistical Test Decision Tree](https://stats.oarc.ucla.edu/other/mult-pkg/whatstat/)
+**Statistical Tests:**  
+- [Choosing the Right Test](https://www.scribbr.com/statistics/statistical-tests/)  
+- [Statistical Test Decision Tree](https://stats.oarc.ucla.edu/other/mult-pkg/whatstat/)  
