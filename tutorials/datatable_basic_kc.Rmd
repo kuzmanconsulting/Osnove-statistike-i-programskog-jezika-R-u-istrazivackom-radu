@@ -1,5 +1,5 @@
 ---  
-title: "Basic Data Analysis with data.table and Statistics"  
+title: "Data Analysis with data.table and Categorical Tests"  
 output:   
   learnr::tutorial:  
     progressive: true  
@@ -114,7 +114,7 @@ growth_summary[, ci_upper := mean_growth + 1.96 * se_growth]
 
 ## 1. Welcome  
 
-Welcome to **Basic Data Analysis with data.table and Statistics**  
+Welcome to **Data Analysis with data.table and Categorical Tests**  
 
 ### 1.1. Author  
 
@@ -133,38 +133,36 @@ Welcome to **Basic Data Analysis with data.table and Statistics**
 <div class="callout callout-success">  
 <div class="callout-title">What You Will Learn</div>  
 
-This tutorial combines data manipulation with statistical analysis:  
+This tutorial combines data manipulation with categorical statistical analysis:  
 
-1. **Introduction to data.table**  
+1. **Welcome**  
+   - Tutorial overview  
+   - How to use this tutorial  
+
+2. **Quick Review: Subsetting and Conditions**  
+   - Logical subsetting  
+   - Comparison operators  
+   - Logical operators (AND, OR, NOT)  
+   - Practical filtering examples  
+
+3. **Introduction to data.table**  
    - Why data.table?  
    - Converting to data.table  
    - The DT[i, j, by] syntax  
 
-2. **Basic Data Operations**  
+4. **Basic Data Operations**  
    - Selecting rows (filtering)  
    - Selecting columns  
    - Computing summaries  
    - Grouping data  
 
-3. **Categorical Data Analysis**  
+5. **Categorical Data Analysis**  
    - Visualizing categorical data  
    - Chi-squared test  
    - Fisher's exact test  
+   - Goodness of fit tests  
 
-4. **Comparing Means: t-tests**  
-   - One-sample t-test  
-   - Two-sample t-test  
-   - Paired samples t-test  
-   - Visualizing group differences  
-
-5. **Comparing Multiple Groups**  
-   - ANOVA (Analysis of Variance)  
-   - Visualizing multiple groups  
-   - Post-hoc analysis  
-
-6. **Integrated Workflow**  
-   - Complete analysis examples  
-   - From data manipulation to visualization to testing  
+**Note:** For parametric tests (t-tests, ANOVA, regression), see the companion tutorial: "Parametric Tests and Regression with data.table"  
 
 </div>  
 
@@ -224,25 +222,146 @@ ages != 18  # Returns: FALSE TRUE TRUE TRUE TRUE TRUE TRUE
 
 </div>  
 
-**Your Turn:** Create a logical vector that checks which temperatures are below 20 degrees, then display it:  
+**Your Turn:** Create a logical vector that checks which numbers are equal to 0.3, then display it:  
 
 ```{r comparison-exercise, exercise=TRUE}
-temperatures <- c(18, 22, 15, 25, 19, 30, 12)
-
-# Check which temperatures are below 20
+numbers <- 0.1*c(1, 2, 3, 4)
+numbers
+# Check which numbers are equal to 0.3
 
 ```
 
 ```{r comparison-exercise-hint}
-# Use the < operator
-temperatures < 20
+# Use the == operator
+numbers == 0.3
 ```
 
 ```{r comparison-exercise-solution}
-temperatures <- c(18, 22, 15, 25, 19, 30, 12)
-temperatures < 20
-# Returns: TRUE FALSE TRUE FALSE TRUE FALSE TRUE
+numbers <- 0.1*c(1, 2, 3, 4)
+numbers
+numbers == 0.3
+# Returns:  WHAT?
 ```
+
+---
+
+### ⚠️ BE CAREFUL: Comparing Decimal Numbers with ==
+
+<div class="callout callout-danger">
+<div class="callout-title">⚠️ DANGER: Floating Point Precision Issues</div>
+
+**Never use `==` to compare decimal numbers!**
+
+Computers store decimal numbers with limited precision, which can cause unexpected results:
+
+```r
+0.1 + 0.2 == 0.3  # You'd expect TRUE, but it returns FALSE!
+```
+
+**Why?** Computers store numbers in binary (0s and 1s), and some decimals can't be represented exactly. This causes tiny rounding errors that make "equal" numbers appear unequal.
+
+**The Problem in Filtering:**
+```r
+x <- c(0.1, 0.2, 0.3, 0.4)
+x[x == 0.3]  # Might not find 0.3 due to precision errors!
+```
+
+</div>
+
+---
+
+### Demonstration: The Problem with == for Decimals
+
+See the floating point precision problem in action:
+
+```{r floating-point-problem, exercise=TRUE}
+# Example 1: Simple arithmetic that "should" work
+0.1 + 0.2 == 0.3
+
+# Example 2: Why does this happen?
+print(0.1 + 0.2, digits = 20)  # Shows the actual stored value
+print(0.3, digits = 20)         # Compare to what we expect
+
+# Example 3: Filtering problem
+values <- c(0.1, 0.2, 0.3, 0.4, 0.5)
+calculated <- c(0.05 + 0.05, 0.1 + 0.1, 0.15 + 0.15, 0.2 + 0.2, 0.25 + 0.25)
+
+# This might not work as expected!
+calculated == 0.3
+```
+
+---
+
+### Solution: Use Tolerance or Other Comparisons
+
+<div class="callout callout-success">
+<div class="callout-title">✅ SAFE ALTERNATIVES</div>
+
+**Instead of `==`, use one of these methods:**
+
+**1. Use `all.equal()` for tolerance-based comparison:**
+```r
+all.equal(0.1 + 0.2, 0.3)  # Returns TRUE (within tolerance)
+```
+
+**2. Use comparison operators (>, <, >=, <=) when possible:**
+```r
+x[x > 0.29 & x < 0.31]  # Safer than x[x == 0.3]
+```
+
+**3. Round numbers first:**
+```r
+round(0.1 + 0.2, 10) == round(0.3, 10)  # TRUE
+```
+
+**4. Use as.numeric(as.character(x)):**
+```r
+as.numeric(as.character(0.1 + 0.2 ))== 0.3  # TRUE (built-in tolerance)
+```
+
+</div>
+
+---
+
+### Demonstration: Safe Comparison Methods
+
+Compare the unsafe `==` with safer alternatives:
+
+```{r safe-comparisons, exercise=TRUE}
+# The problem
+0.1 + 0.2 == 0.3  # FALSE (unexpected!)
+
+# Solution 1: all.equal() with tolerance
+all.equal(0.1 + 0.2, 0.3)  # TRUE (safe!)
+
+# Solution 2: Use range instead of exact match
+x <- 0.1 + 0.2
+x > 0.29 & x < 0.31  # TRUE (safe!)
+
+# Solution 3: Round first
+round(0.1 + 0.2, 10) == round(0.3, 10)  # TRUE (safe!)
+
+# Solution 4: Check absolute difference is small
+abs((0.1 + 0.2) - 0.3) < 0.0000001  # TRUE (safe!)
+
+
+```
+
+<div class="callout callout-tip">
+<div class="callout-title">💡 Pro Tip: When to Worry</div>
+
+**You don't need to worry about this when:**
+- Comparing integers (whole numbers): `5 == 5` is always safe  
+- Using `>`, `<`, `>=`, `<=` with decimals (these work fine!)  
+
+**You DO need to worry when:**
+- Using `==` with any decimal calculations  
+- Filtering datasets for specific decimal values  
+- Working with financial data or precise measurements  
+
+**Remember:** This is a fundamental limitation of how computers store numbers, not a bug in R!
+
+</div>
 
 ---  
 
@@ -875,19 +994,25 @@ ggplot(smoking_disease, aes(smoking, fill = disease)) +
     )
 ```
 
-**Your Turn:** Create a bar chart showing the distribution of `Species` in `iris_dt`:  
+**Your Turn:** Calculate the number of smokers/nonsmokers with/without disease using data.table:  
 
 ```{r cat-viz-exercise, exercise=TRUE, exercise.setup="shared-data"}
-# Create bar chart of Species
+# Calculate counts using data.table
 
 
 ```
 
+```{r cat-viz-exercise-hint}
+# Use .N to count rows, grouped by smoking and disease
+smoking_disease[, .N, by = .(smoking, disease)]
+```
+
 ```{r cat-viz-exercise-solution}
-ggplot(iris_dt, aes(Species, fill = Species)) +
-    geom_bar() +
-    theme_light() +
-    labs(title = "Iris Species Distribution")
+# Count by smoking status and disease status
+smoking_disease[, .N, by = .(smoking, disease)]
+
+# Alternative: Create a contingency table
+table(smoking_disease[, smoking], smoking_disease[, disease])
 ```
 
 ---  
@@ -1044,1012 +1169,13 @@ chisq.test(tidy[,Continent], tidy[,Gender])
 
 ---  
 
-## 6. Comparing Means: t-tests  
+## 6. Summary and Quick Reference  
 
-<div class="callout callout-success">  
-<div class="callout-title">📍 In This Section</div>  
-
-4. **Comparing Means: t-tests**  
-   → One-sample t-test  
-   - Two-sample t-test  
-   - Paired samples t-test  
-   - Visualizing group differences  
-
-</div>  
-
-### 6.1. One-Sample t-test  
-
-<div class="callout callout-concept">  
-<div class="callout-title">When to Use One-Sample t-test</div>  
-
-**Purpose:** Test if a sample mean differs from a known value  
-
-**Question:** "Is the average blood pressure different from 120?"  
-
-**Requirements:**  
-- Continuous variable  
-- Approximately normally distributed  
-- Independent observations  
-
-**Hypotheses:**  
-- H₀: μ = known value  
-- H₁: μ ≠ known value  
-
-</div>  
-
-**About the `bp_data` dataset:**  
-This dataset contains systolic blood pressure measurements from 25 patients. Normal systolic blood pressure is around 120 mmHg. We want to test if our sample mean differs from this normal value.  
-
-**Step 1: Visualize and summarize the data**  
-
-```{r onesample-viz, exercise=TRUE, exercise.setup="shared-data"}
-# Summary statistics
-bp_data[, .(
-  mean_bp = mean(systolic_bp),
-  sd_bp = sd(systolic_bp),
-  n = .N
-)]
-
-# Histogram with reference line at normal BP (120)
-ggplot(bp_data, aes(systolic_bp)) +
-    geom_histogram(bins = 10, fill = "steelblue", alpha = 0.7, color = "black") +
-    geom_vline(xintercept = 120, color = "red", linetype = "dashed", size = 1) +
-    annotate("text", x = 120, y = 5, label = "Normal BP = 120", color = "red", hjust = -0.1) +
-    theme_light() +
-    labs(title = "Blood Pressure Distribution", x = "Systolic BP (mmHg)", y = "Count")
-```
-
-**Step 2: Perform the one-sample t-test**  
-
-```{r onesample-test, exercise=TRUE, exercise.setup="shared-data"}
-# Test if mean BP differs from 120
-t.test(bp_data[,systolic_bp], mu = 120)
-```
-
-**Your Turn:** Test if the mean `Sepal.Length` in iris differs from 6:  
-
-```{r onesample-exercise, exercise=TRUE, exercise.setup="shared-data"}
-# 1. Calculate mean Sepal.Length
-# 2. Create a histogram with reference line at 6
-# 3. Perform one-sample t-test
-
-
-```
-
-```{r onesample-exercise-hint}
-# Mean
-iris_dt[, mean(Sepal.Length)]
-
-# Test
-t.test(iris_dt[,Sepal.Length], mu = 6)
-```
-
-```{r onesample-exercise-solution}
-# Summary
-iris_dt[, .(mean_sepal = mean(Sepal.Length), sd_sepal = sd(Sepal.Length))]
-
-# Visualization
-ggplot(iris_dt, aes(Sepal.Length)) +
-    geom_histogram(bins = 15, fill = "steelblue", alpha = 0.7, color = "black") +
-    geom_vline(xintercept = 6, color = "red", linetype = "dashed", size = 1) +
-    theme_light() +
-    labs(title = "Sepal Length Distribution", x = "Sepal Length")
-
-# Test
-t.test(iris_dt[,Sepal.Length], mu = 6)
-```
-
----  
-
-### 6.2. Two-Sample t-test  
-
-<div class="callout callout-success">  
-<div class="callout-title">📍 In This Section</div>  
-
-4. **Comparing Means: t-tests**  
-   - One-sample t-test  
-   → Two-sample t-test  
-   - Paired samples t-test  
-   - Visualizing group differences  
-
-</div>  
-
-<div class="callout callout-concept">  
-<div class="callout-title">When to Use Two-Sample t-test</div>  
-
-**Purpose:** Compare means between **two independent groups**  
-
-**Question:** "Do males and females have different average heights?"  
-
-**Requirements:**  
-- Continuous outcome variable  
-- Categorical grouping variable (2 groups)  
-- Independent observations  
-- Approximately normal distributions (or large sample)  
-
-**Hypotheses:**  
-- H₀: μ₁ = μ₂ (means are equal)  
-- H₁: μ₁ ≠ μ₂ (means differ)  
-
-</div>  
-
-First, explore the data with data.table:  
-
-```{r twosample-explore, exercise=TRUE, exercise.setup="shared-data"}
-# Summary by gender
-tidy[, .(
-  mean_height = mean(Height),
-  sd_height = sd(Height),
-  n = .N
-), by = Gender]
-```
-
-Visualize the distributions:  
-
-```{r twosample-viz, exercise=TRUE, exercise.setup="shared-data"}
-# Boxplot
-ggplot(tidy, aes(Gender, Height, fill = Gender)) +
-    geom_boxplot(alpha = 0.7) +
-    theme_light() +
-    labs(title = "Height by Gender", y = "Height (cm)")
-
-# Density plot
-ggplot(tidy, aes(Height, fill = Gender)) +
-    geom_density(alpha = 0.5) +
-    theme_light() +
-    labs(title = "Height Distribution by Gender")
-```
-
-Perform the two-sample t-test:  
-
-```{r twosample-test, exercise=TRUE, exercise.setup="shared-data"}
-# Two-sample t-test
-t.test(Height ~ Gender, data = tidy)
-
-# Alternative: split data manually
-females <- tidy[Gender == "female", Height]
-males <- tidy[Gender == "male", Height]
-t.test(females, males)
-```
-
-**Your Turn:** Compare `Petal.Length` between `setosa` and `versicolor` species in iris:  
-
-```{r twosample-exercise, exercise=TRUE, exercise.setup="shared-data"}
-# 1. Filter for setosa and versicolor only
-# 2. Calculate summary statistics by species
-# 3. Create a boxplot
-# 4. Perform two-sample t-test
-
-
-```
-
-```{r twosample-exercise-hint}
-# Filter
-iris_subset <- iris_dt[Species %in% c("setosa", "versicolor")]
-
-# Summary
-iris_subset[, .(mean_petal = mean(Petal.Length)), by = Species]
-
-# Test
-t.test(Petal.Length ~ Species, data = iris_subset)
-```
-
-```{r twosample-exercise-solution}
-# Filter data
-iris_subset <- iris_dt[Species %in% c("setosa", "versicolor")]
-
-# Summary statistics
-iris_subset[, .(
-  mean_petal = mean(Petal.Length),
-  sd_petal = sd(Petal.Length),
-  n = .N
-), by = Species]
-
-# Visualization
-ggplot(iris_subset, aes(Species, Petal.Length, fill = Species)) +
-    geom_boxplot(alpha = 0.7) +
-    geom_jitter(width = 0.1, alpha = 0.3) +
-    theme_light() +
-    labs(title = "Petal Length: Setosa vs Versicolor")
-
-# Two-sample t-test
-t.test(Petal.Length ~ Species, data = iris_subset)
-```
-
----  
-
-### 6.3. Paired Samples t-test  
-
-<div class="callout callout-success">  
-<div class="callout-title">📍 In This Section</div>  
-
-4. **Comparing Means: t-tests**  
-   - One-sample t-test  
-   - Two-sample t-test  
-   → Paired samples t-test  
-   - Visualizing group differences  
-
-</div>  
-
-<div class="callout callout-concept">  
-<div class="callout-title">When to Use Paired Samples t-test</div>  
-
-**Purpose:** Compare means from **same subjects measured twice**  
-
-**Question:** "Did weight change after a diet program?"  
-
-**Requirements:**  
-- Two measurements on same subjects (before/after, matched pairs)  
-- Continuous variable  
-- Differences approximately normally distributed  
-
-**Hypotheses:**  
-- H₀: μ_diff = 0 (no change)  
-- H₁: μ_diff ≠ 0 (there is change)  
-
-**Key:** We test the **differences**, not the groups!  
-
-</div>  
-
-First, calculate the differences:  
-
-```{r paired-prep, exercise=TRUE, exercise.setup="shared-data"}
-# Add difference column
-weight_data[, difference := after - before]
-
-# Summary statistics
-weight_data[, .(
-  mean_before = mean(before),
-  mean_after = mean(after),
-  mean_diff = mean(difference),
-  sd_diff = sd(difference)
-)]
-```
-
-Visualize before/after:  
-
-```{r paired-viz, exercise=TRUE, exercise.setup="shared-data"}
-# Reshape for visualization
-weight_long <- melt(weight_data, 
-                    id.vars = "participant",
-                    measure.vars = c("before", "after"),
-                    variable.name = "time",
-                    value.name = "weight")
-
-# Boxplot comparison
-ggplot(weight_long, aes(time, weight, fill = time)) +
-    geom_boxplot(alpha = 0.7) +
-    geom_line(aes(group = participant), alpha = 0.3) +
-    theme_light() +
-    labs(title = "Weight Before and After Diet Program", y = "Weight (kg)")
-
-# Histogram of differences
-ggplot(weight_data, aes(difference)) +
-    geom_histogram(bins = 10, fill = "steelblue", alpha = 0.7, color = "black") +
-    geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
-    theme_light() +
-    labs(title = "Weight Change Distribution", x = "Change (After - Before)")
-```
-
-Perform the paired t-test:  
-
-```{r paired-test, exercise=TRUE, exercise.setup="shared-data"}
-# Paired t-test
-t.test(weight_data[,after], weight_data[,before], paired = TRUE)
-
-# Check: same as one-sample test on differences
-t.test(weight_data[,difference], mu = 0)
-```
-
----  
-
-### 6.4. Visualizing Group Differences  
-
-<div class="callout callout-success">  
-<div class="callout-title">📍 In This Section</div>  
-
-4. **Comparing Means: t-tests**  
-   - One-sample t-test  
-   - Two-sample t-test  
-   - Paired samples t-test  
-   → Visualizing group differences  
-
-</div>  
-
-Multiple ways to visualize group comparisons:  
-
-```{r viz-comparison, exercise=TRUE, exercise.setup="shared-data"}
-# 1. Boxplot with individual points
-ggplot(tidy, aes(Gender, Height, fill = Gender)) +
-    geom_boxplot(alpha = 0.5) +
-    geom_jitter(width = 0.1, alpha = 0.3) +
-    theme_light()
-
-# 2. Violin plot
-ggplot(tidy, aes(Gender, Height, fill = Gender)) +
-    geom_violin(alpha = 0.7) +
-    geom_boxplot(width = 0.1, alpha = 0.5) +
-    theme_light()
-
-# 3. Density plot with means
-mean_height <- tidy[, .(mean_height = mean(Height)), by = Gender]
-
-ggplot(tidy, aes(Height, fill = Gender)) +
-    geom_density(alpha = 0.5) +
-    geom_vline(data = mean_height, aes(xintercept = mean_height, color = Gender),
-               linetype = "dashed", size = 1) +
-    theme_light()
-```
-
----  
-
-## 7. Comparing Multiple Groups  
-
-<div class="callout callout-success">  
-<div class="callout-title">📍 In This Section</div>  
-
-5. **Comparing Multiple Groups**  
-   → ANOVA (Analysis of Variance)  
-   - Visualizing multiple groups  
-   - Post-hoc analysis  
-
-</div>  
-
-### 7.1. ANOVA (Analysis of Variance)  
-
-<div class="callout callout-concept">  
-<div class="callout-title">When to Use ANOVA</div>  
-
-**Purpose:** Compare means across **three or more groups**  
-
-**Question:** "Do different fertilizers produce different plant growth?"  
-
-**Requirements:**  
-- Continuous outcome variable  
-- Categorical grouping variable (≥ 3 groups)  
-- Independent observations  
-- Approximately normal distributions within groups  
-- Equal variances across groups (homogeneity)  
-
-**Hypotheses:**  
-- H₀: All group means are equal  
-- H₁: At least one mean differs  
-
-**Important:** ANOVA tells you if *any* groups differ, not *which* ones!  
-
-</div>  
-
-**About the `growth_data` dataset:**  
-This dataset contains plant growth measurements (in cm) from an experiment with 60 plants. Plants were randomly assigned to three fertilizer groups: Control (no fertilizer), TypeA, and TypeB (20 plants per group).  
-
-**Step 1: Explore the data**  
-
-```{r anova-explore, exercise=TRUE, exercise.setup="shared-data"}
-# Summary statistics by fertilizer type
-growth_data[, .(
-  mean_growth = mean(growth_cm),
-  sd_growth = sd(growth_cm),
-  n = .N
-), by = fertilizer]
-```
-
-**Step 2: Visualize the groups**  
-
-Create visualizations to compare the three groups.  
-
-**Visualization 1: Boxplot with individual points**  
-
-```{r anova-viz1, exercise=TRUE, exercise.setup="shared-data"}
-# Boxplot showing distribution for each fertilizer type
-ggplot(growth_data, aes(x = fertilizer, y = growth_cm, fill = fertilizer)) +
-    geom_boxplot(alpha = 0.7) +
-    geom_jitter(width = 0.1, alpha = 0.3) +
-    theme_light() +
-    labs(title = "Plant Growth by Fertilizer Type",
-         x = "Fertilizer", y = "Growth (cm)")
-```
-
-**Visualization 2: Density plot**  
-
-```{r anova-viz2, exercise=TRUE, exercise.setup="shared-data"}
-# Density plot showing overlapping distributions
-ggplot(growth_data, aes(x = growth_cm, fill = fertilizer)) +
-    geom_density(alpha = 0.5) +
-    theme_light() +
-    labs(title = "Growth Distribution by Fertilizer Type",
-         x = "Growth (cm)", y = "Density")
-```
-
-**Step 3: Perform ANOVA**  
-
-```{r anova-test, exercise=TRUE, exercise.setup="shared-data"}
-# ANOVA test
-anova_result <- aov(growth_cm ~ fertilizer, data = growth_data)
-summary(anova_result)
-```
-
----  
-
-### 7.2. Post-hoc Analysis  
-
-<div class="callout callout-success">  
-<div class="callout-title">📍 In This Section</div>  
-
-5. **Comparing Multiple Groups**  
-   - ANOVA (Analysis of Variance)  
-   - Visualizing multiple groups  
-   → Post-hoc analysis  
-
-</div>  
-
-<div class="callout callout-tip">  
-<div class="callout-title">After ANOVA: Which Groups Differ?</div>  
-
-If ANOVA is significant (p < 0.05), we know groups differ. But which ones?  
-
-**Post-hoc tests** compare all pairs of groups, with correction for multiple testing.  
-
-</div>  
-
-Common post-hoc test: Tukey's HSD (Honest Significant Difference)  
-
-```{r posthoc-test, exercise=TRUE, exercise.setup="shared-data"}
-# Tukey's HSD test
-anova_result <- aov(growth_cm ~ fertilizer, data = growth_data)
-tukey_result <- TukeyHSD(anova_result)
-tukey_result
-
-# Visualize Tukey results
-plot(tukey_result)
-```
-
-**Your Turn:** Perform ANOVA comparing `Sepal.Length` across all three iris species:  
-
-```{r anova-exercise, exercise=TRUE, exercise.setup="shared-data"}
-# 1. Calculate summary statistics by species
-# 2. Create a boxplot
-# 3. Perform ANOVA
-# 4. If significant, perform Tukey's HSD
-
-
-```
-
-```{r anova-exercise-hint}
-# Summary
-iris_dt[, .(mean_sepal = mean(Sepal.Length)), by = Species]
-
-# ANOVA
-anova_result <- aov(Sepal.Length ~ Species, data = iris_dt)
-summary(anova_result)
-```
-
-```{r anova-exercise-solution}
-# Summary statistics
-iris_dt[, .(
-  mean_sepal = mean(Sepal.Length),
-  sd_sepal = sd(Sepal.Length),
-  n = .N
-), by = Species]
-
-# Visualization
-ggplot(iris_dt, aes(Species, Sepal.Length, fill = Species)) +
-    geom_boxplot(alpha = 0.7) +
-    geom_jitter(width = 0.1, alpha = 0.3) +
-    theme_light() +
-    labs(title = "Sepal Length by Species")
-
-# ANOVA
-anova_result <- aov(Sepal.Length ~ Species, data = iris_dt)
-summary(anova_result)
-
-# Post-hoc
-TukeyHSD(anova_result)
-```
-
----  
-
-### 7.3. Visualizing Multiple Groups  
-
-<div class="callout callout-success">  
-<div class="callout-title">📍 In This Section</div>  
-
-5. **Comparing Multiple Groups**  
-   - ANOVA (Analysis of Variance)  
-   → Visualizing multiple groups  
-   - Post-hoc analysis  
-
-</div>  
-
-Advanced visualizations for multiple groups:  
-
-```{r multi-viz, exercise=TRUE, exercise.setup="shared-data"}
-# Boxplot with summary statistics
-ggplot(growth_data, aes(fertilizer, growth_cm, fill = fertilizer)) +
-    geom_boxplot(alpha = 0.5, outlier.shape = NA) +
-    geom_jitter(width = 0.2, alpha = 0.4) +
-    stat_summary(fun = mean, geom = "point", shape = 23, size = 3, fill = "white") +
-    theme_light() +
-    labs(title = "Plant Growth by Fertilizer (Diamond = Mean)",
-         x = "Fertilizer Type", y = "Growth (cm)") +
-    theme(legend.position = "none")
-
-# Violin plot with quartiles
-ggplot(growth_data, aes(fertilizer, growth_cm, fill = fertilizer)) +
-    geom_violin(alpha = 0.7) +
-    geom_boxplot(width = 0.1, alpha = 0.8) +
-    theme_light() +
-    labs(title = "Growth Distribution by Fertilizer")
-
-# Mean plot with error bars (95% CI)
-growth_summary <- growth_data[, .(
-  mean_growth = mean(growth_cm),
-  se_growth = sd(growth_cm) / sqrt(.N),
-  n = .N
-), by = fertilizer]
-
-growth_summary[, ci_lower := mean_growth - 1.96 * se_growth]
-growth_summary[, ci_upper := mean_growth + 1.96 * se_growth]
-
-ggplot(growth_summary, aes(fertilizer, mean_growth, fill = fertilizer)) +
-    geom_col(alpha = 0.7) +
-    geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.2) +
-    theme_light() +
-    labs(title = "Mean Growth by Fertilizer (with 95% CI)",
-         x = "Fertilizer", y = "Mean Growth (cm)")
-```
-
----  
-
-## 8. Integrated Workflow  
-
-<div class="callout callout-success">  
-<div class="callout-title">📍 In This Section</div>  
-
-6. **Integrated Workflow**  
-   → Complete analysis examples  
-   - From data manipulation to visualization to testing  
-
-</div>  
-
-### 8.1. Complete Analysis Example 1: Height by Continent  
-
-Let's perform a complete analysis from start to finish with explicit step-by-step instructions.  
-
-**Research Question:** "Do people from different continents have different average heights?"  
-
-**About the analysis:**  
-We'll use ANOVA since we're comparing means across MORE than 2 groups (continents).  
-
----  
-
-**STEP 1: Explore the Data**  
-
-First, count how many observations we have per continent:  
-
-```{r workflow1-step1, exercise=TRUE, exercise.setup="shared-data"}
-# Count observations per continent
-tidy[, .N, by = Continent]
-```
-
----  
-
-**STEP 2: Calculate Summary Statistics**  
-
-Calculate mean, standard deviation, and count for each continent:  
-
-```{r workflow1-step2, exercise=TRUE, exercise.setup="shared-data"}
-# Summary statistics by continent
-height_summary <- tidy[, .(
-  mean_height = mean(Height),
-  sd_height = sd(Height),
-  n = .N
-), by = Continent]
-height_summary
-```
-
----  
-
-**STEP 3: Create Visualization**  
-
-Create a boxplot to visualize height distributions across continents.  
-
-**What to plot:**  
-- **x-axis:** Continent  
-- **y-axis:** Height  
-- **geom:** Use `geom_boxplot()` for the boxes  
-- **Add:** Use `geom_jitter()` to show individual points  
-- **Color:** Fill boxes by Continent  
-
-```{r workflow1-step3, exercise=TRUE, exercise.setup="shared-data"}
-# Boxplot with individual points
-ggplot(tidy, aes(x = Continent, y = Height, fill = Continent)) +
-    geom_boxplot(alpha = 0.7) +
-    geom_jitter(width = 0.2, alpha = 0.3) +
-    theme_light() +
-    labs(title = "Height by Continent", y = "Height (cm)") +
-    theme(legend.position = "none")
-```
-
----  
-
-**STEP 4: Perform ANOVA**  
-
-Test if there are significant differences between continents:  
-
-```{r workflow1-step4, exercise=TRUE, exercise.setup="shared-data"}
-# Perform ANOVA
-anova_result <- aov(Height ~ Continent, data = tidy)
-summary(anova_result)
-```
-
----  
-
-**STEP 5: Post-hoc Test (If ANOVA is Significant)**  
-
-If p < 0.05, find out WHICH continents differ from each other:  
-
-```{r workflow1-step5, exercise=TRUE, exercise.setup="shared-data"}
-# Tukey's HSD post-hoc test
-anova_result <- aov(Height ~ Continent, data = tidy)
-TukeyHSD(anova_result)
-```
-
----  
-
-### 8.2. Complete Analysis Example 2: Weight Loss Study  
-
-**Research Question:** "Is the weight loss program effective?"  
-
-**About the analysis:**  
-We'll use a PAIRED t-test since we have the same people measured twice (before and after).  
-
-**About the dataset:**  
-`weight_data` contains weight measurements for 30 participants before and after a diet program.  
-
----  
-
-**STEP 1: Calculate the Differences**  
-
-Add a new column showing weight change for each participant:  
-
-```{r workflow2-step1, exercise=TRUE, exercise.setup="shared-data"}
-# Calculate weight loss (before - after)
-# Note: Positive values mean weight loss
-weight_data[, weight_loss := before - after]
-
-# View first few rows
-weight_data
-```
-
----  
-
-**STEP 2: Summary Statistics**  
-
-Calculate means and standard deviations:  
-
-```{r workflow2-step2, exercise=TRUE, exercise.setup="shared-data"}
-# Calculate weight loss (before - after)
-weight_data[, weight_loss := before - after]
-
-# Summary statistics
-weight_data[, .(
-  mean_before = mean(before),
-  mean_after = mean(after),
-  mean_loss = mean(weight_loss),
-  sd_loss = sd(weight_loss)
-)]
-```
-
----  
-
-**STEP 3a: Visualize Before vs After**  
-
-Create a boxplot comparing weights before and after.  
-
-**What to plot:**  
-- **x-axis:** time (before vs after)  
-- **y-axis:** weight  
-- **geom:** Use `geom_boxplot()` to compare distributions  
-- **Add:** Use `geom_line()` with `group = participant` to show individual changes  
-
-```{r workflow2-step3a, exercise=TRUE, exercise.setup="shared-data"}
-# Note: weight_long is already prepared in shared-data
-
-# Boxplot showing before/after with individual trajectories
-ggplot(weight_long, aes(x = time, y = weight, fill = time)) +
-    geom_boxplot(alpha = 0.7) +
-    geom_line(aes(group = participant), alpha = 0.2) +
-    geom_point(alpha = 0.3) +
-    theme_light() +
-    labs(title = "Weight Before and After Diet Program",
-         x = "Time", y = "Weight (kg)")
-```
-
----  
-
-**STEP 3b: Visualize the Weight Changes**  
-
-Create a histogram of the weight changes (differences).  
-
-**What to plot:**  
-- **x-axis:** difference (weight change)  
-- **geom:** Use `geom_histogram()` to show distribution of changes  
-- **Add:** Use `geom_vline()` at x = 0 to show the "no change" line  
-- **bins:** Set to 10 for appropriate binning  
-
-```{r workflow2-step3b, exercise=TRUE, exercise.setup="shared-data"}
-# Histogram of weight changes
-ggplot(weight_data, aes(x = difference)) +
-    geom_histogram(bins = 10, fill = "steelblue", alpha = 0.7, color = "black") +
-    geom_vline(xintercept = 0, color = "red", linetype = "dashed", size = 1) +
-    theme_light() +
-    labs(title = "Weight Change Distribution", 
-         x = "Change (After - Before in kg)",
-         subtitle = "Negative values = weight loss, Positive values = weight gain")
-```
-
----  
-
-**STEP 4: Perform Paired t-test**  
-
-Test if the weight change is significantly different from zero:  
-
-```{r workflow2-step4, exercise=TRUE, exercise.setup="shared-data"}
-# Paired t-test
-t.test(weight_data[,before], weight_data[,after], paired = TRUE)
-
-# Or equivalently, test if difference differs from 0
-# t.test(weight_data[,difference], mu = 0)
-```
-
----  
-
-**STEP 5: Calculate Effect Size (Optional)**  
-
-Cohen's d shows the magnitude of the effect (how big is the change?):  
-
-```{r workflow2-step5, exercise=TRUE, exercise.setup="shared-data"}
-# Calculate weight loss (before - after)
-weight_data[, weight_loss := before - after]
-
-# Calculate Cohen's d
-weight_data[, .(
-  cohens_d = mean(weight_loss) / sd(weight_loss)
-)]
-
-# Interpretation:
-# |d| < 0.2: small effect
-# |d| = 0.5: medium effect
-# |d| > 0.8: large effect
-```
-
----  
-
-### 8.3. Final Challenge: Your Complete Analysis  
-
-**Research Question:** "Is there a relationship between Gender and Continent, and do Heights differ by Gender and Continent?"  
-
-This challenge combines THREE different analyses. Complete each part step-by-step.  
-
----  
-
-**TASK 1: Chi-squared Test - Gender and Continent Relationship**  
-
-Test if Gender distribution is independent of Continent.  
-
-**Step 1a: Create a stacked bar chart**  
-- Use `ggplot()` with `tidy` dataset  
-- x-axis: `Continent`  
-- fill: `Gender` (to show gender within each continent)  
-- geom: `geom_bar(position = "fill")` (fill to show proportions)  
-- Add labels with `labs()`  
-
-**Step 1b: Create a contingency table**  
-- Use `tidy[,.N,.(Continent,Gender)]`  
-
-**Step 1c: Perform chi-squared test**  
-- Use `chisq.test(tidy[,Continent], tidy[,Gender])`  
-
-```{r final-part1, exercise=TRUE, exercise.setup="shared-data"}
-# TASK 1: Your code here
-
-
-
-
-```
-
----  
-
-**TASK 2: Two-Sample t-test - Height by Gender**  
-
-Compare average heights between males and females.  
-
-**Step 2a: Calculate summary statistics**  
-- Use data.table: `tidy[, .(mean_height = ..., sd_height = ..., n = .N), by = Gender]`  
-
-**Step 2b: Create a boxplot**  
-- Use `ggplot()` with `tidy` dataset  
-- x-axis: `Gender`  
-- y-axis: `Height`  
-- fill: `Gender`  
-- geom: `geom_boxplot(alpha = 0.7)`   
-- Add individual points with `geom_jitter(width = 0.1, alpha = 0.2)`  
-
-**Step 2c: Perform two-sample t-test**  
-- Use `t.test(Height ~ Gender, data = tidy)`  
-
-```{r final-part2, exercise=TRUE, exercise.setup="shared-data"}
-# TASK 2: Your code here
-
-
-
-
-```
-
----  
-
-**TASK 3: ANOVA - Height by Continent**  
-
-Compare average heights across all continents.  
-
-**Step 3a: Calculate summary statistics**  
-- Use data.table: `tidy[, .(mean_height = ..., sd_height = ..., n = .N), by = Continent]`  
-
-**Step 3b: Create a boxplot**  
-- Use `ggplot()` with `tidy` dataset  
-- x-axis: `Continent`  
-- y-axis: `Height`  
-- fill: `Continent`  
-- geom: `geom_boxplot(alpha = 0.7)`  
-- Add points with `geom_jitter(width = 0.2, alpha = 0.3)`  
-- Remove legend with `theme(legend.position = "none")`  
-
-**Step 3c: Perform ANOVA**  
-- Create ANOVA model: `anova_result <- aov(Height ~ Continent, data = tidy)`  
-- View results: `summary(anova_result)`  
-
-**Step 3d: Perform post-hoc test (if significant)**  
-- Use `TukeyHSD(anova_result)`  
-
-```{r final-part3, exercise=TRUE, exercise.setup="shared-data"}
-# TASK 3: Your code here
-
-
-
-
-```
-
-```{r final-part1-hint}
-# TASK 1 HINT: Chi-squared test
-# Step 1a: Visualization
-ggplot(tidy, aes(x = Continent, fill = Gender)) +
-    geom_bar(position = "fill") +
-    theme_light() +
-    labs(title = "Gender Distribution by Continent", y = "Proportion")
-
-# Step 1b: Contingency table with .N
-tidy[,.N,.(Continent,Gender)]
-
-# Step 1c: Test
-chisq.test(tidy[,Continent], tidy[,Gender])
-```
-
-```{r final-part2-hint}
-# TASK 2 HINT: Two-sample t-test
-# Step 2a: Summary
-tidy[, .(mean_height = mean(Height), sd_height = sd(Height), n = .N), by = Gender]
-
-# Step 2b: Visualization
-ggplot(tidy, aes(x = Gender, y = Height, fill = Gender)) +
-    geom_boxplot(alpha = 0.7) +
-    geom_jitter(width = 0.1, alpha = 0.2) +
-    theme_light() +
-    labs(title = "Height by Gender")
-
-# Step 2c: Test
-t.test(Height ~ Gender, data = tidy)
-```
-
-```{r final-part3-hint}
-# TASK 3 HINT: ANOVA
-# Step 3a: Summary
-tidy[, .(mean_height = mean(Height), sd_height = sd(Height), n = .N), by = Continent]
-
-# Step 3b: Visualization
-ggplot(tidy, aes(x = Continent, y = Height, fill = Continent)) +
-    geom_boxplot(alpha = 0.7) +
-    geom_jitter(width = 0.2, alpha = 0.3) +
-    theme_light() +
-    labs(title = "Height by Continent", y = "Height (cm)") +
-    theme(legend.position = "none")
-
-# Step 3c: ANOVA
-anova_result <- aov(Height ~ Continent, data = tidy)
-summary(anova_result)
-
-# Step 3d: Post-hoc
-TukeyHSD(anova_result)
-```
-
-```{r final-part3-solution}
-# ==================== TASK 1: Categorical Analysis ====================
-# Question: Are Gender and Continent independent?
-
-# Step 1a: Visualization - Stacked bar chart
-ggplot(tidy, aes(x = Continent, fill = Gender)) +
-    geom_bar(position = "fill") +
-    theme_light() +
-    labs(title = "Gender Distribution by Continent", y = "Proportion")
-
-# Step 1b: Contingency table with .N
-tidy[,.N,.(Continent,Gender)]
-
-# Step 1c: Chi-squared test
-chisq.test(tidy[,Continent], tidy[,Gender])
-
-
-# ==================== TASK 2: Height by Gender ====================
-# Question: Do males and females have different heights?
-
-# Step 2a: Summary statistics
-tidy[, .(mean_height = mean(Height), sd_height = sd(Height), n = .N), by = Gender]
-
-# Step 2b: Visualization - Boxplot
-ggplot(tidy, aes(x = Gender, y = Height, fill = Gender)) +
-    geom_boxplot(alpha = 0.7) +
-    geom_jitter(width = 0.1, alpha = 0.2) +
-    theme_light() +
-    labs(title = "Height by Gender", y = "Height (cm)")
-
-# Step 2c: Two-sample t-test
-t.test(Height ~ Gender, data = tidy)
-
-
-# ==================== TASK 3: Height by Continent ====================
-# Question: Do heights differ across continents?
-
-# Step 3a: Summary statistics
-tidy[, .(mean_height = mean(Height), sd_height = sd(Height), n = .N), by = Continent]
-
-# Step 3b: Visualization - Boxplot
-ggplot(tidy, aes(x = Continent, y = Height, fill = Continent)) +
-    geom_boxplot(alpha = 0.7) +
-    geom_jitter(width = 0.2, alpha = 0.3) +
-    theme_light() +
-    labs(title = "Height by Continent", y = "Height (cm)") +
-    theme(legend.position = "none")
-
-# Step 3c: ANOVA
-anova_result <- aov(Height ~ Continent, data = tidy)
-summary(anova_result)
-
-# Step 3d: Post-hoc test
-TukeyHSD(anova_result)
-
-
-# ==================== BONUS: Height by Gender AND Continent ====================
-# Explore the interaction between Gender and Continent
-
-# Visualization: Two-way comparison
-ggplot(tidy, aes(x = Continent, y = Height, fill = Gender)) +
-    geom_boxplot(alpha = 0.7) +
-    theme_light() +
-    labs(title = "Height by Continent and Gender", y = "Height (cm)")
-
-# Two-way ANOVA (tests both main effects and interaction)
-anova_2way <- aov(Height ~ Gender * Continent, data = tidy)
-summary(anova_2way)
-```
-
----  
-
-## 9. Summary and Quick Reference  
-
-### 9.1. Congratulations!  
+### 6.1. Congratulations!  
 
 You've learned how to combine data manipulation, visualization, and statistical testing!  
 
-### 9.2. What You've Learned  
+### 6.2. What You've Learned  
 
 **Data Manipulation (data.table):**  
 - `DT[i, j, by]` syntax for filtering, selecting, computing  
@@ -2062,11 +1188,6 @@ You've learned how to combine data manipulation, visualization, and statistical 
 |------|---------|-------------|------------|  
 | **Chi-squared** | Test independence of categorical variables | 2+ categorical variables, n ≥ 5 per cell | `chisq.test()` |  
 | **Fisher's exact** | Test independence (small samples) | 2 categorical variables, small n | `fisher.test()` |  
-| **One-sample t-test** | Compare mean to known value | 1 continuous variable vs. reference | `t.test(x, mu = value)` |  
-| **Two-sample t-test** | Compare 2 independent group means | 2 groups, continuous outcome | `t.test(y ~ group)` |  
-| **Paired t-test** | Compare 2 related measurements | Before/after, matched pairs | `t.test(x, y, paired = TRUE)` |  
-| **ANOVA** | Compare 3+ group means | 3+ groups, continuous outcome | `aov(y ~ group)` |  
-| **Tukey HSD** | Post-hoc after ANOVA | After significant ANOVA | `TukeyHSD()` |  
 
 **Visualization (ggplot2):**  
 - Bar charts for categorical data  
@@ -2074,7 +1195,7 @@ You've learned how to combine data manipulation, visualization, and statistical 
 - Boxplots and violin plots for group comparisons  
 - Always visualize before testing!  
 
-### 9.3. Key Workflow  
+### 6.3. Key Workflow  
 
 1. **Explore**: Use data.table to understand your data  
 2. **Visualize**: Create plots with ggplot2  
@@ -2082,7 +1203,7 @@ You've learned how to combine data manipulation, visualization, and statistical 
 4. **Interpret**: Look at p-values and effect sizes  
 5. **Communicate**: Report findings clearly  
 
-### 9.4. Best Practices  
+### 6.4. Best Practices  
 
 <div class="callout callout-tip">  
 <div class="callout-title">Analysis Checklist</div>  
@@ -2098,7 +1219,7 @@ You've learned how to combine data manipulation, visualization, and statistical 
 
 ---  
 
-### 9.5. Download Your Work  
+### 6.5. Download Your Work  
 
 <div class="callout callout-tip">  
 <div class="callout-title">Save Your Work</div>  
@@ -2112,7 +1233,7 @@ HTML('<button onclick="window.downloadTutorial(); return false;" class="btn-down
 
 ---  
 
-### 9.6. Please Give Feedback!  
+### 6.6. Please Give Feedback!  
 
 <div class="callout callout-success">  
 <div class="callout-title">💬 Your Feedback Matters</div>  
@@ -2126,7 +1247,7 @@ HTML('<a href="https://forms.gle/F3xueJLoTrVyPPLM7" target="_blank" style="displ
 
 ---  
 
-### 9.7. Additional Resources  
+### 6.7. Additional Resources  
 
 **R Packages:**  
 - [data.table documentation](https://rdatatable.gitlab.io/data.table/)  
