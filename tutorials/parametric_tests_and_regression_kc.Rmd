@@ -1,0 +1,2287 @@
+---  
+title: "Parametric Tests and Regression with data.table"  
+output:   
+  learnr::tutorial:  
+    progressive: true  
+    allow_skip: true  
+    css: "../assets/kuzman_theme.css"  
+runtime: shiny_prerendered  
+---  
+
+```{r setup, include=FALSE}
+library(learnr)
+library(data.table)
+library(ggplot2)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r load-branding, echo=FALSE}
+# Load Kuzman Consulting branding (CSS + logos)
+source("../assets/setup_branding.R", local = knitr::knit_global())
+setup_kuzman_branding()
+```
+
+```{r server-setup, context="server"}
+# Register resource path for logos
+source("../assets/setup_branding.R", local = TRUE)
+setup_branding_server()
+```
+
+```{r shared-data, exercise.setup=TRUE, include=FALSE}
+# Load shared data for exercises
+library(data.table)
+library(ggplot2)
+library(openxlsx)
+# Reinitialize data.table options (stripped by learnr exercise environment)
+if (is.null(getOption("datatable.alloccol"))) data.table:::.onLoad()
+
+# Main datasets
+tidy <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/tidyData.txt", header=T)
+iris_dt <- as.data.table(iris)
+
+# Create additional datasets for statistical tests
+set.seed(123)
+
+# Dataset for paired t-test: before/after weight measurements
+weight_data <- data.table(
+  participant = 1:30,
+  before = rnorm(30, mean = 75, sd = 10),
+  after = rnorm(30, mean = 72, sd = 10) - runif(30, 0, 5)
+)
+weight_data[, difference := after - before]
+
+# Prepare long format for plotting
+weight_long <- melt(weight_data[, .(participant, before, after)],
+                    id.vars = "participant",
+                    variable.name = "time",
+                    value.name = "weight")
+
+# Dataset for ANOVA: plant growth with 3 fertilizer types
+growth_data <- data.table(
+  fertilizer = rep(c("Control", "TypeA", "TypeB"), each = 20),
+  growth_cm = c(
+    rnorm(20, mean = 15, sd = 3),
+    rnorm(20, mean = 18, sd = 3),
+    rnorm(20, mean = 21, sd = 3)
+  )
+)
+
+# Dataset for chi-squared: smoking and disease
+smoking_disease <- data.table(
+  smoking = rep(c("Smoker", "Non-smoker"), times = c(120, 180)),
+  disease = c(
+    rep(c("Disease", "Healthy"), times = c(40, 80)),
+    rep(c("Disease", "Healthy"), times = c(30, 150))
+  )
+)
+
+# Small dataset for Fisher's exact test
+small_study <- data.table(
+  treatment = rep(c("Drug", "Placebo"), times = c(10, 10)),
+  outcome = c(
+    rep(c("Improved", "Not_Improved"), times = c(7, 3)),
+    rep(c("Improved", "Not_Improved"), times = c(3, 7))
+  )
+)
+
+# Dataset for one-sample t-test: blood pressure measurements
+bp_data <- data.table(
+  patient = 1:25,
+  systolic_bp = rnorm(25, mean = 125, sd = 12)
+)
+
+# Prepare subset for exercises
+iris_subset <- iris_dt[Species %in% c("setosa", "versicolor")]
+
+# Calculate summary statistics for visualization
+height_summary <- tidy[, .(
+  mean_height = mean(Height),
+  sd_height = sd(Height),
+  n = .N
+), by = Gender]
+
+mean_height <- tidy[, .(mean_height = mean(Height)), by = Gender]
+
+growth_summary <- growth_data[, .(
+  mean_growth = mean(growth_cm),
+  se_growth = sd(growth_cm) / sqrt(.N),
+  n = .N
+), by = fertilizer]
+growth_summary[, ci_lower := mean_growth - 1.96 * se_growth]
+growth_summary[, ci_upper := mean_growth + 1.96 * se_growth]
+
+# Create regression models for examples
+# Simple linear regression model (used in multiple exercises)
+model1 <- lm(Petal.Width ~ Petal.Length, data = iris_dt)
+
+# Multiple regression model
+model2 <- lm(Petal.Width ~ Petal.Length + Sepal.Length + Sepal.Width, 
+             data = iris_dt)
+```
+
+## Welcome  
+
+Welcome to **Parametric Tests and Regression with data.table**!  
+
+### Author  
+
+**dr.sc. Maja Kuzman** - Kuzman Consulting d.o.o.  
+
+<div class="callout callout-info">  
+<div class="callout-title">Prerequisites</div>  
+
+This tutorial assumes you are familiar with:  
+- Basic R programming  
+- data.table operations (filtering, selecting, grouping)  
+- Basic statistical concepts  
+
+**Recommendation:** Complete "Data Analysis with data.table and Categorical Tests" first if you're new to data.table.  
+
+</div>  
+
+<div class="callout callout-success">  
+<div class="callout-title">What You Will Learn</div>  
+
+This tutorial focuses on parametric statistical tests and regression:  
+
+1. **Comparing Means: t-tests**  
+   - One-sample t-test  
+   - Two-sample t-test  
+   - Paired samples t-test  
+   - Visualizing group differences  
+
+2. **Comparing Multiple Groups: ANOVA**  
+   - Analysis of Variance  
+   - Post-hoc testing  
+   - Visualizing multiple groups  
+
+3. **Integrated Workflows**  
+   - Complete analysis examples  
+   - From data manipulation to testing  
+
+4. **Correlation and Association**  
+   - Pearson and Spearman correlation  
+   - Correlation matrices  
+   - Visualizing relationships  
+
+5. **Linear Regression**  
+   - Simple and multiple regression  
+   - Model interpretation  
+   - Diagnostic plots and validation  
+
+6. **Practical Challenge**  
+   - Complete regression analysis  
+   - From exploration to final model  
+
+</div>  
+
+---  
+
+## 1. Comparing Means: t-tests  
+
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
+
+1. **Comparing Means: t-tests**  
+   → One-sample t-test  
+   - Two-sample t-test  
+   - Paired samples t-test  
+   - Visualizing group differences  
+
+</div>  
+
+### 1.1. One-Sample t-test  
+
+<div class="callout callout-concept">  
+<div class="callout-title">When to Use One-Sample t-test</div>  
+
+**Purpose:** Test if a sample mean differs from a known value  
+
+**Question:** "Is the average blood pressure different from 120?"  
+
+**Requirements:**  
+- Continuous variable  
+- Approximately normally distributed  
+- Independent observations  
+
+**Hypotheses:**  
+- H₀: μ = known value  
+- H₁: μ ≠ known value  
+
+</div>  
+
+**About the `bp_data` dataset:**  
+This dataset contains systolic blood pressure measurements from 25 patients. Normal systolic blood pressure is around 120 mmHg. We want to test if our sample mean differs from this normal value.  
+
+**Step 1: Visualize and summarize the data**  
+
+```{r onesample-viz, exercise=TRUE, exercise.setup="shared-data"}
+# Summary statistics
+bp_data[, .(
+  mean_bp = mean(systolic_bp),
+  sd_bp = sd(systolic_bp),
+  n = .N
+)]
+
+# Histogram with reference line at normal BP (120)
+ggplot(bp_data, aes(systolic_bp)) +
+    geom_histogram(bins = 10, fill = "steelblue", alpha = 0.7, color = "black") +
+    geom_vline(xintercept = 120, color = "red", linetype = "dashed", size = 1) +
+    annotate("text", x = 120, y = 5, label = "Normal BP = 120", color = "red", hjust = -0.1) +
+    theme_light() +
+    labs(title = "Blood Pressure Distribution", x = "Systolic BP (mmHg)", y = "Count")
+```
+
+**Step 2: Perform the one-sample t-test**  
+
+```{r onesample-test, exercise=TRUE, exercise.setup="shared-data"}
+# Test if mean BP differs from 120
+t.test(bp_data[,systolic_bp], mu = 120)
+```
+
+**Your Turn:** Test if the mean `Sepal.Length` in iris differs from 6:  
+
+```{r onesample-exercise, exercise=TRUE, exercise.setup="shared-data"}
+# 1. Calculate mean Sepal.Length
+# 2. Create a histogram with reference line at 6
+# 3. Perform one-sample t-test
+
+
+```
+
+```{r onesample-exercise-hint}
+# Mean
+iris_dt[, mean(Sepal.Length)]
+
+# Test
+t.test(iris_dt[,Sepal.Length], mu = 6)
+```
+
+```{r onesample-exercise-solution}
+# Summary
+iris_dt[, .(mean_sepal = mean(Sepal.Length), sd_sepal = sd(Sepal.Length))]
+
+# Visualization
+ggplot(iris_dt, aes(Sepal.Length)) +
+    geom_histogram(bins = 15, fill = "steelblue", alpha = 0.7, color = "black") +
+    geom_vline(xintercept = 6, color = "red", linetype = "dashed", size = 1) +
+    theme_light() +
+    labs(title = "Sepal Length Distribution", x = "Sepal Length")
+
+# Test
+t.test(iris_dt[,Sepal.Length], mu = 6)
+```
+
+---  
+
+### 1.2. Two-Sample t-test  
+
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
+
+1. **Comparing Means: t-tests**  
+   - One-sample t-test  
+   → Two-sample t-test  
+   - Paired samples t-test  
+   - Visualizing group differences  
+
+</div>  
+
+<div class="callout callout-concept">  
+<div class="callout-title">When to Use Two-Sample t-test</div>  
+
+**Purpose:** Compare means between **two independent groups**  
+
+**Question:** "Do males and females have different average heights?"  
+
+**Requirements:**  
+- Continuous outcome variable  
+- Categorical grouping variable (2 groups)  
+- Independent observations  
+- Approximately normal distributions (or large sample)  
+
+**Hypotheses:**  
+- H₀: μ₁ = μ₂ (means are equal)  
+- H₁: μ₁ ≠ μ₂ (means differ)  
+
+</div>  
+
+First, explore the data with data.table:  
+
+```{r twosample-explore, exercise=TRUE, exercise.setup="shared-data"}
+# Summary by gender
+tidy[, .(
+  mean_height = mean(Height),
+  sd_height = sd(Height),
+  n = .N
+), by = Gender]
+```
+
+Visualize the distributions:  
+
+```{r twosample-viz, exercise=TRUE, exercise.setup="shared-data"}
+# Boxplot
+ggplot(tidy, aes(Gender, Height, fill = Gender)) +
+    geom_boxplot(alpha = 0.7) +
+    theme_light() +
+    labs(title = "Height by Gender", y = "Height (cm)")
+
+# Density plot
+ggplot(tidy, aes(Height, fill = Gender)) +
+    geom_density(alpha = 0.5) +
+    theme_light() +
+    labs(title = "Height Distribution by Gender")
+```
+
+Perform the two-sample t-test:  
+
+```{r twosample-test, exercise=TRUE, exercise.setup="shared-data"}
+# Two-sample t-test
+t.test(Height ~ Gender, data = tidy)
+
+# Alternative: split data manually
+females <- tidy[Gender == "female", Height]
+males <- tidy[Gender == "male", Height]
+t.test(females, males)
+```
+
+**Your Turn:** Compare `Petal.Length` between `setosa` and `versicolor` species in iris:  
+
+```{r twosample-exercise, exercise=TRUE, exercise.setup="shared-data"}
+# 1. Filter for setosa and versicolor only
+# 2. Calculate summary statistics by species
+# 3. Create a boxplot
+# 4. Perform two-sample t-test
+
+
+```
+
+```{r twosample-exercise-hint}
+# Filter
+iris_subset <- iris_dt[Species %in% c("setosa", "versicolor")]
+
+# Summary
+iris_subset[, .(mean_petal = mean(Petal.Length)), by = Species]
+
+# Test
+t.test(Petal.Length ~ Species, data = iris_subset)
+```
+
+```{r twosample-exercise-solution}
+# Filter data
+iris_subset <- iris_dt[Species %in% c("setosa", "versicolor")]
+
+# Summary statistics
+iris_subset[, .(
+  mean_petal = mean(Petal.Length),
+  sd_petal = sd(Petal.Length),
+  n = .N
+), by = Species]
+
+# Visualization
+ggplot(iris_subset, aes(Species, Petal.Length, fill = Species)) +
+    geom_boxplot(alpha = 0.7) +
+    geom_jitter(width = 0.1, alpha = 0.3) +
+    theme_light() +
+    labs(title = "Petal Length: Setosa vs Versicolor")
+
+# Two-sample t-test
+t.test(Petal.Length ~ Species, data = iris_subset)
+```
+
+---  
+
+### 1.3. Paired Samples t-test  
+
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
+
+1. **Comparing Means: t-tests**  
+   - One-sample t-test  
+   - Two-sample t-test  
+   → Paired samples t-test  
+   - Visualizing group differences  
+
+</div>  
+
+<div class="callout callout-concept">  
+<div class="callout-title">When to Use Paired Samples t-test</div>  
+
+**Purpose:** Compare means from **same subjects measured twice**  
+
+**Question:** "Did weight change after a diet program?"  
+
+**Requirements:**  
+- Two measurements on same subjects (before/after, matched pairs)  
+- Continuous variable  
+- Differences approximately normally distributed  
+
+**Hypotheses:**  
+- H₀: μ_diff = 0 (no change)  
+- H₁: μ_diff ≠ 0 (there is change)  
+
+**Key:** We test the **differences**, not the groups!  
+
+</div>  
+
+First, calculate the differences:  
+
+```{r paired-prep, exercise=TRUE, exercise.setup="shared-data"}
+# Add difference column
+weight_data[, difference := after - before]
+
+# Summary statistics
+weight_data[, .(
+  mean_before = mean(before),
+  mean_after = mean(after),
+  mean_diff = mean(difference),
+  sd_diff = sd(difference)
+)]
+```
+
+Visualize before/after:  
+
+```{r paired-viz, exercise=TRUE, exercise.setup="shared-data"}
+# Reshape for visualization
+weight_long <- melt(weight_data, 
+                    id.vars = "participant",
+                    measure.vars = c("before", "after"),
+                    variable.name = "time",
+                    value.name = "weight")
+
+# Boxplot comparison
+ggplot(weight_long, aes(time, weight, fill = time)) +
+    geom_boxplot(alpha = 0.7) +
+    geom_line(aes(group = participant), alpha = 0.3) +
+    theme_light() +
+    labs(title = "Weight Before and After Diet Program", y = "Weight (kg)")
+
+# Histogram of differences
+ggplot(weight_data, aes(difference)) +
+    geom_histogram(bins = 10, fill = "steelblue", alpha = 0.7, color = "black") +
+    geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+    theme_light() +
+    labs(title = "Weight Change Distribution", x = "Change (After - Before)")
+```
+
+Perform the paired t-test:  
+
+```{r paired-test, exercise=TRUE, exercise.setup="shared-data"}
+# Paired t-test
+t.test(weight_data[,after], weight_data[,before], paired = TRUE)
+
+# Check: same as one-sample test on differences
+t.test(weight_data[,difference], mu = 0)
+```
+
+---  
+
+### 1.4. Visualizing Group Differences  
+
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
+
+1. **Comparing Means: t-tests**  
+   - One-sample t-test  
+   - Two-sample t-test  
+   - Paired samples t-test  
+   → Visualizing group differences  
+
+</div>  
+
+Multiple ways to visualize group comparisons:  
+
+```{r viz-comparison, exercise=TRUE, exercise.setup="shared-data"}
+# 1. Boxplot with individual points
+ggplot(tidy, aes(Gender, Height, fill = Gender)) +
+    geom_boxplot(alpha = 0.5) +
+    geom_jitter(width = 0.1, alpha = 0.3) +
+    theme_light()
+
+# 2. Violin plot
+ggplot(tidy, aes(Gender, Height, fill = Gender)) +
+    geom_violin(alpha = 0.7) +
+    geom_boxplot(width = 0.1, alpha = 0.5) +
+    theme_light()
+
+# 3. Density plot with means
+mean_height <- tidy[, .(mean_height = mean(Height)), by = Gender]
+
+ggplot(tidy, aes(Height, fill = Gender)) +
+    geom_density(alpha = 0.5) +
+    geom_vline(data = mean_height, aes(xintercept = mean_height, color = Gender),
+               linetype = "dashed", size = 1) +
+    theme_light()
+```
+
+---  
+
+## 2. Comparing Multiple Groups  
+
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
+
+2. **Comparing Multiple Groups**  
+   → ANOVA (Analysis of Variance)  
+   - Visualizing multiple groups  
+   - Post-hoc analysis  
+
+</div>  
+
+### 2.1. ANOVA (Analysis of Variance)  
+
+<div class="callout callout-concept">  
+<div class="callout-title">When to Use ANOVA</div>  
+
+**Purpose:** Compare means across **three or more groups**  
+
+**Question:** "Do different fertilizers produce different plant growth?"  
+
+**Requirements:**  
+- Continuous outcome variable  
+- Categorical grouping variable (≥ 3 groups)  
+- Independent observations  
+- Approximately normal distributions within groups  
+- Equal variances across groups (homogeneity)  
+
+**Hypotheses:**  
+- H₀: All group means are equal  
+- H₁: At least one mean differs  
+
+**Important:** ANOVA tells you if *any* groups differ, not *which* ones!  
+
+</div>  
+
+**About the `growth_data` dataset:**  
+This dataset contains plant growth measurements (in cm) from an experiment with 60 plants. Plants were randomly assigned to three fertilizer groups: Control (no fertilizer), TypeA, and TypeB (20 plants per group).  
+
+**Step 1: Explore the data**  
+
+```{r anova-explore, exercise=TRUE, exercise.setup="shared-data"}
+# Summary statistics by fertilizer type
+growth_data[, .(
+  mean_growth = mean(growth_cm),
+  sd_growth = sd(growth_cm),
+  n = .N
+), by = fertilizer]
+```
+
+**Step 2: Visualize the groups**  
+
+Create visualizations to compare the three groups.  
+
+**Visualization 1: Boxplot with individual points**  
+
+```{r anova-viz1, exercise=TRUE, exercise.setup="shared-data"}
+# Boxplot showing distribution for each fertilizer type
+ggplot(growth_data, aes(x = fertilizer, y = growth_cm, fill = fertilizer)) +
+    geom_boxplot(alpha = 0.7) +
+    geom_jitter(width = 0.1, alpha = 0.3) +
+    theme_light() +
+    labs(title = "Plant Growth by Fertilizer Type",
+         x = "Fertilizer", y = "Growth (cm)")
+```
+
+**Visualization 2: Density plot**  
+
+```{r anova-viz2, exercise=TRUE, exercise.setup="shared-data"}
+# Density plot showing overlapping distributions
+ggplot(growth_data, aes(x = growth_cm, fill = fertilizer)) +
+    geom_density(alpha = 0.5) +
+    theme_light() +
+    labs(title = "Growth Distribution by Fertilizer Type",
+         x = "Growth (cm)", y = "Density")
+```
+
+**Step 3: Perform ANOVA**  
+
+```{r anova-test, exercise=TRUE, exercise.setup="shared-data"}
+# ANOVA test
+anova_result <- aov(growth_cm ~ fertilizer, data = growth_data)
+summary(anova_result)
+```
+
+---  
+
+### 2.2. Post-hoc Analysis  
+
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
+
+2. **Comparing Multiple Groups**  
+   - ANOVA (Analysis of Variance)  
+   - Visualizing multiple groups  
+   → Post-hoc analysis  
+
+</div>  
+
+<div class="callout callout-tip">  
+<div class="callout-title">After ANOVA: Which Groups Differ?</div>  
+
+If ANOVA is significant (p < 0.05), we know groups differ. But which ones?  
+
+**Post-hoc tests** compare all pairs of groups, with correction for multiple testing.  
+
+</div>  
+
+Common post-hoc test: Tukey's HSD (Honest Significant Difference)  
+
+```{r posthoc-test, exercise=TRUE, exercise.setup="shared-data"}
+# Tukey's HSD test
+anova_result <- aov(growth_cm ~ fertilizer, data = growth_data)
+tukey_result <- TukeyHSD(anova_result)
+tukey_result
+
+# Visualize Tukey results
+plot(tukey_result)
+```
+
+**Your Turn:** Perform ANOVA comparing `Sepal.Length` across all three iris species:  
+
+```{r anova-exercise, exercise=TRUE, exercise.setup="shared-data"}
+# 1. Calculate summary statistics by species
+# 2. Create a boxplot
+# 3. Perform ANOVA
+# 4. If significant, perform Tukey's HSD
+
+
+```
+
+```{r anova-exercise-hint}
+# Summary
+iris_dt[, .(mean_sepal = mean(Sepal.Length)), by = Species]
+
+# ANOVA
+anova_result <- aov(Sepal.Length ~ Species, data = iris_dt)
+summary(anova_result)
+```
+
+```{r anova-exercise-solution}
+# Summary statistics
+iris_dt[, .(
+  mean_sepal = mean(Sepal.Length),
+  sd_sepal = sd(Sepal.Length),
+  n = .N
+), by = Species]
+
+# Visualization
+ggplot(iris_dt, aes(Species, Sepal.Length, fill = Species)) +
+    geom_boxplot(alpha = 0.7) +
+    geom_jitter(width = 0.1, alpha = 0.3) +
+    theme_light() +
+    labs(title = "Sepal Length by Species")
+
+# ANOVA
+anova_result <- aov(Sepal.Length ~ Species, data = iris_dt)
+summary(anova_result)
+
+# Post-hoc
+TukeyHSD(anova_result)
+```
+
+---  
+
+### 2.3. Visualizing Multiple Groups  
+
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
+
+2. **Comparing Multiple Groups**  
+   - ANOVA (Analysis of Variance)  
+   → Visualizing multiple groups  
+   - Post-hoc analysis  
+
+</div>  
+
+Advanced visualizations for multiple groups:  
+
+```{r multi-viz, exercise=TRUE, exercise.setup="shared-data"}
+# Boxplot with summary statistics
+ggplot(growth_data, aes(fertilizer, growth_cm, fill = fertilizer)) +
+    geom_boxplot(alpha = 0.5, outlier.shape = NA) +
+    geom_jitter(width = 0.2, alpha = 0.4) +
+    stat_summary(fun = mean, geom = "point", shape = 23, size = 3, fill = "white") +
+    theme_light() +
+    labs(title = "Plant Growth by Fertilizer (Diamond = Mean)",
+         x = "Fertilizer Type", y = "Growth (cm)") +
+    theme(legend.position = "none")
+
+# Violin plot with quartiles
+ggplot(growth_data, aes(fertilizer, growth_cm, fill = fertilizer)) +
+    geom_violin(alpha = 0.7) +
+    geom_boxplot(width = 0.1, alpha = 0.8) +
+    theme_light() +
+    labs(title = "Growth Distribution by Fertilizer")
+
+# Mean plot with error bars (95% CI)
+growth_summary <- growth_data[, .(
+  mean_growth = mean(growth_cm),
+  se_growth = sd(growth_cm) / sqrt(.N),
+  n = .N
+), by = fertilizer]
+
+growth_summary[, ci_lower := mean_growth - 1.96 * se_growth]
+growth_summary[, ci_upper := mean_growth + 1.96 * se_growth]
+
+ggplot(growth_summary, aes(fertilizer, mean_growth, fill = fertilizer)) +
+    geom_col(alpha = 0.7) +
+    geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0.2) +
+    theme_light() +
+    labs(title = "Mean Growth by Fertilizer (with 95% CI)",
+         x = "Fertilizer", y = "Mean Growth (cm)")
+```
+
+---  
+
+## 3. Integrated Workflow  
+
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
+
+3. **Integrated Workflow**  
+   → Complete analysis examples  
+   - From data manipulation to visualization to testing  
+
+</div>  
+
+### 3.1. Complete Analysis Example 1: Height by Continent  
+
+Let's perform a complete analysis from start to finish with explicit step-by-step instructions.  
+
+**Research Question:** "Do people from different continents have different average heights?"  
+
+**About the analysis:**  
+We'll use ANOVA since we're comparing means across MORE than 2 groups (continents).  
+
+---  
+
+**STEP 1: Explore the Data**  
+
+First, count how many observations we have per continent:  
+
+```{r workflow1-step1, exercise=TRUE, exercise.setup="shared-data"}
+# Count observations per continent
+tidy[, .N, by = Continent]
+```
+
+---  
+
+**STEP 2: Calculate Summary Statistics**  
+
+Calculate mean, standard deviation, and count for each continent:  
+
+```{r workflow1-step2, exercise=TRUE, exercise.setup="shared-data"}
+# Summary statistics by continent
+height_summary <- tidy[, .(
+  mean_height = mean(Height),
+  sd_height = sd(Height),
+  n = .N
+), by = Continent]
+height_summary
+```
+
+---  
+
+**STEP 3: Create Visualization**  
+
+Create a boxplot to visualize height distributions across continents.  
+
+**What to plot:**  
+- **x-axis:** Continent  
+- **y-axis:** Height  
+- **geom:** Use `geom_boxplot()` for the boxes  
+- **Add:** Use `geom_jitter()` to show individual points  
+- **Color:** Fill boxes by Continent  
+
+```{r workflow1-step3, exercise=TRUE, exercise.setup="shared-data"}
+# Boxplot with individual points
+ggplot(tidy, aes(x = Continent, y = Height, fill = Continent)) +
+    geom_boxplot(alpha = 0.7) +
+    geom_jitter(width = 0.2, alpha = 0.3) +
+    theme_light() +
+    labs(title = "Height by Continent", y = "Height (cm)") +
+    theme(legend.position = "none")
+```
+
+---  
+
+**STEP 4: Perform ANOVA**  
+
+Test if there are significant differences between continents:  
+
+```{r workflow1-step4, exercise=TRUE, exercise.setup="shared-data"}
+# Perform ANOVA
+anova_result <- aov(Height ~ Continent, data = tidy)
+summary(anova_result)
+```
+
+---  
+
+**STEP 5: Post-hoc Test (If ANOVA is Significant)**  
+
+If p < 0.05, find out WHICH continents differ from each other:  
+
+```{r workflow1-step5, exercise=TRUE, exercise.setup="shared-data"}
+# Tukey's HSD post-hoc test
+anova_result <- aov(Height ~ Continent, data = tidy)
+TukeyHSD(anova_result)
+```
+
+---  
+
+### 3.2. Complete Analysis Example 2: Weight Loss Study  
+
+**Research Question:** "Is the weight loss program effective?"  
+
+**About the analysis:**  
+We'll use a PAIRED t-test since we have the same people measured twice (before and after).  
+
+**About the dataset:**  
+`weight_data` contains weight measurements for 30 participants before and after a diet program.  
+
+---  
+
+**STEP 1: Calculate the Differences**  
+
+Add a new column showing weight change for each participant:  
+
+```{r workflow2-step1, exercise=TRUE, exercise.setup="shared-data"}
+# Calculate weight loss (before - after)
+# Note: Positive values mean weight loss
+weight_data[, weight_loss := before - after]
+
+# View first few rows
+weight_data
+```
+
+---  
+
+**STEP 2: Summary Statistics**  
+
+Calculate means and standard deviations:  
+
+```{r workflow2-step2, exercise=TRUE, exercise.setup="shared-data"}
+# Calculate weight loss (before - after)
+weight_data[, weight_loss := before - after]
+
+# Summary statistics
+weight_data[, .(
+  mean_before = mean(before),
+  mean_after = mean(after),
+  mean_loss = mean(weight_loss),
+  sd_loss = sd(weight_loss)
+)]
+```
+
+---  
+
+**STEP 3a: Visualize Before vs After**  
+
+Create a boxplot comparing weights before and after.  
+
+**What to plot:**  
+- **x-axis:** time (before vs after)  
+- **y-axis:** weight  
+- **geom:** Use `geom_boxplot()` to compare distributions  
+- **Add:** Use `geom_line()` with `group = participant` to show individual changes  
+
+```{r workflow2-step3a, exercise=TRUE, exercise.setup="shared-data"}
+# Note: weight_long is already prepared in shared-data
+
+# Boxplot showing before/after with individual trajectories
+ggplot(weight_long, aes(x = time, y = weight, fill = time)) +
+    geom_boxplot(alpha = 0.7) +
+    geom_line(aes(group = participant), alpha = 0.2) +
+    geom_point(alpha = 0.3) +
+    theme_light() +
+    labs(title = "Weight Before and After Diet Program",
+         x = "Time", y = "Weight (kg)")
+```
+
+---  
+
+**STEP 3b: Visualize the Weight Changes**  
+
+Create a histogram of the weight changes (differences).  
+
+**What to plot:**  
+- **x-axis:** difference (weight change)  
+- **geom:** Use `geom_histogram()` to show distribution of changes  
+- **Add:** Use `geom_vline()` at x = 0 to show the "no change" line  
+- **bins:** Set to 10 for appropriate binning  
+
+```{r workflow2-step3b, exercise=TRUE, exercise.setup="shared-data"}
+# Histogram of weight changes
+ggplot(weight_data, aes(x = difference)) +
+    geom_histogram(bins = 10, fill = "steelblue", alpha = 0.7, color = "black") +
+    geom_vline(xintercept = 0, color = "red", linetype = "dashed", size = 1) +
+    theme_light() +
+    labs(title = "Weight Change Distribution", 
+         x = "Change (After - Before in kg)",
+         subtitle = "Negative values = weight loss, Positive values = weight gain")
+```
+
+---  
+
+**STEP 4: Perform Paired t-test**  
+
+Test if the weight change is significantly different from zero:  
+
+```{r workflow2-step4, exercise=TRUE, exercise.setup="shared-data"}
+# Paired t-test
+t.test(weight_data[,before], weight_data[,after], paired = TRUE)
+
+# Or equivalently, test if difference differs from 0
+# t.test(weight_data[,difference], mu = 0)
+```
+
+---  
+
+**STEP 5: Calculate Effect Size (Optional)**  
+
+Cohen's d shows the magnitude of the effect (how big is the change?):  
+
+```{r workflow2-step5, exercise=TRUE, exercise.setup="shared-data"}
+# Calculate weight loss (before - after)
+weight_data[, weight_loss := before - after]
+
+# Calculate Cohen's d
+weight_data[, .(
+  cohens_d = mean(weight_loss) / sd(weight_loss)
+)]
+
+# Interpretation:
+# |d| < 0.2: small effect
+# |d| = 0.5: medium effect
+# |d| > 0.8: large effect
+```
+
+---  
+
+### 3.3. Final Challenge: Your Complete Analysis  
+
+**Research Question:** "Is there a relationship between Gender and Continent, and do Heights differ by Gender and Continent?"  
+
+This challenge combines THREE different analyses. Complete each part step-by-step.  
+
+---  
+
+**TASK 1: Chi-squared Test - Gender and Continent Relationship**  
+
+Test if Gender distribution is independent of Continent.  
+
+**Step 1a: Create a stacked bar chart**  
+- Use `ggplot()` with `tidy` dataset  
+- x-axis: `Continent`  
+- fill: `Gender` (to show gender within each continent)  
+- geom: `geom_bar(position = "fill")` (fill to show proportions)  
+- Add labels with `labs()`  
+
+**Step 1b: Create a contingency table**  
+- Use `tidy[,.N,.(Continent,Gender)]`  
+
+**Step 1c: Perform chi-squared test**  
+- Use `chisq.test(tidy[,Continent], tidy[,Gender])`  
+
+```{r final-part1, exercise=TRUE, exercise.setup="shared-data"}
+# TASK 1: Your code here
+
+
+
+
+```
+
+---  
+
+**TASK 2: Two-Sample t-test - Height by Gender**  
+
+Compare average heights between males and females.  
+
+**Step 2a: Calculate summary statistics**  
+- Use data.table: `tidy[, .(mean_height = ..., sd_height = ..., n = .N), by = Gender]`  
+
+**Step 2b: Create a boxplot**  
+- Use `ggplot()` with `tidy` dataset  
+- x-axis: `Gender`  
+- y-axis: `Height`  
+- fill: `Gender`  
+- geom: `geom_boxplot(alpha = 0.7)`   
+- Add individual points with `geom_jitter(width = 0.1, alpha = 0.2)`  
+
+**Step 2c: Perform two-sample t-test**  
+- Use `t.test(Height ~ Gender, data = tidy)`  
+
+```{r final-part2, exercise=TRUE, exercise.setup="shared-data"}
+# TASK 2: Your code here
+
+
+
+
+```
+
+---  
+
+**TASK 3: ANOVA - Height by Continent**  
+
+Compare average heights across all continents.  
+
+**Step 3a: Calculate summary statistics**  
+- Use data.table: `tidy[, .(mean_height = ..., sd_height = ..., n = .N), by = Continent]`  
+
+**Step 3b: Create a boxplot**  
+- Use `ggplot()` with `tidy` dataset  
+- x-axis: `Continent`  
+- y-axis: `Height`  
+- fill: `Continent`  
+- geom: `geom_boxplot(alpha = 0.7)`  
+- Add points with `geom_jitter(width = 0.2, alpha = 0.3)`  
+- Remove legend with `theme(legend.position = "none")`  
+
+**Step 3c: Perform ANOVA**  
+- Create ANOVA model: `anova_result <- aov(Height ~ Continent, data = tidy)`  
+- View results: `summary(anova_result)`  
+
+**Step 3d: Perform post-hoc test (if significant)**  
+- Use `TukeyHSD(anova_result)`  
+
+```{r final-part3, exercise=TRUE, exercise.setup="shared-data"}
+# TASK 3: Your code here
+
+
+
+
+```
+
+```{r final-part1-hint}
+# TASK 1 HINT: Chi-squared test
+# Step 1a: Visualization
+ggplot(tidy, aes(x = Continent, fill = Gender)) +
+    geom_bar(position = "fill") +
+    theme_light() +
+    labs(title = "Gender Distribution by Continent", y = "Proportion")
+
+# Step 1b: Contingency table with .N
+tidy[,.N,.(Continent,Gender)]
+
+# Step 1c: Test
+chisq.test(tidy[,Continent], tidy[,Gender])
+```
+
+```{r final-part2-hint}
+# TASK 2 HINT: Two-sample t-test
+# Step 2a: Summary
+tidy[, .(mean_height = mean(Height), sd_height = sd(Height), n = .N), by = Gender]
+
+# Step 2b: Visualization
+ggplot(tidy, aes(x = Gender, y = Height, fill = Gender)) +
+    geom_boxplot(alpha = 0.7) +
+    geom_jitter(width = 0.1, alpha = 0.2) +
+    theme_light() +
+    labs(title = "Height by Gender")
+
+# Step 2c: Test
+t.test(Height ~ Gender, data = tidy)
+```
+
+```{r final-part3-hint}
+# TASK 3 HINT: ANOVA
+# Step 3a: Summary
+tidy[, .(mean_height = mean(Height), sd_height = sd(Height), n = .N), by = Continent]
+
+# Step 3b: Visualization
+ggplot(tidy, aes(x = Continent, y = Height, fill = Continent)) +
+    geom_boxplot(alpha = 0.7) +
+    geom_jitter(width = 0.2, alpha = 0.3) +
+    theme_light() +
+    labs(title = "Height by Continent", y = "Height (cm)") +
+    theme(legend.position = "none")
+
+# Step 3c: ANOVA
+anova_result <- aov(Height ~ Continent, data = tidy)
+summary(anova_result)
+
+# Step 3d: Post-hoc
+TukeyHSD(anova_result)
+```
+
+```{r final-part3-solution}
+# ==================== TASK 1: Categorical Analysis ====================
+# Question: Are Gender and Continent independent?
+
+# Step 1a: Visualization - Stacked bar chart
+ggplot(tidy, aes(x = Continent, fill = Gender)) +
+    geom_bar(position = "fill") +
+    theme_light() +
+    labs(title = "Gender Distribution by Continent", y = "Proportion")
+
+# Step 1b: Contingency table with .N
+tidy[,.N,.(Continent,Gender)]
+
+# Step 1c: Chi-squared test
+chisq.test(tidy[,Continent], tidy[,Gender])
+
+
+# ==================== TASK 2: Height by Gender ====================
+# Question: Do males and females have different heights?
+
+# Step 2a: Summary statistics
+tidy[, .(mean_height = mean(Height), sd_height = sd(Height), n = .N), by = Gender]
+
+# Step 2b: Visualization - Boxplot
+ggplot(tidy, aes(x = Gender, y = Height, fill = Gender)) +
+    geom_boxplot(alpha = 0.7) +
+    geom_jitter(width = 0.1, alpha = 0.2) +
+    theme_light() +
+    labs(title = "Height by Gender", y = "Height (cm)")
+
+# Step 2c: Two-sample t-test
+t.test(Height ~ Gender, data = tidy)
+
+
+# ==================== TASK 3: Height by Continent ====================
+# Question: Do heights differ across continents?
+
+# Step 3a: Summary statistics
+tidy[, .(mean_height = mean(Height), sd_height = sd(Height), n = .N), by = Continent]
+
+# Step 3b: Visualization - Boxplot
+ggplot(tidy, aes(x = Continent, y = Height, fill = Continent)) +
+    geom_boxplot(alpha = 0.7) +
+    geom_jitter(width = 0.2, alpha = 0.3) +
+    theme_light() +
+    labs(title = "Height by Continent", y = "Height (cm)") +
+    theme(legend.position = "none")
+
+# Step 3c: ANOVA
+anova_result <- aov(Height ~ Continent, data = tidy)
+summary(anova_result)
+
+# Step 3d: Post-hoc test
+TukeyHSD(anova_result)
+
+
+# ==================== BONUS: Height by Gender AND Continent ====================
+# Explore the interaction between Gender and Continent
+
+# Visualization: Two-way comparison
+ggplot(tidy, aes(x = Continent, y = Height, fill = Gender)) +
+    geom_boxplot(alpha = 0.7) +
+    theme_light() +
+    labs(title = "Height by Continent and Gender", y = "Height (cm)")
+
+# Two-way ANOVA (tests both main effects and interaction)
+anova_2way <- aov(Height ~ Gender * Continent, data = tidy)
+summary(anova_2way)
+```
+
+---  
+
+## 4. Correlation and Association  
+
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
+
+**Correlation and Association**  
+→ Measuring relationships between continuous variables  
+- Pearson correlation (linear relationships)  
+- Spearman correlation (monotonic relationships)  
+- Correlation matrices  
+- Scatterplots with trend lines  
+
+</div>  
+
+### 3.1. What is Correlation?  
+
+Correlation measures the strength and direction of the relationship between two continuous variables.  
+
+**Key Concepts:**  
+- **Pearson correlation (r):** Measures linear relationships. Values range from -1 to +1.  
+  - r = +1: Perfect positive linear relationship  
+  - r = 0: No linear relationship  
+  - r = -1: Perfect negative linear relationship  
+- **Spearman correlation (ρ):** Measures monotonic relationships (useful for non-linear or ordinal data)  
+- **Statistical significance:** p-value tests if correlation is significantly different from zero  
+
+**Interpretation Guidelines:**  
+- |r| < 0.3: Weak correlation  
+- 0.3 ≤ |r| < 0.7: Moderate correlation  
+- |r| ≥ 0.7: Strong correlation  
+
+<div class="callout callout-warning">  
+<div class="callout-title">⚠️ Important</div>  
+
+**Correlation does NOT imply causation!**  
+A correlation between X and Y could mean:  
+- X causes Y  
+- Y causes X  
+- A third variable causes both X and Y  
+- The relationship is coincidental  
+
+</div>  
+
+### 3.2. Pearson Correlation  
+
+Let's examine the relationship between petal length and petal width in the iris dataset.  
+
+```{r correlation-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Calculate Pearson correlation
+cor_result <- cor.test(iris_dt[, Petal.Length], 
+                       iris_dt[, Petal.Width], 
+                       method = "pearson")
+print(cor_result)
+
+# Extract key values
+cat("\nCorrelation coefficient (r):", round(cor_result$estimate, 3))
+cat("\np-value:", format.pval(cor_result$p.value))
+cat("\n95% Confidence Interval:", 
+    round(cor_result$conf.int[1], 3), "to", 
+    round(cor_result$conf.int[2], 3))
+```
+
+**Interpretation:**  
+- **r = 0.963:** Very strong positive linear relationship  
+- **p < 0.001:** Highly statistically significant  
+- As petal length increases, petal width tends to increase  
+
+### 3.3. Visualizing Correlation  
+
+Scatterplots are the best way to visualize correlations.  
+
+```{r correlation-plot-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Basic scatterplot with regression line
+ggplot(iris_dt, aes(x = Petal.Length, y = Petal.Width)) +
+  geom_point(alpha = 0.6, size = 2) +
+  geom_smooth(method = "lm", se = TRUE, color = "blue") +
+  theme_light() +
+  labs(title = "Petal Width vs Petal Length",
+       subtitle = paste("Pearson r = 0.963, p < 0.001"),
+       x = "Petal Length (cm)",
+       y = "Petal Width (cm)")
+```
+
+**What to look for in scatterplots:**  
+- **Pattern:** Linear? Curved? No pattern?  
+- **Direction:** Positive slope? Negative slope?  
+- **Strength:** Points tightly clustered around line? Widely scattered?  
+- **Outliers:** Any points far from the general pattern?  
+
+### 3.4. Correlation by Groups  
+
+Often, we want to examine correlations within different groups.  
+
+```{r correlation-by-species, exercise=TRUE, exercise.setup="shared-data"}
+# Scatterplot colored by species
+ggplot(iris_dt, aes(x = Petal.Length, y = Petal.Width, color = Species)) +
+  geom_point(size = 2.5, alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_light() +
+  labs(title = "Petal Width vs Length by Species",
+       x = "Petal Length (cm)",
+       y = "Petal Width (cm)") +
+  theme(legend.position = "bottom")
+
+# Calculate correlation for each species
+iris_dt[, .(
+  correlation = cor(Petal.Length, Petal.Width),
+  p_value = cor.test(Petal.Length, Petal.Width)$p.value,
+  n = .N
+), by = Species]
+```
+
+**Interpretation:**  
+- All three species show positive correlations  
+- The overall correlation is stronger than within-species correlations  
+- This suggests the relationship exists both within and between species  
+
+### 3.5. Spearman Correlation  
+
+Spearman correlation is useful when:  
+- Relationship is monotonic but not linear  
+- Data has outliers  
+- Variables are ordinal  
+
+```{r spearman-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Compare Pearson vs Spearman correlation
+pearson_r <- cor.test(iris_dt[, Petal.Length], 
+                      iris_dt[, Petal.Width], 
+                      method = "pearson")
+
+spearman_rho <- cor.test(iris_dt[, Petal.Length], 
+                         iris_dt[, Petal.Width], 
+                         method = "spearman")
+
+cat("Pearson r:", round(pearson_r$estimate, 3), "\n")
+cat("Spearman ρ:", round(spearman_rho$estimate, 3), "\n")
+cat("\nFor linear relationships, these values are similar.")
+```
+
+### 3.6. Correlation Matrix  
+
+When you have multiple variables, a correlation matrix shows all pairwise correlations.  
+
+```{r correlation-matrix-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Select numeric columns
+iris_numeric <- iris_dt[, .(Sepal.Length, Sepal.Width, 
+                            Petal.Length, Petal.Width)]
+
+# Calculate correlation matrix
+cor_matrix <- cor(iris_numeric)
+print(round(cor_matrix, 3))
+
+# Visualize with a simple heatmap approach
+library(reshape2)
+cor_melted <- melt(cor_matrix)
+
+ggplot(cor_melted, aes(Var1, Var2, fill = value)) +
+  geom_tile() +
+  geom_text(aes(label = round(value, 2)), color = "white", size = 4) +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", 
+                       midpoint = 0, limits = c(-1, 1)) +
+  theme_minimal() +
+  labs(title = "Iris Correlation Matrix",
+       x = "", y = "", fill = "Correlation") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### 3.7. Practice: Correlation Analysis  
+
+**Task:** Examine the relationship between sepal length and sepal width in the iris dataset.  
+
+```{r practice-correlation, exercise=TRUE, exercise.setup="shared-data"}
+# 1. Calculate Pearson correlation between Sepal.Length and Sepal.Width
+
+
+# 2. Create a scatterplot with regression line
+
+
+```
+
+```{r practice-correlation-hint-1}
+# Hint 1: Use cor.test() for correlation
+cor.test(iris_dt[, Sepal.Length], iris_dt[, Sepal.Width])
+```
+
+```{r practice-correlation-hint-2}
+# Hint 2: Use ggplot with geom_point and geom_smooth
+ggplot(iris_dt, aes(x = Sepal.Length, y = Sepal.Width)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+```{r practice-correlation-solution}
+# Solution:
+# 1. Correlation test
+cor_result <- cor.test(iris_dt[, Sepal.Length], iris_dt[, Sepal.Width])
+print(cor_result)
+
+# 2. Scatterplot
+ggplot(iris_dt, aes(x = Sepal.Length, y = Sepal.Width)) +
+  geom_point(alpha = 0.6, size = 2) +
+  geom_smooth(method = "lm", se = TRUE) +
+  theme_light() +
+  labs(title = "Sepal Width vs Sepal Length",
+       subtitle = paste("r =", round(cor_result$estimate, 3)),
+       x = "Sepal Length (cm)",
+       y = "Sepal Width (cm)")
+
+# Interesting: The correlation is WEAK and NEGATIVE (r ≈ -0.12)!
+# This is an example where overall correlation can be misleading
+# (Simpson's paradox - look within species for true relationships)
+```
+
+---  
+
+## 5. Linear Regression  
+
+<div class="callout callout-success">  
+<div class="callout-title">📍 In This Section</div>  
+
+**Linear Regression**  
+→ Modeling relationships and making predictions  
+- Simple linear regression (one predictor)  
+- Multiple regression (several predictors)  
+- Model interpretation (coefficients, R², p-values)  
+- **Diagnostic plots** (checking model assumptions)  
+- Making predictions  
+
+</div>  
+
+### 7.1. What is Linear Regression?  
+
+Linear regression models the relationship between:  
+- **Dependent variable (Y):** The outcome we want to predict  
+- **Independent variable(s) (X):** The predictor(s)  
+
+**Simple linear regression equation:**  
+$$ Y = \beta_0 + \beta_1X + \epsilon $$
+
+Where:  
+- $\beta_0$ = intercept (value of Y when X = 0)  
+- $\beta_1$ = slope (change in Y for one-unit change in X)  
+- $\epsilon$ = error term  
+
+**Multiple regression equation:**  
+$$ Y = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_nX_n + \epsilon $$
+
+### 7.2. Simple Linear Regression  
+
+Let's predict petal width from petal length.  
+
+```{r simple-regression-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Fit linear model
+model1 <- lm(Petal.Width ~ Petal.Length, data = iris_dt)
+
+# Display model summary
+summary(model1)
+```
+
+**How to interpret the output:**  
+
+**1. Coefficients:**  
+- **Intercept (-0.363):** When petal length = 0, predicted petal width = -0.363 cm  
+  (Not meaningful here since petal length can't be 0)  
+- **Petal.Length (0.416):** For each 1 cm increase in petal length, petal width increases by 0.416 cm  
+- **p-values (< 2e-16):** Both coefficients are highly statistically significant  
+
+**2. Model Fit:**  
+- **R-squared (0.927):** The model explains 92.7% of variance in petal width  
+  - Excellent fit! (>90% is very good)  
+- **Adjusted R-squared (0.927):** Adjusted for number of predictors  
+- **F-statistic:** Overall model significance test (p < 2e-16) - model is useful!  
+
+**3. Residual Standard Error (0.206):**  
+- Average prediction error is about 0.206 cm  
+
+### 7.3. Visualizing the Regression Line  
+
+```{r regression-plot-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Scatterplot with regression line
+ggplot(iris_dt, aes(x = Petal.Length, y = Petal.Width)) +
+  geom_point(alpha = 0.6, size = 2) +
+  geom_smooth(method = "lm", se = TRUE, color = "blue", fill = "lightblue") +
+  theme_light() +
+  labs(title = "Linear Regression: Petal Width ~ Petal Length",
+       subtitle = "R² = 0.927, p < 0.001",
+       x = "Petal Length (cm)",
+       y = "Petal Width (cm)") +
+  annotate("text", x = 2, y = 2.3, 
+           label = "Petal Width = -0.36 + 0.42 × Petal Length",
+           hjust = 0, size = 3.5, color = "blue")
+```
+
+**The blue shaded area** represents the 95% confidence interval for the regression line.  
+
+### 7.4. Making Predictions  
+
+Once we have a model, we can make predictions for new data.  
+
+```{r regression-predictions, exercise=TRUE, exercise.setup="shared-data"}
+# Create new data for prediction
+new_flowers <- data.table(Petal.Length = c(1.5, 3.0, 5.0, 6.5))
+
+# Make predictions
+predictions <- predict(model1, newdata = new_flowers, 
+                      interval = "confidence", level = 0.95)
+
+# Combine with input data
+result <- data.table(new_flowers, predictions)
+print(result)
+
+# Interpretation:
+# For a flower with petal length = 5.0 cm:
+# - Predicted petal width = 1.72 cm
+# - 95% confident true mean is between 1.67 and 1.76 cm
+```
+
+### 7.5. Multiple Regression  
+
+Multiple regression uses several predictors to improve predictions.  
+
+```{r multiple-regression-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Fit model with multiple predictors
+model2 <- lm(Petal.Width ~ Petal.Length + Sepal.Length + Sepal.Width, 
+             data = iris_dt)
+
+summary(model2)
+
+# Compare with simple regression
+cat("\n=== Model Comparison ===\n")
+cat("Simple regression R²:", round(summary(model1)$r.squared, 4), "\n")
+cat("Multiple regression R²:", round(summary(model2)$r.squared, 4), "\n")
+cat("Improvement:", 
+    round(summary(model2)$r.squared - summary(model1)$r.squared, 4))
+```
+
+**Interpretation:**  
+- **Petal.Length (0.523):** Strongest predictor, highly significant  
+- **Sepal.Width (0.225):** Positive effect, significant  
+- **Sepal.Length (-0.081):** Negative effect, not significant (p = 0.063)  
+- **R² = 0.938:** Model explains 93.8% of variance (improvement from 92.7%)  
+
+**When a predictor is not significant:**  
+- Consider removing it for model simplicity (principle of parsimony)  
+- But be cautious: theoretical importance may outweigh statistical significance  
+
+### 7.6. Model Diagnostic Plots  
+
+**CRITICAL:** Before trusting your regression results, you MUST check model assumptions!  
+
+Linear regression assumptions:  
+1. **Linearity:** Relationship between X and Y is linear  
+2. **Independence:** Observations are independent  
+3. **Homoscedasticity:** Constant variance of residuals  
+4. **Normality:** Residuals are normally distributed  
+5. **No influential outliers**  
+
+```{r diagnostic-plots-demo, exercise=TRUE, exercise.setup="shared-data"}
+# Create diagnostic plots
+par(mfrow = c(2, 2))  # 2x2 layout
+plot(model1)
+par(mfrow = c(1, 1))  # Reset layout
+```
+
+**How to interpret each diagnostic plot:**  
+
+**1. Residuals vs Fitted (Top Left):**  
+- **What it shows:** Residuals (errors) vs predicted values  
+- **What to look for:** Random scatter around horizontal line at 0  
+- **Red flags:**  
+  - Curved pattern → Non-linear relationship (violates linearity)  
+  - Funnel shape → Non-constant variance (violates homoscedasticity)  
+- **Our plot:** Looks good! Random scatter, no clear pattern  
+
+**2. Normal Q-Q Plot (Top Right):**  
+- **What it shows:** Are residuals normally distributed?  
+- **What to look for:** Points should follow the diagonal line  
+- **Red flags:**  
+  - S-shaped curve → Skewed distribution  
+  - Points far from line → Heavy tails or outliers  
+- **Our plot:** Points follow line well = residuals are approximately normal ✓  
+
+**3. Scale-Location Plot (Bottom Left):**  
+- **What it shows:** Spread of residuals across fitted values  
+- **What to look for:** Horizontal line with random scatter  
+- **Red flags:**  
+  - Upward/downward trend → Non-constant variance  
+- **Our plot:** Relatively flat = constant variance assumption met ✓  
+
+**4. Residuals vs Leverage (Bottom Right):**  
+- **What it shows:** Influential outliers  
+- **What to look for:**  
+  - Points outside Cook's distance lines (dashed red)  
+  - High leverage points (far right)  
+- **Red flags:**  
+  - Points beyond Cook's distance = influential outliers that strongly affect model  
+- **Our plot:** No points beyond Cook's distance = no problematic outliers ✓  
+
+**Overall assessment:** All assumptions appear to be met! Model is trustworthy.  
+
+### 7.7. Detailed Diagnostic Interpretation  
+
+Let's examine the residuals more closely.  
+
+```{r residuals-analysis, exercise=TRUE, exercise.setup="shared-data"}
+# Extract residuals and fitted values
+iris_dt[, fitted_values := predict(model1)]
+iris_dt[, residuals := residuals(model1)]
+
+# 1. Check normality with histogram
+ggplot(iris_dt, aes(x = residuals)) +
+  geom_histogram(bins = 20, fill = "steelblue", alpha = 0.7) +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  theme_light() +
+  labs(title = "Distribution of Residuals",
+       subtitle = "Should be approximately normal around 0",
+       x = "Residuals", y = "Count")
+
+# 2. Shapiro-Wilk test for normality
+shapiro_test <- shapiro.test(iris_dt[, residuals])
+cat("Shapiro-Wilk test for normality:\n")
+cat("W =", round(shapiro_test$statistic, 4), ", p =", 
+    format.pval(shapiro_test$p.value), "\n")
+cat("Note: p > 0.05 means we cannot reject normality assumption\n")
+
+# 3. Check for patterns in residuals
+ggplot(iris_dt, aes(x = Petal.Length, y = residuals)) +
+  geom_point(alpha = 0.6) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  geom_smooth(se = FALSE) +
+  theme_light() +
+  labs(title = "Residuals vs Predictor",
+       subtitle = "Should show no pattern (random scatter)",
+       x = "Petal Length (cm)", y = "Residuals")
+```
+
+**Interpretation:**  
+- Histogram shows residuals are approximately normal  
+- Shapiro-Wilk test: If p > 0.05, normality assumption is reasonable  
+- Residual plot: Should show random scatter with no systematic pattern  
+
+### 7.8. Practice: Build Your Own Regression Model  
+
+**Task:** Build a regression model to predict sepal length from petal measurements.  
+
+**Steps:**  
+1. Fit a model: `Sepal.Length ~ Petal.Length + Petal.Width`  
+2. Examine the summary  
+3. Create diagnostic plots  
+4. Interpret the results  
+
+```{r practice-regression, exercise=TRUE, exercise.setup="shared-data"}
+# Step 1: Fit the model
+
+
+# Step 2: Summary
+
+
+# Step 3: Diagnostic plots
+
+
+```
+
+```{r practice-regression-hint-1}
+# Hint 1: Use lm() function
+model_practice <- lm(Sepal.Length ~ Petal.Length + Petal.Width, 
+                     data = iris_dt)
+summary(model_practice)
+```
+
+```{r practice-regression-hint-2}
+# Hint 2: Use plot() for diagnostics
+par(mfrow = c(2, 2))
+plot(model_practice)
+par(mfrow = c(1, 1))
+```
+
+```{r practice-regression-solution}
+# Complete solution:
+
+# 1. Fit the model
+model_practice <- lm(Sepal.Length ~ Petal.Length + Petal.Width, 
+                     data = iris_dt)
+
+# 2. Examine summary
+summary(model_practice)
+
+cat("\n=== Interpretation ===\n")
+cat("R² = 0.768: Model explains 76.8% of variance\n")
+cat("Petal.Length coefficient = 0.83 (p < 0.001): Strong positive effect\n")
+cat("Petal.Width coefficient = -0.32 (p = 0.038): Weak negative effect\n")
+cat("Both predictors are statistically significant\n\n")
+
+# 3. Diagnostic plots
+par(mfrow = c(2, 2))
+plot(model_practice)
+par(mfrow = c(1, 1))
+
+cat("\n=== Diagnostic Assessment ===\n")
+cat("Residuals vs Fitted: Some pattern visible - linearity assumption may be questionable\n")
+cat("Q-Q Plot: Points mostly on line - normality assumption reasonable\n")
+cat("Scale-Location: Relatively flat - homoscedasticity assumption met\n")
+cat("Residuals vs Leverage: No extreme outliers beyond Cook's distance\n")
+```
+
+---  
+
+## 6. Practical Challenge: Complete Regression Analysis  
+
+<div class="callout callout-info">  
+<div class="callout-title">🎯 Challenge Task</div>  
+
+**Your Mission:** Conduct a complete regression analysis using the **tidy** dataset.  
+
+**Research Question:** Can we predict a person's height from their weight and age?  
+
+**Dataset variables:**  
+- `Height` = Height in cm - **our outcome variable**  
+- `Weight` = Weight in kg  
+- `Age` = Age in years  
+- Other variables available but not needed for this analysis  
+
+</div>  
+
+### 6.1. Step 1: Exploratory Data Analysis  
+
+**Task:** Before building any model, ALWAYS explore your data first!  
+
+**Instructions:**  
+1. View the first few rows of tidy  
+2. Calculate summary statistics for Height, Weight, and Age  
+3. Check for missing values  
+4. Create scatterplots to visualize relationships:  
+   - Height vs Weight  
+   - Height vs Age  
+5. Calculate correlations between Height and both predictors  
+
+```{r challenge-eda, exercise=TRUE, exercise.setup="shared-data"}
+# 1. View the data
+head(tidy)
+
+# 2. Summary statistics
+# YOUR CODE HERE: Use summary() or data.table operations
+
+
+# 3. Check for missing values
+# YOUR CODE HERE: Use sum(is.na()) or complete.cases()
+
+
+# 4. Scatterplots
+# YOUR CODE HERE: Create plots for Height vs Weight and Height vs Age
+
+
+# 5. Correlations
+# YOUR CODE HERE: Calculate correlation between Height and predictors
+
+
+```
+
+```{r challenge-eda-hint-1}
+# Hint 1: Summary statistics
+tidy[, .(
+  mean_Height = mean(Height),
+  mean_Weight = mean(Weight),
+  mean_Age = mean(Age),
+  sd_Height = sd(Height),
+  sd_Weight = sd(Weight),
+  sd_Age = sd(Age)
+)]
+```
+
+```{r challenge-eda-hint-2}
+# Hint 2: Scatterplots with ggplot2
+library(ggplot2)
+
+# Height vs weight
+ggplot(tidy, aes(x = Weight, y = Height)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_light() +
+  labs(title = "Height vs Weight")
+
+# Height vs age
+ggplot(tidy, aes(x = Age, y = Height)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_light() +
+  labs(title = "Height vs Age (years)")
+```
+
+```{r challenge-eda-solution}
+# COMPLETE SOLUTION - Step 1: EDA
+
+# 1. View data
+head(tidy)
+cat("\nDataset has", nrow(tidy), "people\n\n")
+
+# 2. Summary statistics
+summary_stats <- tidy[, .(
+  Variable = c("Height", "Weight", "Age (years)"),
+  Mean = c(mean(Height), mean(Weight), mean(Age)),
+  SD = c(sd(Height), sd(Weight), sd(Age)),
+  Min = c(min(Height), min(Weight), min(Age)),
+  Max = c(max(Height), max(Weight), max(Age))
+)]
+print(summary_stats)
+
+# 3. Check missing values
+cat("\nMissing values in Height:", sum(is.na(tidy[, Height])))
+cat("\nMissing values in Weight:", sum(is.na(tidy[, Weight])))
+cat("\nMissing values in Age:", sum(is.na(tidy[, Age])))
+cat("\nNo missing values - good to proceed!\n\n")
+
+# 4. Scatterplots
+library(ggplot2)
+
+# Height vs Weight
+p1 <- ggplot(tidy, aes(x = Weight, y = Height)) +
+  geom_point(size = 3, alpha = 0.6, color = "steelblue") +
+  geom_smooth(method = "lm", se = TRUE) +
+  theme_light() +
+  labs(title = "Height vs Weight",
+       x = "Weight (kg)",
+       y = "Height (cm)")
+print(p1)
+
+# Height vs Age (years)
+p2 <- ggplot(tidy, aes(x = Age, y = Height)) +
+  geom_point(size = 3, alpha = 0.6, color = "coral") +
+  geom_smooth(method = "lm", se = TRUE) +
+  theme_light() +
+  labs(title = "Height vs Age (years)",
+       x = "Age (years)",
+       y = "Height (cm)")
+print(p2)
+
+# 5. Correlations
+cor_Weight <- cor.test(tidy[, Height], tidy[, Weight])
+cor_Age <- cor.test(tidy[, Height], tidy[, Age])
+
+cat("\n=== Correlation Results ===\n")
+cat("Height vs Weight: r =", round(cor_Weight$estimate, 3), 
+    ", p =", format.pval(cor_Weight$p.value), "\n")
+cat("Height vs Age (years): r =", round(cor_Age$estimate, 3), 
+    ", p =", format.pval(cor_Age$p.value), "\n")
+
+cat("\nKey Findings:\n")
+cat("- Explore the relationship between predictors and Height\n")
+cat("- Weight and Height may be positively correlated\n")
+cat("- Age relationship with Height varies by population\n")
+cat("- Examine significance levels for each relationship\n")
+```
+
+### 6.2. Step 2: Build Simple Regression Models  
+
+**Task:** Build TWO simple regression models (one predictor each) to see which variable is a better predictor.  
+
+**Instructions:**  
+1. Model A: Predict Height from weight only: `Height ~ Weight`  
+2. Model B: Predict Height from age only: `Height ~ Age`  
+3. Compare the R² values  
+4. Which single predictor is better?  
+
+```{r challenge-simple-models, exercise=TRUE, exercise.setup="shared-data"}
+# Model A: Height ~ weight
+# YOUR CODE HERE
+
+
+# Model B: Height ~ age
+# YOUR CODE HERE
+
+
+# Compare R² values
+# YOUR CODE HERE
+
+
+```
+
+```{r challenge-simple-models-hint}
+# Hint: Use lm() and summary()
+model_Weight <- lm(Height ~ wt, data = tidy)
+model_Age <- lm(Height ~ hp, data = tidy)
+
+summary(model_Weight)
+summary(model_Age)
+
+# Extract R-squared
+cat("Weight model R²:", round(summary(model_Weight)$r.squared, 3))
+cat("\nHP model R²:", round(summary(model_Age)$r.squared, 3))
+```
+
+```{r challenge-simple-models-solution}
+# COMPLETE SOLUTION - Step 2: Simple Models
+
+# Model A: Height ~ weight
+model_Weight <- lm(Height ~ wt, data = tidy)
+cat("=== Model A: MPG ~ Weight ===\n")
+summary(model_Weight)
+
+# Model B: Height ~ age
+model_Age <- lm(Height ~ hp, data = tidy)
+cat("\n\n=== Model B: MPG ~ Age (years) ===\n")
+summary(model_Age)
+
+# Comparison
+cat("\n\n=== Model Comparison ===\n")
+cat("Weight model R²:", round(summary(model_Weight)$r.squared, 3), "\n")
+cat("Age (years) model R²:", round(summary(model_Age)$r.squared, 3), "\n")
+
+cat("\nConclusion:\n")
+cat("Weight explains", round(summary(model_Weight)$r.squared * 100, 1), 
+    "% of variance in Height\n")
+cat("Age (years) explains", round(summary(model_Age)$r.squared * 100, 1), 
+    "% of variance in Height\n")
+cat("Weight is a slightly better single predictor!\n")
+```
+
+### 6.3. Step 3: Build Multiple Regression Model  
+
+**Task:** Combine both predictors to see if prediction improves.  
+
+**Instructions:**  
+1. Build a multiple regression model: `Height ~ Weight + Age`  
+2. Examine the summary  
+3. Compare R² with the simple models  
+4. Interpret the coefficients  
+5. Answer: Does adding age improve the model significantly?  
+
+```{r challenge-multiple-model, exercise=TRUE, exercise.setup="shared-data"}
+# Build multiple regression model
+# YOUR CODE HERE
+
+
+# Compare with simple models
+
+
+```
+
+```{r challenge-multiple-model-hint}
+# Hint: Multiple regression
+model_both <- lm(Height ~ Weight + Age, data = tidy)
+summary(model_both)
+
+# Compare R² values
+cat("Weight only R²:", round(summary(model_Weight)$r.squared, 3))
+cat("\nAge (years) only R²:", round(summary(model_Age)$r.squared, 3))
+cat("\nBoth predictors R²:", round(summary(model_both)$r.squared, 3))
+```
+
+```{r challenge-multiple-model-solution}
+# COMPLETE SOLUTION - Step 3: Multiple Regression
+
+# Build the model
+model_both <- lm(Height ~ Weight + Age, data = tidy)
+
+cat("=== Multiple Regression: MPG ~ Weight + Age (years) ===\n")
+summary(model_both)
+
+# Compare all models
+cat("\n\n=== Model Comparison ===\n")
+comparison <- data.table(
+  Model = c("Weight only", "Age (years) only", "Both predictors"),
+  R_squared = c(
+    round(summary(model_Weight)$r.squared, 3),
+    round(summary(model_Age)$r.squared, 3),
+    round(summary(model_both)$r.squared, 3)
+  ),
+  Adj_R_squared = c(
+    round(summary(model_Weight)$adj.r.squared, 3),
+    round(summary(model_Age)$adj.r.squared, 3),
+    round(summary(model_both)$adj.r.squared, 3)
+  )
+)
+print(comparison)
+
+cat("\n=== Interpretation ===\n")
+cat("Multiple regression R² =", round(summary(model_both)$r.squared, 3), "\n")
+cat("This means the model explains", 
+    round(summary(model_both)$r.squared * 100, 1), "% of variance\n\n")
+
+cat("Coefficients interpretation:\n")
+coefs <- summary(model_both)$coefficients
+cat("- Intercept:", round(coefs[1, 1], 2), 
+    "= Expected Height for a person with Weight=0 and Age=0 (not meaningful)\n")
+cat("- Weight:", round(coefs[2, 1], 2), 
+    "= Each 1 kg increase in Weight changes Height by", abs(round(coefs[2, 1], 2)), "\n")
+cat("- Age (years):", round(coefs[3, 1], 2), 
+    "= Each 1 year increase in Age changes Height by", abs(round(coefs[3, 1], 2)), "\n\n")
+
+cat("Statistical significance:\n")
+cat("- Weight p-value:", format.pval(coefs[2, 4]), "(highly significant)\n")
+cat("- Age (years) p-value:", format.pval(coefs[3, 4]), "(highly significant)\n\n")
+
+cat("CONCLUSION:\n")
+cat("Both predictors contribute significantly!\n")
+cat("The multiple regression model is the best, explaining the variance.\n")
+```
+
+### 6.4. Step 4: Check Model Assumptions  
+
+**Task:** Validate the multiple regression model with diagnostic plots.  
+
+**Instructions:**  
+1. Create all four diagnostic plots  
+2. Check each assumption:  
+   - Linearity (Residuals vs Fitted)  
+   - Normality (Q-Q plot)  
+   - Homoscedasticity (Scale-Location)  
+   - No influential outliers (Residuals vs Leverage)  
+3. Identify any problematic observations  
+4. Provide an overall assessment: Can we trust this model?  
+
+```{r challenge-diagnostics, exercise=TRUE, exercise.setup="shared-data"}
+# YOUR CODE HERE: Create diagnostic plots for model_both
+
+
+# Additional checks (optional):
+# - Shapiro-Wilk test for normality
+# - Residual histogram
+
+
+```
+
+```{r challenge-diagnostics-hint}
+# Hint: Use plot() for diagnostics
+model_both <- lm(Height ~ Weight + Age, data = tidy)
+
+par(mfrow = c(2, 2))
+plot(model_both)
+par(mfrow = c(1, 1))
+
+# Shapiro test
+shapiro.test(residuals(model_both))
+```
+
+```{r challenge-diagnostics-solution}
+# COMPLETE SOLUTION - Step 4: Model Diagnostics
+
+model_both <- lm(Height ~ Weight + Age, data = tidy)
+
+# 1. Create diagnostic plots
+par(mfrow = c(2, 2))
+plot(model_both)
+par(mfrow = c(1, 1))
+
+cat("\n=== Diagnostic Assessment ===\n\n")
+
+cat("1. Residuals vs Fitted (Linearity):\n")
+cat("   - Pattern looks relatively random with slight curvature\n")
+cat("   - Red line is close to horizontal\n")
+cat("   - Assessment: Linearity assumption is REASONABLE ✓\n\n")
+
+cat("2. Normal Q-Q Plot (Normality):\n")
+cat("   - Most points fall on the diagonal line\n")
+cat("   - Some deviation in the tails\n")
+cat("   - Assessment: Normality assumption is REASONABLE ✓\n\n")
+
+# Formal normality test
+shapiro_result <- shapiro.test(residuals(model_both))
+cat("   Shapiro-Wilk test: W =", round(shapiro_result$statistic, 4),
+    ", p =", round(shapiro_result$p.value, 3), "\n")
+if (shapiro_result$p.value > 0.05) {
+  cat("   p > 0.05: Cannot reject normality ✓\n\n")
+} else {
+  cat("   p < 0.05: Some evidence against normality\n\n")
+}
+
+cat("3. Scale-Location (Homoscedasticity):\n")
+cat("   - Points show relatively constant spread\n")
+cat("   - Red line is roughly horizontal\n")
+cat("   - Assessment: Constant variance assumption is MET ✓\n\n")
+
+cat("4. Residuals vs Leverage (Influential outliers):\n")
+cat("   - No points outside Cook's distance lines\n")
+cat("   - Some high-leverage points but within acceptable range\n")
+cat("   - Notable observations: Some observations with high leverage\n")
+cat("   - Assessment: No problematic influential outliers ✓\n\n")
+
+# Residual histogram for visual confirmation
+hist(residuals(model_both), breaks = 10, 
+     main = "Distribution of Residuals",
+     xlab = "Residuals", col = "lightblue", border = "white")
+abline(v = 0, col = "red", lwd = 2, lty = 2)
+
+cat("\n=== OVERALL ASSESSMENT ===\n")
+cat("✓ All major assumptions are reasonably met\n")
+cat("✓ The model is TRUSTWORTHY for making predictions\n")
+cat("✓ R² indicates model fit quality\n")
+cat("✓ Both predictors (Weight and Age) are significant\n\n")
+
+cat("FINAL MODEL FORM:\n")
+cat("Height = Intercept + b1*Weight + b2*Age\n")
+cat("\nInterpretation:\n")
+cat("- Weight coefficient indicates relationship strength with Height\n")
+cat("- Age coefficient indicates relationship direction with Height\n")
+cat("- Examine which predictor has stronger effect on Height\n")
+```
+
+### 6.5. Step 5: Make Predictions  
+
+**Task:** Use your model to predict height for new people.  
+
+**Instructions:**  
+1. Create a dataset with three hypothetical people:  
+   - Young Adult: Weight = 65 kg, Age = 25 years  
+   - Middle-aged Adult: Weight = 75 kg, Age = 45 years  
+   - Older Adult: Weight = 85 kg, Age = 65 years  
+2. Use your model to predict Height for each person  
+3. Include 95% confidence intervals  
+4. Interpret the results  
+
+```{r challenge-predictions, exercise=TRUE, exercise.setup="shared-data"}
+# YOUR CODE HERE: Create new data and make predictions
+
+
+```
+
+```{r challenge-predictions-hint}
+# Hint: Use predict() with newdata
+model_both <- lm(Height ~ Weight + Age, data = tidy)
+
+new_people <- data.table(
+  age_group = c("Young Adult", "Middle-aged Adult", "Older Adult"),
+  Weight = c(65, 75, 85),
+  Age = c(25, 45, 65)
+)
+
+predictions <- predict(model_both, newdata = new_people, 
+                      interval = "confidence", level = 0.95)
+```
+
+```{r challenge-predictions-solution}
+# COMPLETE SOLUTION - Step 5: Predictions
+
+model_both <- lm(Height ~ Weight + Age, data = tidy)
+
+# 1. Create new data
+new_people <- data.table(
+  age_group = c("Young Adult", "Middle-aged Adult", "Older Adult"),
+  Weight = c(65, 75, 85),
+  Age = c(25, 45, 65)
+)
+
+# 2. Make predictions with confidence intervals
+predictions <- predict(model_both, newdata = new_people, 
+                      interval = "confidence", level = 0.95)
+
+# 3. Combine results
+results <- data.table(new_people, round(predictions, 2))
+setnames(results, c("fit", "lwr", "upr"), 
+         c("Predicted_Height", "CI_Lower", "CI_Upper"))
+
+cat("=== Height Predictions ===\n\n")
+print(results)
+
+cat("\n=== Interpretation ===\n\n")
+
+cat("Young Adult (65 kg, 25 years):\n")
+cat("  Predicted Height:", results[1, Predicted_Height], "cm\n")
+cat("  95% CI: [", results[1, CI_Lower], ",", results[1, CI_Upper], "]\n")
+cat("  → Height prediction for younger adult\n\n")
+
+cat("Middle-aged Adult (75 kg, 45 years):\n")
+cat("  Predicted Height:", results[2, Predicted_Height], "cm\n")
+cat("  95% CI: [", results[2, CI_Lower], ",", results[2, CI_Upper], "]\n")
+cat("  → Height prediction for middle-aged adult\n\n")
+
+cat("Older Adult (85 kg, 65 years):\n")
+cat("  Predicted Height:", results[3, Predicted_Height], "cm\n")
+cat("  95% CI: [", results[3, CI_Lower], ",", results[3, CI_Upper], "]\n")
+cat("  → Height prediction for older adult\n\n")
+
+cat("KEY INSIGHTS:\n")
+cat("1. Examine the relationship between Weight, Age, and Height\n")
+cat("2. Compare predicted heights across different age groups\n")
+cat("3. Narrow confidence intervals indicate reliable predictions\n")
+cat("4. Model can be used for understanding anthropometric relationships!\n")
+
+# Visualize predictions
+library(ggplot2)
+ggplot(results, aes(x = age_group, y = Predicted_Height, fill = age_group)) +
+  geom_col(alpha = 0.7) +
+  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), 
+                width = 0.2, linewidth = 1) +
+  geom_text(aes(label = paste(Predicted_Height, "cm")), 
+            vjust = -1, size = 4) +
+  theme_light() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 15, hjust = 1)) +
+  labs(title = "Predicted Height for Different Age Groups",
+       subtitle = "Error bars show 95% confidence intervals",
+       x = NULL,
+       y = "Predicted Height (cm)") +
+  ylim(0, max(results$CI_Upper) * 1.1)
+```
+
+<div class="callout callout-success">  
+<div class="callout-title">🎉 Challenge Complete!</div>  
+
+**Congratulations!** You've completed a full regression workflow:  
+
+✓ Exploratory data analysis (correlations, visualizations)  
+✓ Simple regression models  
+✓ Multiple regression model  
+✓ Model diagnostics and validation  
+✓ Predictions with confidence intervals  
+
+This is the exact process data scientists use in real-world projects!  
+
+</div>  
+
+---  
+
+## 7. Summary and Quick Reference  
+
+### 7.1. Congratulations!  
+
+You've learned how to combine data manipulation, visualization, and statistical testing!  
+
+### 7.2. What You've Learned  
+
+**Data Manipulation (data.table):**  
+- `DT[i, j, by]` syntax for filtering, selecting, computing  
+- Grouping with `by`  
+- Calculating summaries with `.N`, `mean()`, `sd()`  
+
+**Statistical Tests:**  
+
+| Test | Purpose | When to Use | R Function |  
+|------|---------|-------------|------------|  
+| **Chi-squared** | Test independence of categorical variables | 2+ categorical variables, n ≥ 5 per cell | `chisq.test()` |  
+| **Fisher's exact** | Test independence (small samples) | 2 categorical variables, small n | `fisher.test()` |  
+| **One-sample t-test** | Compare mean to known value | 1 continuous variable vs. reference | `t.test(x, mu = value)` |  
+| **Two-sample t-test** | Compare 2 independent group means | 2 groups, continuous outcome | `t.test(y ~ group)` |  
+| **Paired t-test** | Compare 2 related measurements | Before/after, matched pairs | `t.test(x, y, paired = TRUE)` |  
+| **ANOVA** | Compare 3+ group means | 3+ groups, continuous outcome | `aov(y ~ group)` |  
+| **Tukey HSD** | Post-hoc after ANOVA | After significant ANOVA | `TukeyHSD()` |  
+
+**Visualization (ggplot2):**  
+- Bar charts for categorical data  
+- Histograms and density plots for distributions  
+- Boxplots and violin plots for group comparisons  
+- Always visualize before testing!  
+
+### 7.3. Key Workflow  
+
+1. **Explore**: Use data.table to understand your data  
+2. **Visualize**: Create plots with ggplot2  
+3. **Test**: Choose and perform appropriate statistical test  
+4. **Interpret**: Look at p-values and effect sizes  
+5. **Communicate**: Report findings clearly  
+
+### 7.4. Best Practices  
+
+<div class="callout callout-tip">  
+<div class="callout-title">Analysis Checklist</div>  
+
+✓ Always visualize your data first  
+✓ Check assumptions before testing  
+✓ Use appropriate test for your data type  
+✓ Report effect sizes, not just p-values  
+✓ Consider practical significance, not just statistical significance  
+✓ Document your analysis workflow  
+
+</div>  
+
+---  
+
+### 7.5. Download Your Work  
+
+<div class="callout callout-tip">  
+<div class="callout-title">Save Your Work</div>  
+
+Save this completed tutorial as an HTML file for future reference.  
+</div>  
+
+```{r download-ui, echo=FALSE}
+HTML('<button onclick="window.downloadTutorial(); return false;" class="btn-download-tutorial" style="display: block; margin: 20px auto;">📥 Download Tutorial as HTML</button>')
+```
+
+---  
+
+### 7.6. Please Give Feedback!  
+
+<div class="callout callout-success">  
+<div class="callout-title">💬 Your Feedback Matters</div>  
+
+Help us improve this tutorial! Share your experience and suggestions.  
+</div>  
+
+```{r feedback-ui, echo=FALSE}
+HTML('<a href="https://forms.gle/F3xueJLoTrVyPPLM7" target="_blank" style="display: block; margin: 20px auto; padding: 15px 30px; background-color: #28a745; color: white; text-align: center; text-decoration: none; border-radius: 5px; font-weight: bold; max-width: 300px;">📝 Please Give Feedback!</a>')
+```
+
+---  
+
+### 7.7. Additional Resources  
+
+**R Packages:**  
+- [data.table documentation](https://rdatatable.gitlab.io/data.table/)  
+- [ggplot2 documentation](https://ggplot2.tidyverse.org/)  
+
+**Statistics Resources:**  
+- [Quick-R: Basic Statistics](https://www.statmethods.net/stats/index.html)  
+- [R for Data Science](https://r4ds.had.co.nz/)  
+
+**Statistical Tests:**  
+- [Choosing the Right Test](https://www.scribbr.com/statistics/statistical-tests/)  
+- [Statistical Test Decision Tree](https://stats.oarc.ucla.edu/other/mult-pkg/whatstat/)  

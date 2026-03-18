@@ -1669,6 +1669,126 @@ myvector * c(0.1, 0.2)
 
 ---
 
+### ⚠️ BE CAREFUL: Comparing Decimal Numbers with ==
+
+<div class="callout callout-danger">
+<div class="callout-title">⚠️ DANGER: Floating Point Precision Issues</div>
+
+**Never use `==` to compare decimal numbers!**
+
+Computers store decimal numbers with limited precision, which can cause unexpected results:
+
+```r
+0.1 + 0.2 == 0.3  # You'd expect TRUE, but it returns FALSE!
+```
+
+**Why?** Computers store numbers in binary (0s and 1s), and some decimals can't be represented exactly. This causes tiny rounding errors that make "equal" numbers appear unequal.
+
+**The Problem in Filtering:**
+```r
+x <- c(0.1, 0.2, 0.3, 0.4)
+x[x == 0.3]  # Might not find 0.3 due to precision errors!
+```
+
+</div>
+
+---
+
+### Demonstration: The Problem with == for Decimals
+
+See the floating point precision problem in action:
+
+```{r floating-point-problem, exercise=TRUE}
+# Example 1: Simple arithmetic that "should" work
+0.1 + 0.2 == 0.3
+
+# Example 2: Why does this happen?
+print(0.1 + 0.2, digits = 20)  # Shows the actual stored value
+print(0.3, digits = 20)         # Compare to what we expect
+
+# Example 3: Filtering problem
+values <- c(0.1, 0.2, 0.3, 0.4, 0.5)
+calculated <- c(0.05 + 0.05, 0.1 + 0.1, 0.15 + 0.15, 0.2 + 0.2, 0.25 + 0.25)
+
+# This might not work as expected!
+calculated == 0.3
+```
+
+---
+
+### Solution: Use Tolerance or Other Comparisons
+
+<div class="callout callout-success">
+<div class="callout-title">✅ SAFE ALTERNATIVES</div>
+
+**Instead of `==`, use one of these methods:**
+
+**1. Use `all.equal()` for tolerance-based comparison:**
+```r
+all.equal(0.1 + 0.2, 0.3)  # Returns TRUE (within tolerance)
+```
+
+**2. Use comparison operators (>, <, >=, <=) when possible:**
+```r
+x[x > 0.29 & x < 0.31]  # Safer than x[x == 0.3]
+```
+
+**3. Round numbers first:**
+```r
+round(0.1 + 0.2, 10) == round(0.3, 10)  # TRUE
+```
+
+**4. Use as.numeric(as.character(x)):**
+```r
+as.numeric(as.character(0.1 + 0.2 ))== 0.3  # TRUE (built-in tolerance)
+```
+
+</div>
+
+---
+
+### Demonstration: Safe Comparison Methods
+
+Compare the unsafe `==` with safer alternatives:
+
+```{r safe-comparisons, exercise=TRUE}
+# The problem
+0.1 + 0.2 == 0.3  # FALSE (unexpected!)
+
+# Solution 1: all.equal() with tolerance
+all.equal(0.1 + 0.2, 0.3)  # TRUE (safe!)
+
+# Solution 2: Use range instead of exact match
+x <- 0.1 + 0.2
+x > 0.29 & x < 0.31  # TRUE (safe!)
+
+# Solution 3: Round first
+round(0.1 + 0.2, 10) == round(0.3, 10)  # TRUE (safe!)
+
+# Solution 4: Check absolute difference is small
+abs((0.1 + 0.2) - 0.3) < 0.0000001  # TRUE (safe!)
+
+
+```
+
+<div class="callout callout-tip">
+<div class="callout-title">💡 Pro Tip: When to Worry</div>
+
+**You don't need to worry about this when:**
+- Comparing integers (whole numbers): `5 == 5` is always safe  
+- Using `>`, `<`, `>=`, `<=` with decimals (these work fine!)  
+
+**You DO need to worry when:**
+- Using `==` with any decimal calculations  
+- Filtering datasets for specific decimal values  
+- Working with financial data or precise measurements  
+
+**Remember:** This is a fundamental limitation of how computers store numbers, not a bug in R!
+
+</div>
+
+---
+
 ## Quick Reference: All Functions
 
 <div class="callout callout-info">
