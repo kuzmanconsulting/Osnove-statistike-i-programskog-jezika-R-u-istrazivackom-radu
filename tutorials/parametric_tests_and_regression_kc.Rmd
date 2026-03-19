@@ -239,7 +239,16 @@ ggplot(bp_data, aes(systolic_bp)) +
 t.test(bp_data[,systolic_bp], mu = 120)
 ```
 
-**Your Turn:** Test if the mean `Sepal.Length` in iris differs from 6:  
+**Your Turn:** Test if the mean `Sepal.Length` in iris for the Species=="versicolor" differs from 6:  
+
+hint : you can add a line to ggplot by typing    
+geom_vline(xintercept = X, color = "red", linetype = "dashed") - the X marks where on x axis to add the line; color="red" and linetype="dashed" affect appearance of the line
+
+Extra task for the quicker audience :  
+  - plot the histogram for entire dataset, Sepal.Length. Does the distribution look normal?  
+  - use shapiro.test(x) where x is a vector on which you want to test normality against , to conclude?  
+  - which test would we use in this case ?  
+  - use it (wilcox.test(x, mu = known_value))  
 
 ```{r onesample-exercise, exercise=TRUE, exercise.setup="shared-data"}
 # 1. Calculate mean Sepal.Length
@@ -251,25 +260,25 @@ t.test(bp_data[,systolic_bp], mu = 120)
 
 ```{r onesample-exercise-hint}
 # Mean
-iris_dt[, mean(Sepal.Length)]
+iris_dt[Species=="versicolor", mean(Sepal.Length)]
 
 # Test
-t.test(iris_dt[,Sepal.Length], mu = 6)
+t.test(iris_dt[Species=="versicolor",Sepal.Length], mu = 6)
 ```
 
 ```{r onesample-exercise-solution}
 # Summary
-iris_dt[, .(mean_sepal = mean(Sepal.Length), sd_sepal = sd(Sepal.Length))]
+iris_dt[Species=="versicolor", .(mean_sepal = mean(Sepal.Length), sd_sepal = sd(Sepal.Length))]
 
 # Visualization
-ggplot(iris_dt, aes(Sepal.Length)) +
+ggplot(iris_dt[Species=="versicolor"], aes(Sepal.Length)) +
     geom_histogram(bins = 15, fill = "steelblue", alpha = 0.7, color = "black") +
     geom_vline(xintercept = 6, color = "red", linetype = "dashed", size = 1) +
     theme_light() +
     labs(title = "Sepal Length Distribution", x = "Sepal Length")
 
 # Test
-t.test(iris_dt[,Sepal.Length], mu = 6)
+t.test(iris_dt[Species=="versicolor",Sepal.Length], mu = 6)
 ```
 
 ---  
@@ -333,16 +342,11 @@ ggplot(tidy, aes(Height, fill = Gender)) +
     labs(title = "Height Distribution by Gender")
 ```
 
-Perform the two-sample t-test:  
+Since the distributions dont look normal, check by shapiro.test, and perform the appropriate test:  
 
 ```{r twosample-test, exercise=TRUE, exercise.setup="shared-data"}
-# Two-sample t-test
-t.test(Height ~ Gender, data = tidy)
 
-# Alternative: split data manually
-females <- tidy[Gender == "female", Height]
-males <- tidy[Gender == "male", Height]
-t.test(females, males)
+
 ```
 
 **Your Turn:** Compare `Petal.Length` between `setosa` and `versicolor` species in iris:  
