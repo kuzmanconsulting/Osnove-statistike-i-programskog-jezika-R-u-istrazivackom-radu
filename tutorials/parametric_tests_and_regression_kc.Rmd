@@ -35,6 +35,10 @@ library(openxlsx)
 # Reinitialize data.table options (stripped by learnr exercise environment)
 if (is.null(getOption("datatable.alloccol"))) data.table:::.onLoad()
 
+#digression
+library(data.table)
+library(ggplot2)
+population <- data.table(height=c(rnorm(250,sd=40, n=20000), rnorm(120, sd=20, n=20000)))
 # Main datasets
 tidy <- data.table::fread("http://hex.bioinfo.hr/~mfabijanic/tidyData.txt", header=T)
 iris_dt <- as.data.table(iris)
@@ -177,6 +181,37 @@ This tutorial focuses on parametric statistical tests and regression:
 
 ---  
 
+## small digression about CLT:  
+
+```{r clt, exercise=TRUE, exercise.setup="shared-data"}
+library(data.table)
+library(ggplot2)
+population <- data.table(height=c(rnorm(250,sd=40, n=20000), rnorm(120, sd=20, n=20000)))
+ggplot(population, aes(height))+
+geom_histogram()
+
+
+s1 <- sample(1:40000, 100)
+s1
+means1 <- mean(population[s1, height])
+
+ggplot(population[s1], aes(height))+
+  geom_histogram()+
+  geom_vline(xintercept = means1, color="red", linetype="dashed")
+
+## but CLT says calculate mean and do repeated samples!!
+hundreadsamplemeans <- sapply( 1:1000, function(x) mean( population[sample(1:40000, 100),height] ) )
+
+ggplot(data.table(hundreadsamplemeans), aes(hundreadsamplemeans))+
+  geom_histogram()+
+  theme_light()
+
+```
+
+
+
+
+
 ## 1. Comparing Means: t-tests  
 
 <div class="callout callout-success">  
@@ -246,7 +281,7 @@ geom_vline(xintercept = X, color = "red", linetype = "dashed") - the X marks whe
 
 Extra task for the quicker audience :  
   - plot the histogram for entire dataset, Sepal.Length. Does the distribution look normal?  
-  - use shapiro.test(x) where x is a vector on which you want to test normality against , to conclude?  
+  - use shapiro.test(x) where x is a vector - see what it will ?  
   - which test would we use in this case ?  
   - use it (wilcox.test(x, mu = known_value))  
 
